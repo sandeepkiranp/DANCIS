@@ -2,7 +2,7 @@
 #include <pbc/pbc.h>
 #include "dac.h"
 
-#define n 2 
+#define n 3 
 
 element_t g1, g2, h;
 element_t y[n];
