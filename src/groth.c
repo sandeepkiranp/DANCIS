@@ -12,8 +12,6 @@ pairing_t pairing;
 
 void groth_generate_parameters()
 {
-    int i;
-
     if (g1_g2_initialized)
         return;
 
@@ -25,15 +23,16 @@ void groth_generate_parameters()
     element_random(g1);
     element_random(g2);
 
-    g1_g2_initialized;
+    g1_g2_initialized = 1;
+    printf("Generated System Parameters\n");
 
 }
 void groth_generate_parameters_2()
 {
     int i;
-    printf("Generating Groth2 Parameters\n");
 
     groth_generate_parameters();
+    printf("Generating Groth2 Parameters\n");
 
     for(i=0; i<n; i++)
     {
@@ -124,7 +123,7 @@ int groth_verify_signature_2()
 
     if (element_cmp(temp1, temp4))
     {
-        printf("signature does not verify\n");
+        printf("Groth2 signature does not verify\n");
 	return FAILURE;
     }
 
@@ -141,25 +140,27 @@ int groth_verify_signature_2()
 
         if (element_cmp(temp1, temp4))
         {
-            printf("signature does not verify\n");
+            printf("Groth2 signature does not verify\n");
             return FAILURE;
         }
     }
 
-    printf("signature verifies\n");
+    printf("Groth2 signature verifies\n");
     return SUCCESS;
 }
 
 void groth_generate_parameters_1()
 {
     int i;
-    printf("Generating Groth1 Parameters\n");	
 
     groth_generate_parameters();
+    printf("Generating Groth1 Parameters\n");	
 
     for(i=0; i<n; i++)
+    {
         element_init_G1(y[i], pairing);
         element_random(y[i]);
+    }
 
     element_init_Zr(secret_key, pairing);
     element_init_G2(public_key, pairing);
@@ -175,30 +176,30 @@ void groth_generate_signature_1()
     element_t r;
     element_t one_by_r, one;
 
-    printf("Generating Groth Signature\n");	
+    printf("Generating Groth1 Signature\n");	
     for(i=0; i<n; i++)
     {
-        element_init_G2(m[i], pairing);
+        element_init_G1(m[i], pairing);
         element_random(m[i]);
     }
 
     element_init_Zr(r, pairing);
 
-    element_init_G1(R, pairing);
-    element_init_G2(S, pairing);
+    element_init_G2(R, pairing);
+    element_init_G1(S, pairing);
 
     for(i=0; i<n; i++)
-        element_init_G2(T[i], pairing);
+        element_init_G1(T[i], pairing);
 
     element_init_Zr(one_by_r, pairing);
     element_init_Zr(one, pairing);
 
-    //R = g1^r
+    //R = g2^r
     element_random(r);
-    element_pow_zn(R, g1, r);
+    element_pow_zn(R, g2, r);
 
-    //S = y1 * g2^sk
-    element_pow_zn(S, g2, secret_key);
+    //S = y1 * g1^sk
+    element_pow_zn(S, g1, secret_key);
     element_mul(S, y[0], S);
 
     // 1/r
@@ -227,47 +228,46 @@ int groth_verify_signature_1()
     element_init_GT(temp3, pairing);
     element_init_GT(temp4, pairing);
 
-    printf("Verifying Groth Signature\n");	
-    //Check if e(R, S) = e(g1 , y )e(V , g2 )
+    printf("Verifying Groth1 Signature\n");	
+    //Check if e(S, R) = e(y1, g2) * e(g1 , V )
     
-    //e(R,S)
-    pairing_apply(temp1, R, S, pairing);
+    //e(S,R)
+    pairing_apply(temp1, S, R, pairing);
 
-    //e(g1,y1)
-    pairing_apply(temp2, g1, y[0], pairing);
-    //e(pk,g2)
-    pairing_apply(temp3, public_key, g2, pairing);
-    // e(g1,y1) * e(pk,g2)
+    //e(y1, g2)
+    pairing_apply(temp2, y[0], g2, pairing);
+    //e(g1, pk)
+    pairing_apply(temp3, g1, public_key, pairing);
+    // e(y1,g2) * e(g1, pk)
     element_mul(temp4, temp2, temp3);
 
     if (element_cmp(temp1, temp4))
     {
-        printf("signature does not verify\n");
+        printf("Groth1 signature does not verify\n");
 	return FAILURE;
     }
 
     for(i=0; i<n; i++)
     {
-        //Check if e(R,Ti ) = e(V, yi )e(g1, mi )
-        pairing_apply(temp1, R, T[i], pairing);
+        //Check if e(Ti,R ) = e(yi,V )e(mi,g2 )
+        pairing_apply(temp1, T[i], R, pairing);
         //e(pk,y1)
-        pairing_apply(temp2, public_key, y[i], pairing);
+        pairing_apply(temp2, y[i], public_key, pairing);
         //e(g1,m)
-        pairing_apply(temp3, g1, m[i], pairing);
-        // e(V, yi )*e(g1, mi )
+        pairing_apply(temp3, m[i], g2, pairing);
+        // e(yi,V )*e(mi,g2)
         element_mul(temp4, temp2, temp3);    
 
         if (element_cmp(temp1, temp4))
         {
-            printf("signature does not verify\n");
+            printf("Groth1 signature does not verify\n");
             return FAILURE;
         }
     }
 
-    printf("signature verifies\n");
+    printf("Groth1 signature verifies\n");
     return SUCCESS;
 }
-*/
 
 int main()
 {
@@ -279,13 +279,22 @@ int main()
     printf("Reading (%d) parameters \n%s \n",count, param);
     pairing_init_set_buf(pairing, param, count);	
 
+    
     groth_generate_parameters_2();
 
     groth_generate_signature_2();
 
     if (groth_verify_signature_2())
         return 1;
+    
 
+    groth_generate_parameters_1();
+
+    groth_generate_signature_1();
+
+    if (groth_verify_signature_1())
+        return 1;
+    
     printf("Exit from main\n");
     return 0;
 }
