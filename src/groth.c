@@ -168,14 +168,14 @@ void groth_generate_signature_1(element_t secret_key, credential_attributes *ca,
     element_t r;
     element_t one_by_r, one;
 
-    printf("Generating Groth1 Signature\n");	
+    printf("Generating Groth1 Signature...");	
 
     element_init_Zr(r, pairing);
 
     element_init_G2(ic->R, pairing);
     element_init_G1(ic->S, pairing);
 
-    for(i=0; i<n; i++)
+    for(i=0; i<n+1; i++)
         element_init_G1(ic->T[i], pairing);
 
     element_init_Zr(one_by_r, pairing);
@@ -203,6 +203,8 @@ void groth_generate_signature_1(element_t secret_key, credential_attributes *ca,
         element_mul(ic->T[i], ic->T[i], ca->attributes[i]);
         element_pow_zn(ic->T[i], ic->T[i], one_by_r);
     }
+    printf("Done!\n\n");
+
 }
 
 int groth_verify_signature_1(element_t public_key, credential_attributes *ca, issued_credential *ic)
@@ -215,7 +217,7 @@ int groth_verify_signature_1(element_t public_key, credential_attributes *ca, is
     element_init_GT(temp3, pairing);
     element_init_GT(temp4, pairing);
 
-    printf("Verifying Groth1 Signature\n");	
+    printf("Verifying Groth1 Signature...");	
     //Check if e(S, R) = e(y1, g2) * e(g1 , V )
     
     //e(S,R)
@@ -230,7 +232,7 @@ int groth_verify_signature_1(element_t public_key, credential_attributes *ca, is
 
     if (element_cmp(temp1, temp4))
     {
-        printf("Groth1 signature does not verify\n");
+        printf("Failed!\n\n");
 	return FAILURE;
     }
 
@@ -247,12 +249,12 @@ int groth_verify_signature_1(element_t public_key, credential_attributes *ca, is
 
         if (element_cmp(temp1, temp4))
         {
-            printf("Groth1 signature does not verify\n");
+            printf("Failed!\n\n");
             return FAILURE;
         }
     }
 
-    printf("Groth1 signature verifies\n");
+    printf("Done!\n\n");
     return SUCCESS;
 }
 

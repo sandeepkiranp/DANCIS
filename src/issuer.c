@@ -12,7 +12,7 @@ void dac_generate_parameters()
     char param[1024];
     int i;
 
-    printf("Generating System Parameters\n");
+    printf("Generating System Parameters...");
 
     int count = fread(param, 1, 1024, stdin);
     if (!count) pbc_die("input error");
@@ -47,7 +47,7 @@ void dac_generate_parameters()
         element_random(Y2[i]);
     }    
 
-    printf("Generated System Parameters\n");
+    printf("Done!\n\n");
 
 }
 
