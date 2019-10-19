@@ -4,8 +4,8 @@ element_t g1, g2;
 element_t root_secret_key
 element_t root_public_key;
 pairing_t pairing;
-element_t y1[n];
-element_t y2[n];
+element_t y1[n+1]; //cpk(i-1) + n attributes = n+1 attrbutes
+element_t y2[n+1]; //cpk(i-1) + n attributes = n+1 attrbutes
 
 void dac_generate_parameters()
 {
@@ -34,13 +34,13 @@ void dac_generate_parameters()
     element_pow_zn(root_public_key, g2, secret_key);
 
     //Generate y1[n] and y2[n]
-    for(i=0; i<n; i++)
+    for(i=0; i<n+1; i++)
     {
         element_init_G1(y1[i], pairing);
         element_random(y1[i]);
     }
 
-    for(i=0; i<n; i++)
+    for(i=0; i<n+1; i++)
     {
         element_init_G2(y2[i], pairing);
         element_random(y2[i]);
@@ -52,6 +52,7 @@ void dac_generate_parameters()
 
 dac_issue_user_credential(credential_attributes ca*, issued_credential *ic)
 {
-    groth_generate_signature_1(ca, ic);
+    groth_generate_signature_1(root_secret_key, ca, ic);
+    groth_verify_signature_1(root_public_key, ca, ic)
 
 }

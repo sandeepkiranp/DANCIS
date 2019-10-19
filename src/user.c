@@ -16,16 +16,16 @@ generate_user_keys()
 
 void get_user_credential_attributes(credential_attributes *ca)
 {
-    ca->public_key = user_public_key;
+    ca->attributes[0] = user_public_key;
 
     // user attributes from G1
-    for(i=0; i<n; i++)
+    for(i=1; i<n+1; i++)
     {
         element_init_G1(ca->attributes[i], pairing);
 	// TODO take a text attribute and convert it to a hash element
         element_random(ca->attributes[i]);
     }
-    ca->num_of_attributes = n; //for now
+    ca->num_of_attributes = n+1; //for now
 }
 
 delegate_credential()

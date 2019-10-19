@@ -7,8 +7,7 @@
 
 typedef struct attributes
 {
-    element_t public_key;
-    element_t attributes[n];
+    element_t attributes[n+1]; //attributes[0] represents the public key
     int num_of_attributes;
 }credential_attributes;
 
