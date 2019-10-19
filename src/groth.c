@@ -160,52 +160,49 @@ void groth_generate_parameters_1()
     element_pow_zn(public_key, g2, secret_key);
 }
 
-//TODO : push R S T inide groth_generate_signature
-void groth_generate_signature_1()
+void groth_generate_signature_1(credential_attributes ca*, issued_credential *ic)
 {
     int i;
     element_t r;
     element_t one_by_r, one;
 
     printf("Generating Groth1 Signature\n");	
-    for(i=0; i<n; i++)
-    {
-        element_init_G1(m[i], pairing);
-        element_random(m[i]);
-    }
 
     element_init_Zr(r, pairing);
 
-    element_init_G2(R, pairing);
-    element_init_G1(S, pairing);
+    element_init_G2(ic->R, pairing);
+    element_init_G1(ic->S, pairing);
 
     for(i=0; i<n; i++)
-        element_init_G1(T[i], pairing);
+        element_init_G1(ic->T[i], pairing);
 
     element_init_Zr(one_by_r, pairing);
     element_init_Zr(one, pairing);
 
     //R = g2^r
     element_random(r);
-    element_pow_zn(R, g2, r);
+    element_pow_zn(ic->R, g2, r);
 
     //S = y1 * g1^sk
-    element_pow_zn(S, g1, secret_key);
-    element_mul(S, y[0], S);
+    element_pow_zn(ic->S, g1, secret_key);
+    element_mul(ic->S, y[0], ic->S);
 
     // 1/r
     element_set1(one);
     element_div(one_by_r, one, r); 
 
     //S = S^(1/r). Therefore S = (y * g2^sk)^(1/r)
-    element_pow_zn(S, S, one_by_r);
+    element_pow_zn(ic->S, ic->S, one_by_r);
 
     //T = (y^sk * m)^(1/r)
-    for(i=0; i<n; i++)
+    for(i=0; i<n+1; i++) //n+1 attributes
     {
-        element_pow_zn(T[i], y[i], secret_key);
-        element_mul(T[i], T[i], m[i]);
-        element_pow_zn(T[i], T[i], one_by_r);
+        element_pow_zn(ic->T[i], ic->y[i], secret_key);
+	if (i == 0) //sign the PK
+            element_mul(ic->T[i], ic->T[i], ca->public_key);
+	else //sign the attributes
+            element_mul(ic->T[i], ic->T[i], ca->attributes[i]);
+        element_pow_zn(ic->T[i], ic->T[i], one_by_r);
     }
 }
 

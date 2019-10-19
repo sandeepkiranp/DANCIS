@@ -50,15 +50,8 @@ void dac_generate_parameters()
 
 }
 
-generate_user_keys()
+dac_issue_user_credential(credential_attributes ca*, issued_credential *ic)
 {
-
-
-}
-
-dac_issue_user_credential()
-{
-    generate_user_keys();
-
+    groth_generate_signature_1(ca, ic);
 
 }

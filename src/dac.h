@@ -5,12 +5,30 @@
 #define FAILURE 1
 #define n 3
 
-extern int g1_g2_initialized;
+typedef struct attributes
+{
+    element_t public_key;
+    element_t attributes[n];
+    int num_of_attributes;
+}credential_attributes;
 
-extern element_t g1, g2, h;
-extern element_t y[n];
-extern element_t public_key, secret_key;
+typedef struct credential
+{
+    element_t R;
+    element_t S;
+    element_t T[n+1]; //CPK + n attributes
+    int num_of_attributes;
+}issued_credential;
+
+extern element_t g1, g2;
+extern element_t y1[n], y2[n];
 extern pairing_t pairing;
+
+extern dac_generate_parameters();
+
+extern dac_issue_user_credential();
+
+extern generate_user_keys();
 
 extern void groth_generate_parameters_2();
 

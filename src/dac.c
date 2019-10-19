@@ -9,10 +9,15 @@ void generate_attribute_token()
 
 main()
 {
+    credential_attributes ca;
+    issued_credential ic;
 
     dac_generate_parameters();
 
-    dac_issue_user_credential();
+    generate_user_keys();
+
+    get_user_credential_attribtutes(&ca);
+    dac_issue_user_credential(&ca, &ic);
 
     groth_generate_parameters_2();
 
