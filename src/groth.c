@@ -1,14 +1,5 @@
 #include <stdio.h>
-#include <pbc/pbc.h>
 #include "dac.h"
-
-#define n 3 
-static int g1_g2_initialized = 0;
-
-element_t g1, g2, h;
-element_t y[n];
-element_t public_key, secret_key;
-pairing_t pairing;
 
 void groth_generate_parameters()
 {
@@ -269,6 +260,7 @@ int groth_verify_signature_1()
     return SUCCESS;
 }
 
+/*
 int main()
 {
     char param[1024];
@@ -298,3 +290,4 @@ int main()
     printf("Exit from main\n");
     return 0;
 }
+*/
