@@ -4,19 +4,21 @@
 static element_t user_secret_key;
 static element_t user_public_key;
 
-generate_user_keys()
+void generate_user_keys()
 {
     element_init_Zr(user_secret_key, pairing);
     element_init_G2(user_public_key, pairing);
 
-    element_random(secret_key);
+    element_random(user_secret_key);
     element_pow_zn(user_public_key, g1, user_secret_key);
 
 }
 
 void get_user_credential_attributes(credential_attributes *ca)
 {
-    ca->attributes[0] = user_public_key;
+    int i;
+
+    element_set(ca->attributes[0],user_public_key);
 
     // user attributes from G1
     for(i=1; i<n+1; i++)
@@ -28,7 +30,7 @@ void get_user_credential_attributes(credential_attributes *ca)
     ca->num_of_attributes = n+1; //for now
 }
 
-delegate_credential()
+void delegate_credential()
 {
 
 

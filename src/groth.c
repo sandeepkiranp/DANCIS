@@ -1,6 +1,6 @@
-#include <stdio.h>
 #include "dac.h"
 
+/*
 void groth_generate_parameters()
 {
     if (g1_g2_initialized)
@@ -160,7 +160,9 @@ void groth_generate_parameters_1()
     element_pow_zn(public_key, g2, secret_key);
 }
 
-void groth_generate_signature_1(element_t secret_key, credential_attributes ca*, issued_credential *ic)
+*/
+
+void groth_generate_signature_1(element_t secret_key, credential_attributes *ca, issued_credential *ic)
 {
     int i;
     element_t r;
@@ -185,7 +187,7 @@ void groth_generate_signature_1(element_t secret_key, credential_attributes ca*,
 
     //S = y1 * g1^sk
     element_pow_zn(ic->S, g1, secret_key);
-    element_mul(ic->S, y1[0], ic->S);
+    element_mul(ic->S, Y1[0], ic->S);
 
     // 1/r
     element_set1(one);
@@ -197,13 +199,13 @@ void groth_generate_signature_1(element_t secret_key, credential_attributes ca*,
     //T = (y^sk * m)^(1/r)
     for(i=0; i<n+1; i++) //n+1 attributes
     {
-        element_pow_zn(ic->T[i], ic->y1[i], secret_key);
+        element_pow_zn(ic->T[i], Y1[i], secret_key);
         element_mul(ic->T[i], ic->T[i], ca->attributes[i]);
         element_pow_zn(ic->T[i], ic->T[i], one_by_r);
     }
 }
 
-int groth_verify_signature_1(element_t public_key, credential_attributes ca*, issued_credential *ic)
+int groth_verify_signature_1(element_t public_key, credential_attributes *ca, issued_credential *ic)
 {
     element_t temp1, temp2, temp3, temp4;
     int i;
@@ -220,7 +222,7 @@ int groth_verify_signature_1(element_t public_key, credential_attributes ca*, is
     pairing_apply(temp1, ic->S, ic->R, pairing);
 
     //e(y1, g2)
-    pairing_apply(temp2, y1[0], g2, pairing);
+    pairing_apply(temp2, Y1[0], g2, pairing);
     //e(g1, pk)
     pairing_apply(temp3, g1, public_key, pairing);
     // e(y1,g2) * e(g1, pk)
@@ -235,9 +237,9 @@ int groth_verify_signature_1(element_t public_key, credential_attributes ca*, is
     for(i=0; i<n+1; i++) //cpk(i-1) + n attributes
     {
         //Check if e(Ti,R ) = e(yi,V )e(mi,g2 )
-        pairing_apply(temp1, ic->T[i], R, pairing);
+        pairing_apply(temp1, ic->T[i], ic->R, pairing);
         //e(y1,pk)
-        pairing_apply(temp2, y1[i], public_key, pairing);
+        pairing_apply(temp2, Y1[i], public_key, pairing);
         //e(g1,mi)
         pairing_apply(temp3, ca->attributes[i], g2, pairing);
         // e(yi,V )*e(mi,g2)
