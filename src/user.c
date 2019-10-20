@@ -44,7 +44,7 @@ void get_user_credential_attributes(credential_attributes *ca)
 
 void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
 {
-    int i;
+    int i, j;
     element_t rhosig, r1, s1, t1[n+1];
     element_t one_by_r, one;
     element_t rhos, rhot[n+1], rhoa[n], rhocsk;
@@ -139,34 +139,71 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
     element_mul(com[1], com[1], temp2);
 
     //we have n attributes. Let's assume half of them are disclosed and rest half not.
+    //TODO 0th attribute is the cpk
     for(i=0; i<n; i++)
     {
         element_mul(temp1, rhosig, rhot[i+1]);
-	element_pow_zn(com[i], eg1R, temp1);
-        if (i%2 == 0)
+	element_pow_zn(com[i+2], eg1R, temp1);
+        if (i%2 == 0) //attribute revealed
 	{
 	    continue;
 	}
-	else
+	else //attribute not revealed
 	{
 	    element_t negrhoa;
             element_init_Zr(negrhoa, pairing);
             element_neg(negrhoa, rhoa[i]);
             element_pow_zn(temp2, eg1g2, negrhoa);
-	    element_mul(com[i], com[i], temp2);
+	    element_mul(com[i+2], com[i], temp2);
 	}
 
     }
     printf("Done!\n");
 
-    printf("\t3. Compute res values...");
+
+    printf("\t3. Compute c...");
+    element_t c;
+    element_init_Zr(c, pairing);
+    printf("Done!\n");
+
+    printf("\t4. Compute res values...");
     element_t ress;
     element_t rescsk;
+    element_t rest[n+1];
+    element_t resa[n/2];
 
     element_init_Zr(ress, pairing);
     element_init_Zr(rescsk, pairing);
 
+    //ress = g1^rhos * s^c
+    element_pow_zn(ress, g1, rhos); 
+    element_pow_zn(temp1, ic->S, c); 
+    element_mul(ress, ress, temp1);
 
+    //rescsk = rhocsk + c * secret_key
+    element_mul(rescsk, c, user_secret_key);
+    element_add(rescsk, rescsk, rhocsk);
+
+    for(i=0; i<n+1; i++)
+    {
+        element_init_Zr(rest[i], pairing);
+        element_pow_zn(rest[i], g1, rhot[i]);
+        element_pow_zn(temp1, ic->T[i], c);
+	element_mul(rest[i], rest[i], temp1);
+    }
+
+    for(i=0,j=0; i<n; i++)
+    {
+        if (i%2 != 0)
+        {
+            element_init_Zr(resa[j], pairing);
+            element_pow_zn(resa[j], g1, rhoa[i]);
+            element_pow_zn(temp1, ca->attributes[i+1], c);
+            element_mul(resa[j], resa[j], temp1);
+	    j++;
+	}
+    }
+    printf("Done!\n");
 
 }
 
