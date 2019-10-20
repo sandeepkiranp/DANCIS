@@ -48,8 +48,13 @@ void dac_generate_parameters()
     }    
 
     printf("Done!\n\n");
-
 }
+/*
+element_t get_root_issuer_public_key()
+{
+    return root_public_key;
+}
+*/
 
 int dac_issue_user_credential(credential_attributes *ca, issued_credential *ic)
 {

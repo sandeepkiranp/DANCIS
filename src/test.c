@@ -8,6 +8,8 @@ main()
     element_t a, b;
     element_t temp1, temp2;
     char param[4096];
+    char buffer[4096] = {0};
+    size_t size = 4096;
 
     size_t count = fread(param, 1, 4096, stdin);
     if (!count) pbc_die("input error");
@@ -22,6 +24,12 @@ main()
 
     element_random(a);
     element_random(b);
+    element_snprintf(buffer,size,"%B",a);
+    printf("A = %s, len = %d\n", buffer, size);
+    printf("strlen = %d\n", strlen(buffer));
+    element_snprintf(buffer,size,"%B",b);
+    printf("A = %s, len = %d\n", buffer, size);
+    printf("strlen = %d\n", strlen(buffer));
 
     pairing_apply(temp1, a, b, pairing);
     pairing_apply(temp2, a, b, pairing);

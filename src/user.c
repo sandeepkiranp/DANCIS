@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "dac.h"
 
 static element_t user_secret_key;
@@ -163,7 +164,17 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
 
     printf("\t3. Compute c...");
     element_t c;
+    char buffer[4096] = {0};
+    int size = 4096;
+
+    //c = Hash(com[i] for i=0 to n+2)
     element_init_Zr(c, pairing);
+    for(i=0; i<n+2; i++)
+    {
+        element_snprintf(buffer+(strlen(buffer)),size,"%B",com[i]);
+    }
+    element_from_hash(c, buffer, strlen(buffer));
+
     printf("Done!\n");
 
     printf("\t4. Compute res values...");
