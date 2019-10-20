@@ -31,12 +31,7 @@ extern int dac_issue_user_credential(credential_attributes *ca, issued_credentia
 
 extern void generate_user_keys();
 
-extern void groth_generate_parameters_2();
-
-extern void groth_generate_signature_2();
-
-extern int groth_verify_signature_2();
-
+extern void generate_attribute_token(credential_attributes *ca, issued_credential *ic);
 
 extern void groth_generate_signature_1(element_t secret_key, credential_attributes *ca, issued_credential *ic);
 
