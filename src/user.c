@@ -110,7 +110,9 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
 
     //compute e(g1,ic->R)
     element_t eg1R;
-    element_t temp1;
+    element_t eg1g2;
+    element_t temp1, temp2;
+    element_t negrhocsk;
 
     element_init_Zr(temp1, pairing);
     element_init_GT(eg1R, pairing);
@@ -119,6 +121,52 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
     //com[0] = e(g1,ic->R)^(rhosig*rhos)
     element_mul(temp1, rhosig, rhos);
     element_pow_zn(com[0], eg1R, temp1);
+
+
+    //e(g1,ic->R)^(rhosig*rhot[0])
+    element_mul(temp1, rhosig, rhot[0]);
+    element_pow_zn(com[1], eg1R, temp1);
+
+    //e(g1,g2)^(-rhocsk)
+    element_init_GT(temp2, pairing);
+    element_init_GT(eg1g2, pairing);
+    pairing_apply(eg1g2, g1, g2, pairing);
+    element_init_Zr(negrhocsk, pairing);
+    element_neg(negrhocsk, rhocsk);
+    element_pow_zn(temp2, eg1g2, negrhocsk);
+
+    //com[1] = e(g1,ic->R)^(rhosig*rhot[0]) * e(g1,g2)^(-rhocsk)
+    element_mul(com[1], com[1], temp2);
+
+    //we have n attributes. Let's assume half of them are disclosed and rest half not.
+    for(i=0; i<n; i++)
+    {
+        element_mul(temp1, rhosig, rhot[i+1]);
+	element_pow_zn(com[i], eg1R, temp1);
+        if (i%2 == 0)
+	{
+	    continue;
+	}
+	else
+	{
+	    element_t negrhoa;
+            element_init_Zr(negrhoa, pairing);
+            element_neg(negrhoa, rhoa[i]);
+            element_pow_zn(temp2, eg1g2, negrhoa);
+	    element_mul(com[i], com[i], temp2);
+	}
+
+    }
+    printf("Done!\n");
+
+    printf("\t3. Compute res values...");
+    element_t ress;
+    element_t rescsk;
+
+    element_init_Zr(ress, pairing);
+    element_init_Zr(rescsk, pairing);
+
+
 
 }
 
