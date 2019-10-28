@@ -58,8 +58,8 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
     //Randomize Signature
 
     element_init_Zr(rhosig, pairing);
-    element_init_Zr(r1, pairing);
-    element_init_Zr(s1, pairing);
+    element_init_G2(r1, pairing);
+    element_init_G1(s1, pairing);
     element_init_Zr(one_by_r, pairing);
     element_init_Zr(one, pairing);
 
@@ -112,7 +112,7 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
     //compute e(g1,ic->R)
     element_t eg1R;
     element_t eg1g2;
-    element_t temp1, temp2;
+    element_t temp1, temp2, temp5;
     element_t negrhocsk;
 
     element_init_Zr(temp1, pairing);
@@ -122,6 +122,8 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
     //com[0] = e(g1,ic->R)^(rhosig*rhos)
     element_mul(temp1, rhosig, rhos);
     element_pow_zn(com[0], eg1R, temp1);
+    //element_pow_zn(com[0], eg1R, rhos);
+    element_printf("eg1R = %B\n", eg1R);
 
 
     //e(g1,ic->R)^(rhosig*rhot[0])
@@ -169,27 +171,36 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
 
     //c = Hash(com[i] for i=0 to n+2)
     element_init_Zr(c, pairing);
+    element_random(c);
+
     for(i=0; i<n+2; i++)
     {
         element_snprintf(buffer+(strlen(buffer)),size,"%B",com[i]);
     }
     element_from_hash(c, buffer, strlen(buffer));
+    element_printf("c = %B\n", c);
 
     printf("Done!\n");
 
     printf("\t4. Compute res values...");
-    element_t ress;
+    element_t ress, resst;
     element_t rescsk;
     element_t rest[n+1];
     element_t resa[n/2];
 
-    element_init_Zr(ress, pairing);
+    element_init_G1(ress, pairing);
+    element_init_G1(temp5, pairing);
     element_init_Zr(rescsk, pairing);
 
-    //ress = g1^rhos * s^c
+    //ress = g1^rhos * s1^c
     element_pow_zn(ress, g1, rhos); 
-    element_pow_zn(temp1, ic->S, c); 
-    element_mul(ress, ress, temp1);
+    element_printf("g1^rhos = %B\n", ress);
+    //element_pow_zn(temp5, ic->S, c); //TEST
+    element_pow_zn(temp5, s1, c);
+    element_printf("temp5 = %B\n", temp5);
+    element_mul(ress, ress, temp5);
+
+    element_printf("ress = %B\n", ress);
 
     //rescsk = rhocsk + c * secret_key
     element_mul(rescsk, c, user_secret_key);
@@ -215,6 +226,37 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
 	}
     }
     printf("Done!\n");
+
+    printf("\t5. Testing if everything is fine...");
+
+    element_t comt[n+2];
+    element_t temp3, temp4;
+
+    element_init_GT(temp3, pairing);
+    element_init_GT(temp4, pairing);
+
+    for(i=0; i<n+2; i++) //for s, cpk, and n attributes
+    {
+        element_init_GT(comt[i], pairing);
+    }    
+    //t(ress,r1) (e(y1[0],g2) * (e(g1,root_public_key))^(-c)
+    pairing_apply(temp2, ress, r1, pairing);
+
+    pairing_apply(temp3, Y1[0], g2, pairing);
+    pairing_apply(temp4, g1, root_public_key, pairing);
+    element_mul(temp3, temp3, temp4);
+    element_printf("temp2 = %B\ntemp3 = %B\n", temp2, temp3);
+    element_neg(temp1, c);
+    element_pow_zn(temp3, temp3, temp1); 
+    element_mul(comt[0], temp2, temp3);
+
+    if (element_cmp(comt[0], com[0]))
+    {
+        printf("Com values comparison Failed!\n\n");
+	element_printf("com[0] = %B\ncomt[0] = %B\n", com[0], comt[0]); 
+    }    
+    else
+        printf("Hurray!\n");
 
 }
 

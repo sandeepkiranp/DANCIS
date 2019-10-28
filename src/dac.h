@@ -22,6 +22,7 @@ typedef struct credential
 extern element_t g1, g2;
 extern element_t Y1[n+1], Y2[n+1];
 extern pairing_t pairing;
+extern element_t root_public_key;
 
 extern void dac_generate_parameters();
 

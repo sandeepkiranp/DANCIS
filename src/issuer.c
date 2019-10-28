@@ -2,7 +2,7 @@
 
 element_t g1, g2;
 static element_t root_secret_key;
-static element_t root_public_key;
+element_t root_public_key;
 pairing_t pairing;
 element_t Y1[n+1]; //cpk(i-1) + n attributes = n+1 attrbutes
 element_t Y2[n+1]; //cpk(i-1) + n attributes = n+1 attrbutes

@@ -235,6 +235,7 @@ int groth_verify_signature_1(element_t public_key, credential_attributes *ca, is
         printf("Failed!\n\n");
 	return FAILURE;
     }
+    element_printf("e(S,R) = %B\n", temp1);
 
     for(i=0; i<n+1; i++) //cpk(i-1) + n attributes
     {
