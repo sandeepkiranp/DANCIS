@@ -122,8 +122,7 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
     //com[0] = e(g1,ic->R)^(rhosig*rhos)
     element_mul(temp1, rhosig, rhos);
     element_pow_zn(com[0], eg1R, temp1);
-    //element_pow_zn(com[0], eg1R, rhos);
-    element_printf("eg1R = %B\n", eg1R);
+    //element_printf("eg1R = %B\n", eg1R);
 
 
     //e(g1,ic->R)^(rhosig*rhot[0])
@@ -137,9 +136,11 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
     element_init_Zr(negrhocsk, pairing);
     element_neg(negrhocsk, rhocsk);
     element_pow_zn(temp2, eg1g2, negrhocsk);
+    element_printf("rhocsk temp2 = %B\n", temp2);
 
     //com[1] = e(g1,ic->R)^(rhosig*rhot[0]) * e(g1,g2)^(-rhocsk)
     element_mul(com[1], com[1], temp2);
+    element_printf("com[1] = %B\n", com[1]);
 
     //we have n attributes. Let's assume half of them are disclosed and rest half not.
     //TODO 0th attribute is the cpk
@@ -171,7 +172,6 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
 
     //c = Hash(com[i] for i=0 to n+2)
     element_init_Zr(c, pairing);
-    element_random(c);
 
     for(i=0; i<n+2; i++)
     {
@@ -194,24 +194,27 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
 
     //ress = g1^rhos * s1^c
     element_pow_zn(ress, g1, rhos); 
-    element_printf("g1^rhos = %B\n", ress);
-    //element_pow_zn(temp5, ic->S, c); //TEST
+    //element_printf("g1^rhos = %B\n", ress);
     element_pow_zn(temp5, s1, c);
-    element_printf("temp5 = %B\n", temp5);
+    //element_printf("temp5 = %B\n", temp5);
     element_mul(ress, ress, temp5);
 
-    element_printf("ress = %B\n", ress);
+    //element_printf("ress = %B\n", ress);
 
     //rescsk = rhocsk + c * secret_key
     element_mul(rescsk, c, user_secret_key);
     element_add(rescsk, rescsk, rhocsk);
 
+    element_printf("rescsk = %B\n", ress);
+
     for(i=0; i<n+1; i++)
     {
-        element_init_Zr(rest[i], pairing);
+        element_init_G1(rest[i], pairing);
         element_pow_zn(rest[i], g1, rhot[i]);
-        element_pow_zn(temp1, ic->T[i], c);
+        element_pow_zn(temp1, t1[i], c);
 	element_mul(rest[i], rest[i], temp1);
+
+	element_printf("rest[%d] = %B\n", i, rest[i]);
     }
 
     for(i=0,j=0; i<n; i++)
@@ -245,7 +248,7 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
     pairing_apply(temp3, Y1[0], g2, pairing);
     pairing_apply(temp4, g1, root_public_key, pairing);
     element_mul(temp3, temp3, temp4);
-    element_printf("temp2 = %B\ntemp3 = %B\n", temp2, temp3);
+    //element_printf("temp2 = %B\ntemp3 = %B\n", temp2, temp3);
     element_neg(temp1, c);
     element_pow_zn(temp3, temp3, temp1); 
     element_mul(comt[0], temp2, temp3);
@@ -254,9 +257,29 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
     {
         printf("Com values comparison Failed!\n\n");
 	element_printf("com[0] = %B\ncomt[0] = %B\n", com[0], comt[0]); 
+	return;
     }    
-    else
-        printf("Hurray!\n");
+
+    //e(rest[0],r1) * e(g1,g2)^(-rescsk) * (e(y1[0],root_public_key))^(-c)
+    pairing_apply(temp2, rest[0], r1, pairing);
+    element_neg(temp1, rescsk);
+    element_pow_zn(temp3, eg1g2, temp1);
+    element_mul(temp2, temp2, temp3);
+
+    pairing_apply(temp3, Y1[0], root_public_key, pairing);
+    element_neg(temp1, c);
+    element_pow_zn(temp4, temp3, temp1);
+
+    element_mul(com[1], temp2, temp4);
+   
+    if (element_cmp(comt[1], com[1]))
+    {
+        printf("Com values comparison Failed!\n\n");
+        element_printf("com[0] = %B\ncomt[0] = %B\n", com[0], comt[0]);
+        return;
+    }
+
+    printf("Hurray!\n");
 
 }
 
