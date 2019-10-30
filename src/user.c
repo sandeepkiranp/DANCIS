@@ -204,8 +204,9 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
     //element_printf("ress = %B\n", ress);
 
     //rescsk = rhocsk + c * secret_key
-    element_mul(rescsk, c, user_secret_key);
-    element_add(rescsk, rescsk, rhocsk);
+    element_set(rescsk, rhocsk);
+    element_mul(temp1, c, user_secret_key);
+    element_add(rescsk, rescsk, temp1);
 
     element_printf("rescsk = %B\n", ress);
 
