@@ -65,7 +65,7 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
 
     for(i=0; i<n+1; i++)
     {
-        element_init_Zr(t1[i], pairing);
+        element_init_G1(t1[i], pairing);
     }
 
     element_random(rhosig);
@@ -80,7 +80,9 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
 
     for(i=0; i<n+1; i++)
     {
+        element_printf("ic->T[%d] = %B\n", i, ic->T[i]);
         element_pow_zn(t1[i], ic->T[i], one_by_r);
+        element_printf("t1[%d] = %B\n", i, t1[i]);
     }
 
     printf("Done!\n");
@@ -211,8 +213,8 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
     {
         element_init_G1(rest[i], pairing);
         element_pow_zn(rest[i], g1, rhot[i]);
-        element_pow_zn(temp1, t1[i], c);
-	element_mul(rest[i], rest[i], temp1);
+        element_pow_zn(temp5, t1[i], c);
+	element_mul(rest[i], rest[i], temp5);
 
 	element_printf("rest[%d] = %B\n", i, rest[i]);
     }
@@ -270,12 +272,12 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
     element_neg(temp1, c);
     element_pow_zn(temp4, temp3, temp1);
 
-    element_mul(com[1], temp2, temp4);
+    element_mul(comt[1], temp2, temp4);
    
     if (element_cmp(comt[1], com[1]))
     {
         printf("Com values comparison Failed!\n\n");
-        element_printf("com[0] = %B\ncomt[0] = %B\n", com[0], comt[0]);
+        element_printf("com[1] = %B\ncomt[1] = %B\n", com[1], comt[1]);
         return;
     }
 
