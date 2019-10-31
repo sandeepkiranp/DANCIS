@@ -148,20 +148,23 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
     //TODO 0th attribute is the cpk
     for(i=0; i<n; i++)
     {
+        //com[i+2] = e(g1,r) ^ (rhosig * rhot[i+1])
         element_mul(temp1, rhosig, rhot[i+1]);
 	element_pow_zn(com[i+2], eg1R, temp1);
         if (i%2 == 0) //attribute revealed
 	{
-	    continue;
+
 	}
 	else //attribute not revealed
 	{
+            //com[i+2] = e(g1,r) ^ (rhosig * rhot[i+1]) * e(g1,g2) ^ (-rhoa[i]) 
 	    element_t negrhoa;
             element_init_Zr(negrhoa, pairing);
             element_neg(negrhoa, rhoa[i]);
             element_pow_zn(temp2, eg1g2, negrhoa);
-	    element_mul(com[i+2], com[i], temp2);
+	    element_mul(com[i+2], com[i+2], temp2);
 	}
+	element_printf("com[%d] = %B\n", i+2, com[i+2]);
 
     }
     printf("Done!\n");
@@ -188,7 +191,7 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
     element_t ress, resst;
     element_t rescsk;
     element_t rest[n+1];
-    element_t resa[n/2];
+    element_t resa[n];
 
     element_init_G1(ress, pairing);
     element_init_G1(temp5, pairing);
@@ -220,15 +223,14 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
 	element_printf("rest[%d] = %B\n", i, rest[i]);
     }
 
-    for(i=0,j=0; i<n; i++)
+    for(i=0; i<n; i++) //attributes[0] represents CPK
     {
+        element_init_G1(resa[i], pairing);
         if (i%2 != 0)
         {
-            element_init_Zr(resa[j], pairing);
-            element_pow_zn(resa[j], g1, rhoa[i]);
-            element_pow_zn(temp1, ca->attributes[i+1], c);
-            element_mul(resa[j], resa[j], temp1);
-	    j++;
+            element_pow_zn(resa[i], g1, rhoa[i]);
+            element_pow_zn(temp5, ca->attributes[i+1], c);
+            element_mul(resa[i], resa[i], temp5);
 	}
     }
     printf("Done!\n");
@@ -280,6 +282,43 @@ void generate_attribute_token(credential_attributes *ca, issued_credential *ic)
         printf("Com values comparison Failed!\n\n");
         element_printf("com[1] = %B\ncomt[1] = %B\n", com[1], comt[1]);
         return;
+    }
+
+    for(i=0; i<n; i++)
+    {
+        pairing_apply(com[i+2], rest[i+1], r1, pairing);
+        if(i%2 == 0)
+	{
+            //com[i+2] = e(rest[i+1], r1) * (e(attributes[i+1],g2) * e(y1[i+1],root_public_key)) ^ (-c)
+	    pairing_apply(temp2, ca->attributes[i+1],g2, pairing);
+	    pairing_apply(temp3, Y1[i+1],root_public_key, pairing);
+	    element_mul(temp2, temp2, temp3);
+	    element_neg(temp1, c);
+	    element_pow_zn(temp2, temp2, temp1);
+
+	    element_mul(com[i+2], com[i+2], temp2);
+
+	}
+	else
+	{
+            //com[i+2] = e(rest[i+1], r1) * (e(resa[i],g2)^(-1)) * (e(y1[i+1],root_public_key)) ^ (-c)
+            pairing_apply(temp2, resa[i],g2, pairing);
+	    element_neg(temp1, one);
+	    element_pow_zn(temp2, temp2, temp1);
+            element_mul(com[i+2], com[i+2], temp2);
+
+            pairing_apply(temp3, Y1[i+1],root_public_key, pairing);
+            element_neg(temp1, c);
+            element_pow_zn(temp3, temp3, temp1);
+            element_mul(com[i+2], com[i+2], temp3);
+	}
+
+        if (element_cmp(comt[i+2], com[i+2]))
+        {
+            printf("Com values comparison Failed!\n\n");
+            element_printf("com[1] = %B\ncomt[1] = %B\n", com[1], comt[1]);
+            return;
+        }
     }
 
     printf("Hurray!\n");
