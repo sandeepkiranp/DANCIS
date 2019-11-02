@@ -39,57 +39,53 @@ void groth_generate_parameters_2()
     element_pow_zn(public_key, g1, secret_key);
 }
 
-//TODO : push R S T inide groth_generate_signature
-element_t R, S, T[n], m[n];
-void groth_generate_signature_2()
+*/
+
+void groth_generate_signature_2(element_t secret_key, credential_attributes *ca, issued_credential *ic)
 {
     int i;
     element_t r;
     element_t one_by_r, one;
 
     printf("Generating Groth2 Signature\n");	
-    for(i=0; i<n; i++)
-    {
-        element_init_G2(m[i], pairing);
-        element_random(m[i]);
-    }
 
     element_init_Zr(r, pairing);
 
-    element_init_G1(R, pairing);
-    element_init_G2(S, pairing);
+    element_init_G1(ic->R, pairing);
+    element_init_G2(ic->S, pairing);
 
     for(i=0; i<n; i++)
-        element_init_G2(T[i], pairing);
+        element_init_G2(ic->T[i], pairing);
 
     element_init_Zr(one_by_r, pairing);
     element_init_Zr(one, pairing);
 
     //R = g1^r
     element_random(r);
-    element_pow_zn(R, g1, r);
+    element_pow_zn(ic->R, g1, r);
 
     //S = y1 * g2^sk
-    element_pow_zn(S, g2, secret_key);
-    element_mul(S, y[0], S);
+    element_pow_zn(ic->S, g2, secret_key);
+    element_mul(ic->S, Y2[0], ic->S);
 
     // 1/r
     element_set1(one);
     element_div(one_by_r, one, r); 
 
     //S = S^(1/r). Therefore S = (y * g2^sk)^(1/r)
-    element_pow_zn(S, S, one_by_r);
+    element_pow_zn(ic->S, ic->S, one_by_r);
 
     //T = (y^sk * m)^(1/r)
-    for(i=0; i<n; i++)
+    for(i=0; i<n+1; i++) //n+1 attributes including CPK
     {
-        element_pow_zn(T[i], y[i], secret_key);
-        element_mul(T[i], T[i], m[i]);
-        element_pow_zn(T[i], T[i], one_by_r);
+        element_pow_zn(ic->T[i], Y2[i], secret_key);
+        element_mul(ic->T[i], ic->T[i], ca->attributes[i]);
+        element_pow_zn(ic->T[i], ic->T[i], one_by_r);
     }
+    printf("Done!\n\n");
 }
 
-int groth_verify_signature_2()
+int groth_verify_signature_2(element_t public_key, credential_attributes *ca, issued_credential *ic)
 {
     element_t temp1, temp2, temp3, temp4;
     int i;
@@ -103,10 +99,10 @@ int groth_verify_signature_2()
     //Check if e(R, S) = e(g1 , y )e(V , g2 )
     
     //e(R,S)
-    pairing_apply(temp1, R, S, pairing);
+    pairing_apply(temp1, ic->R, ic->S, pairing);
 
     //e(g1,y1)
-    pairing_apply(temp2, g1, y[0], pairing);
+    pairing_apply(temp2, g1, Y2[0], pairing);
     //e(pk,g2)
     pairing_apply(temp3, public_key, g2, pairing);
     // e(g1,y1) * e(pk,g2)
@@ -114,31 +110,33 @@ int groth_verify_signature_2()
 
     if (element_cmp(temp1, temp4))
     {
-        printf("Groth2 signature does not verify\n");
+        printf("Failed!\n\n");
 	return FAILURE;
     }
 
-    for(i=0; i<n; i++)
+    for(i=0; i<n+1; i++) //cpk(i-1) + n attributes
     {
         //Check if e(R,Ti ) = e(V, yi )e(g1, mi )
-        pairing_apply(temp1, R, T[i], pairing);
+        pairing_apply(temp1, ic->R, ic->T[i], pairing);
         //e(pk,y1)
-        pairing_apply(temp2, public_key, y[i], pairing);
+        pairing_apply(temp2, public_key, Y2[i], pairing);
         //e(g1,m)
-        pairing_apply(temp3, g1, m[i], pairing);
+        pairing_apply(temp3, g1, ca->attributes[i], pairing);
         // e(V, yi )*e(g1, mi )
         element_mul(temp4, temp2, temp3);    
 
         if (element_cmp(temp1, temp4))
         {
-            printf("Groth2 signature does not verify\n");
+            printf("Failed\n\n");
             return FAILURE;
         }
     }
 
-    printf("Groth2 signature verifies\n");
+    printf("Done\n\n");
     return SUCCESS;
 }
+
+/*
 
 void groth_generate_parameters_1()
 {
