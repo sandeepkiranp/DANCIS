@@ -1,12 +1,25 @@
 #include <stdio.h>
 #include <pbc/pbc.h>
 
+pairing_t pairing;
+
+void func(element_t y)
+{
+        element_t x;
+	element_init_G1(x, pairing);
+	//element_init_G1(y, pairing);
+	element_init_same_as(y,x);
+	element_random(x);
+	element_printf("in func x = %B\n", x);
+	element_set(y,x);
+}
+
 main()
 {
-    pairing_t pairing;
     element_t g, h;
     element_t a, b;
     element_t temp1, temp2;
+    element_t x;
     char param[4096];
     char buffer[4096] = {0};
     size_t size = 4096;
@@ -16,6 +29,9 @@ main()
 
     pairing_init_set_buf(pairing, param, count);    
 
+    func(x);
+    element_printf("In main x = %B\n", x);
+/*
     element_init_G1(a, pairing);
     element_init_G2(b, pairing);
 
@@ -42,4 +58,5 @@ main()
     } else {
         printf("signature does not verify\n");
     }    
+*/    
 }    

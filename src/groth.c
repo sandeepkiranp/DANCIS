@@ -41,7 +41,7 @@ void groth_generate_parameters_2()
 
 */
 
-void groth_generate_signature_2(element_t secret_key, credential_attributes *ca, issued_credential *ic)
+void groth_generate_signature_2(element_t secret_key, credential_attributes *ca, credential_t *ic)
 {
     int i;
     element_t r;
@@ -85,7 +85,7 @@ void groth_generate_signature_2(element_t secret_key, credential_attributes *ca,
     printf("Done!\n\n");
 }
 
-int groth_verify_signature_2(element_t public_key, credential_attributes *ca, issued_credential *ic)
+int groth_verify_signature_2(element_t public_key, credential_attributes *ca, credential_t *ic)
 {
     element_t temp1, temp2, temp3, temp4;
     int i;
@@ -160,7 +160,7 @@ void groth_generate_parameters_1()
 
 */
 
-void groth_generate_signature_1(element_t secret_key, credential_attributes *ca, issued_credential *ic)
+void groth_generate_signature_1(element_t secret_key, credential_attributes *ca, credential_t *ic)
 {
     int i;
     element_t r;
@@ -205,7 +205,7 @@ void groth_generate_signature_1(element_t secret_key, credential_attributes *ca,
 
 }
 
-int groth_verify_signature_1(element_t public_key, credential_attributes *ca, issued_credential *ic)
+int groth_verify_signature_1(element_t public_key, credential_attributes *ca, credential_t *ic)
 {
     element_t temp1, temp2, temp3, temp4;
     int i;

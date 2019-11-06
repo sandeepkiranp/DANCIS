@@ -56,9 +56,27 @@ element_t get_root_issuer_public_key()
 }
 */
 
-int dac_issue_user_credential(credential_attributes *ca, issued_credential *ic)
+void get_root_secret_key(element_t x)
 {
-    groth_generate_signature_1(root_secret_key, ca, ic);
-    groth_verify_signature_1(root_public_key, ca, ic);
+    element_init_same_as(x,root_secret_key);
+    element_set(x,root_secret_key);
+}
 
+int issue_credential(element_t secret_key, credential_attributes *ca, credential_t *ic)
+{
+    int i;
+
+    groth_generate_signature_1(secret_key, ca, ic);
+
+    for(i=0; i<n+1; i++)
+    {
+        element_set(ic->attributes[i], ca->attributes[i]);
+    }	
+
+    groth_verify_signature_1(root_public_key, ca, ic);
+}
+
+void credential_set_private_key(element_t secret_key, credential_t *ic)
+{
+    element_set(ic->secret_key, secret_key);
 }
