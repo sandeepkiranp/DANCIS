@@ -21,6 +21,18 @@ typedef struct credential
     element_t secret_key;
 }credential_t;
 
+typedef struct token
+{
+    element_t r1;
+    element_t c;
+    element_t ress;
+    element_t rescsk;
+    element_t rest[n+1];
+    int revealed[n];
+    element_t *attributes;
+    element_t *resa;
+}token_t;
+
 extern element_t g1, g2;
 extern element_t Y1[n+1], Y2[n+1];
 extern pairing_t pairing;
@@ -39,7 +51,9 @@ extern void get_root_secret_key(element_t x);
 
 extern void credential_set_private_key(element_t secret_key, credential_t *ic);
 
-extern void generate_attribute_token(credential_t *ic);
+extern void generate_attribute_token(token_t *tok, credential_t *ic);
+
+extern void verify_attribute_token(token_t *tok);
 
 extern void groth_generate_signature_1(element_t secret_key, credential_attributes *ca, credential_t *ic);
 

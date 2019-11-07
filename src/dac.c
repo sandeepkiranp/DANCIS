@@ -5,6 +5,7 @@ int main()
     credential_attributes ca;
     credential_t ic;
     element_t x;
+    token_t tok;
 
     dac_generate_parameters();
 
@@ -18,7 +19,8 @@ int main()
     get_user_secret_key(x);
     credential_set_private_key(x, &ic); //called by issuee with its private key
 
-    generate_attribute_token(&ic);
+    generate_attribute_token(&tok, &ic);
+    verify_attribute_token(&tok);
     printf("Exit from main\n");
     return 0;
 }

@@ -70,6 +70,7 @@ int issue_credential(element_t secret_key, credential_attributes *ca, credential
 
     for(i=0; i<n+1; i++)
     {
+        element_init_same_as(ic->attributes[i], ca->attributes[i]);
         element_set(ic->attributes[i], ca->attributes[i]);
     }	
 
@@ -78,5 +79,6 @@ int issue_credential(element_t secret_key, credential_attributes *ca, credential
 
 void credential_set_private_key(element_t secret_key, credential_t *ic)
 {
+    element_init_same_as(ic->secret_key, secret_key);
     element_set(ic->secret_key, secret_key);
 }
