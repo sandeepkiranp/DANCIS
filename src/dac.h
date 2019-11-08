@@ -11,13 +11,19 @@ typedef struct attributes
     int num_of_attributes;
 }credential_attributes;
 
-typedef struct credential
+typedef struct credential_element
 {
     element_t R;
     element_t S;
     element_t T[n+1]; //CPK + n attributes
     element_t attributes[n+1]; //attributes[0] represents the public key
     int num_of_attributes;
+}credential_element_t;
+
+typedef struct credential
+{
+    int levels;
+    credential_element_t **cred; 
     element_t secret_key;
 }credential_t;
 
@@ -54,7 +60,10 @@ extern void generate_attribute_token(token_t *tok, credential_t *ic);
 
 extern void verify_attribute_token(token_t *tok);
 
-extern void groth_generate_signature_1(element_t secret_key, credential_attributes *ca, credential_t *ic);
+extern void groth_generate_signature_1(element_t secret_key, credential_attributes *ca, credential_element_t *ic);
 
-extern int groth_verify_signature_1(element_t public_key, credential_attributes *ca, credential_t *ic);
+extern int groth_verify_signature_1(element_t public_key, credential_attributes *ca, credential_element_t *ic);
 
+extern void groth_generate_signature_2(element_t secret_key, credential_attributes *ca, credential_element_t *ic);
+
+extern int groth_verify_signature_2(element_t public_key, credential_attributes *ca, credential_element_t *ic);

@@ -1,3 +1,4 @@
+#include <string.h>
 #include "dac.h"
 
 int main()
@@ -8,6 +9,8 @@ int main()
     element_t priv, pub;
     token_t tok;
     int i;
+
+    memset(&ic, 0, sizeof(ic));
 
     dac_generate_parameters();
 

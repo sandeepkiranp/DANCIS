@@ -2,7 +2,7 @@
 #include "dac.h"
 
 
-void generate_attribute_token(token_t *tok, credential_t *ic)
+void generate_attribute_token(token_t *tok, credential_t *ci)
 {
     int i, j, k;
     element_t rhosig, s1, t1[n+1];
@@ -10,12 +10,15 @@ void generate_attribute_token(token_t *tok, credential_t *ic)
     element_t rhos, rhot[n+1], rhoa[n], rhocsk;
     element_t com[n+2];
     int revealed[n];
+    credential_element_t *ic;
 
     printf("Generating Attribute token\n");
 
     printf("\t1. Generate Randomized signature...");
 
     //Randomize Signature
+
+    ic = ci->cred[0];
 
     element_init_Zr(rhosig, pairing);
     element_init_G2(tok->r1, pairing);
@@ -162,7 +165,7 @@ void generate_attribute_token(token_t *tok, credential_t *ic)
 
     //rescsk = rhocsk + c * secret_key
     element_set(tok->rescsk, rhocsk);
-    element_mul(temp1, tok->c, ic->secret_key);
+    element_mul(temp1, tok->c, ci->secret_key);
     element_add(tok->rescsk, tok->rescsk, temp1);
 
     element_printf("rescsk = %B\n", tok->ress);

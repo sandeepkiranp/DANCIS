@@ -65,16 +65,27 @@ void get_root_secret_key(element_t x)
 int issue_credential(element_t secret_key, credential_attributes *ca, credential_t *ic)
 {
     int i;
+    credential_element_t *ce = (credential_element_t *)malloc(sizeof(credential_element_t));
 
-    groth_generate_signature_1(secret_key, ca, ic);
+    ic->levels++;
+    if (ic->levels % 2)
+    {
+        groth_generate_signature_1(secret_key, ca, ce);
+        groth_verify_signature_1(root_public_key, ca, ce);
+    }
+    else
+    {
+        groth_generate_signature_2(secret_key, ca, ce);
+        groth_verify_signature_2(root_public_key, ca, ce);
+    }
 
     for(i=0; i<n+1; i++)
     {
-        element_init_same_as(ic->attributes[i], ca->attributes[i]);
-        element_set(ic->attributes[i], ca->attributes[i]);
-    }	
-
-    groth_verify_signature_1(root_public_key, ca, ic);
+        element_init_same_as(ce->attributes[i], ca->attributes[i]);
+        element_set(ce->attributes[i], ca->attributes[i]);
+    }
+    ic->cred = (credential_element_t **) realloc(ic->cred, ic->levels * sizeof(credential_element_t *));
+    ic->cred[ic->levels - 1] = ce;
 }
 
 void credential_set_private_key(element_t secret_key, credential_t *ic)
