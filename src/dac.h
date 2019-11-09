@@ -27,16 +27,22 @@ typedef struct credential
     element_t secret_key;
 }credential_t;
 
-typedef struct token
+typedef token_element
 {
-    element_t *r1;
-    element_t c;
+    element_t r1;
     element_t ress;
     element_t rescsk;
     element_t rest[n+1];
     int revealed[n];
     element_t *attributes;
     element_t *resa;
+}
+
+typedef struct token
+{
+    token_element_t *te;
+    element_t c;
+    element_t rescsk;
 }token_t;
 
 extern element_t g1, g2;

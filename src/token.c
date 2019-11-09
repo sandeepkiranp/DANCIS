@@ -187,9 +187,12 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
     //c = Hash(com[i] for i=0 to n+2)
     element_init_Zr(tok->c, pairing);
 
-    for(i=0; i<n+2; i++)
+    for (l=0; l< ci->levels; l++)
     {
-        element_snprintf(buffer+(strlen(buffer)),size,"%B",com[i]);
+        for(i=0; i<n+2; i++)
+        {
+            element_snprintf(buffer+(strlen(buffer)),size,"%B",com[l][i]);
+        }
     }
     element_from_hash(tok->c, buffer, strlen(buffer));
     element_printf("c = %B\n", tok->c);
@@ -198,59 +201,94 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
 
     printf("\t4. Compute res values...");
 
-    element_init_G1(tok->ress, pairing);
-    element_init_G1(temp5, pairing);
-    element_init_Zr(tok->rescsk, pairing);
+    tok->te = (token_element_t *)malloc(ci->levels * sizeof(token_element_t));
 
-    //ress = g1^rhos * s1^c
-    element_pow_zn(tok->ress, g1, rhos); 
-    //element_printf("g1^rhos = %B\n", ress);
-    element_pow_zn(temp5, s1, tok->c);
-    //element_printf("temp5 = %B\n", temp5);
-    element_mul(tok->ress, tok->ress, temp5);
-
-    element_printf("ress = %B\n", tok->ress);
-
-    //rescsk = rhocsk + c * secret_key
-    element_set(tok->rescsk, rhocsk);
-    element_mul(temp1, tok->c, ci->secret_key);
-    element_add(tok->rescsk, tok->rescsk, temp1);
-
-    element_printf("rescsk = %B\n", tok->ress);
-
-    for(i=0; i<n+1; i++)
+    for (l=0; l< ci->levels; l++)
     {
-        element_init_G1(tok->rest[i], pairing);
-        element_pow_zn(tok->rest[i], g1, rhot[i]);
-        element_pow_zn(temp5, t1[i], tok->c);
-	element_mul(tok->rest[i], tok->rest[i], temp5);
-
-	element_printf("rest[%d] = %B\n", i, tok->rest[i]);
-    }
-
-    tok->resa = (element_t *) malloc((n/2) * sizeof(element_t));
-    if (n%2 ==0)
-	    tok->attributes = (element_t *) malloc((n/2) * sizeof(element_t));
-    else
-	    tok->attributes = (element_t *) malloc(((n/2)+1) * sizeof(element_t));
-    for(i=0,j=0,k=0; i<n; i++) //attributes[0] represents CPK
-    {
-	tok->revealed[i] = 1;
-        if (i%2 != 0)
+        ic = ci->cred[l];
+        te = tok->te[l];
+        if((l+1) % 2)
         {
-            element_init_G1(tok->resa[j], pairing);
-            element_pow_zn(tok->resa[j], g1, rhoa[i]);
-            element_pow_zn(temp5, ic->attributes[i+1], tok->c);
-            element_mul(tok->resa[j], tok->resa[j], temp5);
-	    tok->revealed[i] = 0;
-	    j++;
+            element_init_G1(te->ress, pairing);
+            element_init_G1(temp5, pairing);
+
+            //ress = g1^rhos * s1^c
+            element_pow_zn(te->ress, g1, rhos[l]); 
 	}
 	else
         {
-            element_init_same_as(tok->attributes[k],ic->attributes[i+1]);
-            element_set(tok->attributes[k],ic->attributes[i+1]);
-	    k++;
-	}
+            element_init_G2(te->ress, pairing);
+            element_init_G2(temp5, pairing);
+
+            //ress = g2^rhos * s1^c
+            element_pow_zn(te->ress, g2, rhos[l]); 
+        }
+
+        //element_printf("g1^rhos = %B\n", ress);
+        element_pow_zn(temp5, s1[l], tok->c);
+        //element_printf("temp5 = %B\n", temp5);
+        element_mul(te->ress, te->ress, temp5);
+    
+        element_printf("ress = %B\n", te->ress);
+    
+        //rescsk = rhocsk + c * secret_key
+        element_init_Zr(te->rescsk, pairing);
+        element_set(te->rescsk, rhocsk);
+        element_mul(temp1, tok->c, ci->secret_key);
+        element_add(te->rescsk, te->rescsk, temp1);
+
+        element_printf("rescsk = %B\n", te->ress);
+
+        for(i=0; i<n+1; i++)
+        {
+            if((l+1) % 2)
+            {
+                element_init_G1(te->rest[i], pairing);
+                element_pow_zn(te->rest[i], g1, rhot[l][i]);
+	    }
+	    else
+            {
+                element_init_G2(te->rest[i], pairing);
+                element_pow_zn(te->rest[i], g2, rhot[l][i]);
+	    }
+            element_pow_zn(temp5, t1[l][i], tok->c);
+            element_mul(te->rest[i], te->rest[i], temp5);
+
+       	    element_printf("rest[%d] = %B\n", i, te->rest[i]);
+        }
+
+        te->resa = (element_t *) malloc((n/2) * sizeof(element_t));
+        if (n%2 ==0)
+    	    te->attributes = (element_t *) malloc((n/2) * sizeof(element_t));
+        else
+	    te->attributes = (element_t *) malloc(((n/2)+1) * sizeof(element_t));
+        for(i=0,j=0,k=0; i<n; i++) //attributes[0] represents CPK
+        {
+    	    te->revealed[i] = 1;
+            if (i%2 != 0)
+            {
+                if ((l+1) % 2)
+                {
+                    element_init_G1(te->resa[j], pairing);
+                    element_pow_zn(te->resa[j], g1, rhoa[l][i]);
+                }
+		else
+                {
+                    element_init_G2(te->resa[j], pairing);
+                    element_pow_zn(te->resa[j], g2, rhoa[l][i]);
+                }
+                element_pow_zn(temp5, ic->attributes[i+1], tok->c);
+                element_mul(tok->resa[j], tok->resa[j], temp5);
+	        tok->revealed[i] = 0;
+       	        j++;
+	    }
+	    else
+            {
+                element_init_same_as(tok->attributes[k],ic->attributes[i+1]);
+                element_set(tok->attributes[k],ic->attributes[i+1]);
+    	        k++;
+	    }
+        }
     }
 
     printf("Done!\n");
