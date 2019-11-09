@@ -27,7 +27,7 @@ typedef struct credential
     element_t secret_key;
 }credential_t;
 
-typedef token_element
+typedef struct token_element
 {
     element_t r1;
     element_t ress;
@@ -36,7 +36,7 @@ typedef token_element
     int revealed[n];
     element_t *attributes;
     element_t *resa;
-}
+}token_element_t;
 
 typedef struct token
 {

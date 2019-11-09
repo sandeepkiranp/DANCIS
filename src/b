@@ -1,0 +1,20 @@
+gcc -g dac.c  groth.c  issuer.c  user.c token.c -o dac -lpbc -lgmp
+token.c: In function ‘verify_attribute_token’:
+token.c:342:27: error: ‘token_element_t {aka struct token_element}’ has no member named ‘c’
+     element_neg(temp1, tok->c);
+                           ^~
+token.c:352:27: error: ‘token_element_t {aka struct token_element}’ has no member named ‘c’
+     element_neg(temp1, tok->c);
+                           ^~
+token.c:366:28: error: ‘token_element_t {aka struct token_element}’ has no member named ‘c’
+      element_neg(temp1, tok->c);
+                            ^~
+token.c:381:35: error: ‘token_element_t {aka struct token_element}’ has no member named ‘c’
+             element_neg(temp1, tok->c);
+                                   ^~
+token.c:403:24: error: ‘token_element_t {aka struct token_element}’ has no member named ‘c’
+     if (element_cmp(tok->c, ct))
+                        ^~
+token.c:406:41: error: ‘token_element_t {aka struct token_element}’ has no member named ‘c’
+  element_printf("c = %B\nct = %B\n", tok->c, ct);
+                                         ^~

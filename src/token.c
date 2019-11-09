@@ -5,11 +5,10 @@
 void generate_attribute_token(token_t *tok, credential_t *ci)
 {
     int i, j, k, l;
-    element_t *rhosig, *s1, t1[n+1];
+    element_t *r1, *rhosig, *s1, **t1;
     element_t one_by_r, one;
-    element_t rhos, rhot[n+1], rhoa[n], rhocsk;
-    element_t com[n+2];
-    int revealed[n];
+    element_t *rhos, **rhot, **rhoa, rhocsk;
+    element_t **com;
     credential_element_t *ic;
 
     printf("Generating Attribute token\n");
@@ -19,7 +18,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
     //Randomize Signature
 
     rhosig  = (element_t *)malloc(ci->levels * sizeof(element_t));
-    tok->r1 = (element_t *)malloc(ci->levels * sizeof(element_t));
+    r1      = (element_t *)malloc(ci->levels * sizeof(element_t));
     s1      = (element_t *)malloc(ci->levels * sizeof(element_t));
     t1      = (element_t **)malloc(ci->levels * sizeof(element_t *));
     com     = (element_t **)malloc(ci->levels * sizeof(element_t *));
@@ -39,7 +38,6 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
     element_init_Zr(one, pairing);
     // 1/r
     element_set1(one);
-    element_div(one_by_r, one, rhosig);
 
     for (l=0; l< ci->levels; l++)
     {
@@ -47,7 +45,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
         element_init_Zr(rhosig[l], pairing);
         if ((l+1) % 2)
 	{
-            element_init_G2(tok->r1[l], pairing);
+            element_init_G2(r1[l], pairing);
             element_init_G1(s1[l], pairing);
 
             for(i=0; i<n+1; i++)
@@ -57,7 +55,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
 	}
 	else
         {
-            element_init_G1(tok->r1[l], pairing);
+            element_init_G1(r1[l], pairing);
             element_init_G2(s1[l], pairing);
 
             for(i=0; i<n+1; i++)
@@ -67,8 +65,9 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
         }
 
         element_random(rhosig[l]);
+        element_div(one_by_r, one, rhosig[l]);
 
-        element_pow_zn(tok->r1[l], ic->R, rhosig);
+        element_pow_zn(r1[l], ic->R, rhosig[l]);
 
         element_pow_zn(s1[l], ic->S, one_by_r);
 
@@ -201,12 +200,19 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
 
     printf("\t4. Compute res values...");
 
+
+    token_element_t *te;
     tok->te = (token_element_t *)malloc(ci->levels * sizeof(token_element_t));
 
     for (l=0; l< ci->levels; l++)
     {
         ic = ci->cred[l];
-        te = tok->te[l];
+        te = &tok->te[l];
+
+	//set r'
+	element_init_same_as(te->r1,r1[l]);
+	element_set(te->r1,r1[l]);
+
         if((l+1) % 2)
         {
             element_init_G1(te->ress, pairing);
@@ -278,14 +284,14 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
                     element_pow_zn(te->resa[j], g2, rhoa[l][i]);
                 }
                 element_pow_zn(temp5, ic->attributes[i+1], tok->c);
-                element_mul(tok->resa[j], tok->resa[j], temp5);
-	        tok->revealed[i] = 0;
+                element_mul(te->resa[j], te->resa[j], temp5);
+	        te->revealed[i] = 0;
        	        j++;
 	    }
 	    else
             {
-                element_init_same_as(tok->attributes[k],ic->attributes[i+1]);
-                element_set(tok->attributes[k],ic->attributes[i+1]);
+                element_init_same_as(te->attributes[k],ic->attributes[i+1]);
+                element_set(te->attributes[k],ic->attributes[i+1]);
     	        k++;
 	    }
         }
@@ -294,7 +300,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
     printf("Done!\n");
 }
 
-void verify_attribute_token(token_t *tok)
+void verify_attribute_token(token_t *tk)
 {
     printf("\t5. Testing if everything is fine...");
 
@@ -305,6 +311,9 @@ void verify_attribute_token(token_t *tok)
     element_t ct;
     element_t eg1g2;
     element_t one;
+    token_element_t *tok;
+
+    tok = &tk->te[0];
 
     element_init_Zr(temp1, pairing);
     element_init_GT(temp2, pairing);
@@ -330,7 +339,7 @@ void verify_attribute_token(token_t *tok)
     pairing_apply(temp4, g1, root_public_key, pairing);
     element_mul(temp3, temp3, temp4);
     //element_printf("temp2 = %B\ntemp3 = %B\n", temp2, temp3);
-    element_neg(temp1, tok->c);
+    element_neg(temp1, tk->c);
     element_pow_zn(temp3, temp3, temp1); 
     element_mul(comt[0], temp2, temp3);
     //e(rest[0],r1) * e(g1,g2)^(-rescsk) * (e(y1[0],root_public_key))^(-c)
@@ -340,7 +349,7 @@ void verify_attribute_token(token_t *tok)
     element_mul(temp2, temp2, temp3);
 
     pairing_apply(temp3, Y1[0], root_public_key, pairing);
-    element_neg(temp1, tok->c);
+    element_neg(temp1, tk->c);
     element_pow_zn(temp4, temp3, temp1);
 
     element_mul(comt[1], temp2, temp4);
@@ -354,7 +363,7 @@ void verify_attribute_token(token_t *tok)
 	    pairing_apply(temp2, tok->attributes[j++],g2, pairing);
 	    pairing_apply(temp3, Y1[i+1],root_public_key, pairing);
 	    element_mul(temp2, temp2, temp3);
-	    element_neg(temp1, tok->c);
+	    element_neg(temp1, tk->c);
 	    element_pow_zn(temp2, temp2, temp1);
 
 	    element_mul(comt[i+2], comt[i+2], temp2);
@@ -369,7 +378,7 @@ void verify_attribute_token(token_t *tok)
             element_mul(comt[i+2], comt[i+2], temp2);
 
             pairing_apply(temp3, Y1[i+1],root_public_key, pairing);
-            element_neg(temp1, tok->c);
+            element_neg(temp1, tk->c);
             element_pow_zn(temp3, temp3, temp1);
             element_mul(comt[i+2], comt[i+2], temp3);
 	}
@@ -391,10 +400,10 @@ void verify_attribute_token(token_t *tok)
 
     element_printf(" = %B\n", ct);
 
-    if (element_cmp(tok->c, ct))
+    if (element_cmp(tk->c, ct))
     {
         printf("c values comparison Failed!\n\n");
-	element_printf("c = %B\nct = %B\n", tok->c, ct); 
+	element_printf("c = %B\nct = %B\n", tk->c, ct); 
 	return;
     }
 
