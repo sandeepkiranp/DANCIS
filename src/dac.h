@@ -40,6 +40,7 @@ typedef struct token_element
 
 typedef struct token
 {
+    int levels;
     token_element_t *te;
     element_t c;
     element_t rescsk;
