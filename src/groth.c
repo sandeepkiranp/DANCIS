@@ -54,7 +54,7 @@ void groth_generate_signature_2(element_t secret_key, credential_attributes *ca,
     element_init_G1(ic->R, pairing);
     element_init_G2(ic->S, pairing);
 
-    for(i=0; i<n; i++)
+    for(i=0; i<n+1; i++)
         element_init_G2(ic->T[i], pairing);
 
     element_init_Zr(one_by_r, pairing);

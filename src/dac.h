@@ -29,7 +29,7 @@ typedef struct credential
 
 typedef struct token
 {
-    element_t r1;
+    element_t *r1;
     element_t c;
     element_t ress;
     element_t rescsk;

@@ -16,7 +16,7 @@ int main()
 
     get_root_secret_key(x);
 
-    for(i=1; i<=1; i++)
+    for(i=1; i<=2; i++)
     {
         generate_user_keys(i, priv, pub);
 

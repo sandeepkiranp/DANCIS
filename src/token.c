@@ -4,8 +4,8 @@
 
 void generate_attribute_token(token_t *tok, credential_t *ci)
 {
-    int i, j, k;
-    element_t rhosig, s1, t1[n+1];
+    int i, j, k, l;
+    element_t *rhosig, *s1, t1[n+1];
     element_t one_by_r, one;
     element_t rhos, rhot[n+1], rhoa[n], rhocsk;
     element_t com[n+2];
@@ -18,116 +18,164 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
 
     //Randomize Signature
 
-    ic = ci->cred[0];
+    rhosig  = (element_t *)malloc(ci->levels * sizeof(element_t));
+    tok->r1 = (element_t *)malloc(ci->levels * sizeof(element_t));
+    s1      = (element_t *)malloc(ci->levels * sizeof(element_t));
+    t1      = (element_t **)malloc(ci->levels * sizeof(element_t *));
+    com     = (element_t **)malloc(ci->levels * sizeof(element_t *));
+    rhos    = (element_t *)malloc(ci->levels * sizeof(element_t));
+    rhot    = (element_t **)malloc(ci->levels * sizeof(element_t *));
+    rhoa    = (element_t **)malloc(ci->levels * sizeof(element_t *));
 
-    element_init_Zr(rhosig, pairing);
-    element_init_G2(tok->r1, pairing);
-    element_init_G1(s1, pairing);
-    element_init_Zr(one_by_r, pairing);
-    element_init_Zr(one, pairing);
-
-    for(i=0; i<n+1; i++)
-    {
-        element_init_G1(t1[i], pairing);
+    for(i=0; i<ci->levels; i++)
+    { 
+        t1[i]   = (element_t *)malloc((n+1) * sizeof(element_t));
+        rhot[i] = (element_t *)malloc((n+1) * sizeof(element_t));
+        rhoa[i] = (element_t *)malloc((n)   * sizeof(element_t));
+        com[i]  = (element_t *)malloc((n+2) * sizeof(element_t));
     }
 
-    element_random(rhosig);
-
-    element_pow_zn(tok->r1, ic->R, rhosig);
-
+    element_init_Zr(one_by_r, pairing);
+    element_init_Zr(one, pairing);
     // 1/r
     element_set1(one);
     element_div(one_by_r, one, rhosig);
 
-    element_pow_zn(s1, ic->S, one_by_r);
-
-    for(i=0; i<n+1; i++)
+    for (l=0; l< ci->levels; l++)
     {
-        element_printf("ic->T[%d] = %B\n", i, ic->T[i]);
-        element_pow_zn(t1[i], ic->T[i], one_by_r);
-        element_printf("t1[%d] = %B\n", i, t1[i]);
+        ic = ci->cred[l];
+        element_init_Zr(rhosig[l], pairing);
+        if ((l+1) % 2)
+	{
+            element_init_G2(tok->r1[l], pairing);
+            element_init_G1(s1[l], pairing);
+
+            for(i=0; i<n+1; i++)
+            {
+                element_init_G1(t1[l][i], pairing);
+            }
+	}
+	else
+        {
+            element_init_G1(tok->r1[l], pairing);
+            element_init_G2(s1[l], pairing);
+
+            for(i=0; i<n+1; i++)
+            {
+                element_init_G2(t1[l][i], pairing);
+            }
+        }
+
+        element_random(rhosig[l]);
+
+        element_pow_zn(tok->r1[l], ic->R, rhosig);
+
+        element_pow_zn(s1[l], ic->S, one_by_r);
+
+        for(i=0; i<n+1; i++)
+        {
+            element_printf("ic->T[%d] = %B\n", i, ic->T[i]);
+            element_pow_zn(t1[l][i], ic->T[i], one_by_r);
+            element_printf("t1[%d] = %B\n", i, t1[l][i]);
+        }
     }
 
     printf("Done!\n");
 
     printf("\t2. Compute com-values...");
-    element_init_Zr(rhos, pairing);
-    element_random(rhos);
 
-    for(i=0; i<n+1; i++)
-    {
-        element_init_Zr(rhot[i], pairing);
-	element_random(rhot[i]);
-    }
-    for(i=0; i<n; i++)
-    {
-        element_init_Zr(rhoa[i], pairing);
-	element_random(rhoa[i]);
-    }    
-
-    element_init_Zr(rhocsk, pairing);
-    element_random(rhocsk);
-
-    for(i=0; i<n+2; i++) //for s, cpk, and n attributes
-    {
-        element_init_GT(com[i], pairing);
-    }
-
-
-    //compute e(g1,ic->R)
     element_t eg1R;
     element_t eg1g2;
     element_t temp1, temp2, temp5;
     element_t negrhocsk;
+    element_t negrhoa;
 
     element_init_Zr(temp1, pairing);
     element_init_GT(eg1R, pairing);
-    pairing_apply(eg1R, g1, ic->R, pairing);
-
-    //com[0] = e(g1,ic->R)^(rhosig*rhos)
-    element_mul(temp1, rhosig, rhos);
-    element_pow_zn(com[0], eg1R, temp1);
-    //element_printf("eg1R = %B\n", eg1R);
-
-
-    //e(g1,ic->R)^(rhosig*rhot[0])
-    element_mul(temp1, rhosig, rhot[0]);
-    element_pow_zn(com[1], eg1R, temp1);
-
-    //e(g1,g2)^(-rhocsk)
     element_init_GT(temp2, pairing);
     element_init_GT(eg1g2, pairing);
-    pairing_apply(eg1g2, g1, g2, pairing);
     element_init_Zr(negrhocsk, pairing);
-    element_neg(negrhocsk, rhocsk);
-    element_pow_zn(temp2, eg1g2, negrhocsk);
-    element_printf("rhocsk temp2 = %B\n", temp2);
+    element_init_Zr(negrhoa, pairing);
 
-    //com[1] = e(g1,ic->R)^(rhosig*rhot[0]) * e(g1,g2)^(-rhocsk)
-    element_mul(com[1], com[1], temp2);
-    element_printf("com[1] = %B\n", com[1]);
+    element_init_Zr(rhocsk, pairing);
+    element_random(rhocsk);
 
-    //we have n attributes. Let's assume half of them are disclosed and rest half not.
-    for(i=0; i<n; i++)
+    pairing_apply(eg1g2, g1, g2, pairing);
+
+    for (l=0; l< ci->levels; l++)
     {
-        //com[i+2] = e(g1,r) ^ (rhosig * rhot[i+1])
-        element_mul(temp1, rhosig, rhot[i+1]);
-	element_pow_zn(com[i+2], eg1R, temp1);
-        if (i%2 == 0) //attribute revealed
-	{
+        ic = ci->cred[l];
+        element_init_Zr(rhosig[l], pairing);
+        element_init_Zr(rhos[l], pairing);
+        element_random(rhos[l]);
 
-	}
-	else //attribute not revealed
-	{
-            //com[i+2] = e(g1,r) ^ (rhosig * rhot[i+1]) * e(g1,g2) ^ (-rhoa[i]) 
-	    element_t negrhoa;
-            element_init_Zr(negrhoa, pairing);
-            element_neg(negrhoa, rhoa[i]);
-            element_pow_zn(temp2, eg1g2, negrhoa);
-	    element_mul(com[i+2], com[i+2], temp2);
-	}
-	element_printf("com[%d] = %B\n", i+2, com[i+2]);
+        for(i=0; i<n+1; i++)
+        {
+            element_init_Zr(rhot[l][i], pairing);
+	    element_random(rhot[l][i]);
+        }
+        for(i=0; i<n; i++)
+        {
+            element_init_Zr(rhoa[l][i], pairing);
+	    element_random(rhoa[l][i]);
+        }    
 
+
+        for(i=0; i<n+2; i++) //for s, cpk, and n attributes
+        {
+            element_init_GT(com[l][i], pairing);
+        }
+
+	if( (l+1) % 2)
+        {
+            //compute e(g1,ic->R)
+            pairing_apply(eg1R, g1, ic->R, pairing);
+        }
+	else
+        {
+            //compute e(ic->R,g2)
+            pairing_apply(eg1R, ic->R, g2, pairing);
+        }
+
+        //com[0] = e(g1,ic->R)^(rhosig*rhos)
+        element_mul(temp1, rhosig[l], rhos[l]);
+        element_pow_zn(com[l][0], eg1R, temp1);
+        //element_printf("eg1R = %B\n", eg1R);
+
+
+        //e(g1,ic->R)^(rhosig*rhot[0])
+        element_mul(temp1, rhosig[l], rhot[l][0]);
+        element_pow_zn(com[l][1], eg1R, temp1);
+
+        //e(g1,g2)^(-rhocsk)
+        element_neg(negrhocsk, rhocsk);
+        element_pow_zn(temp2, eg1g2, negrhocsk);
+        //element_printf("rhocsk temp2 = %B\n", temp2);
+
+        //com[1] = e(g1,ic->R)^(rhosig*rhot[0]) * e(g1,g2)^(-rhocsk)
+        element_mul(com[l][1], com[l][1], temp2);
+        element_printf("com[%d][1] = %B\n", l, com[l][1]);
+
+        //we have n attributes. Let's assume half of them are disclosed and rest half not.
+        for(i=0; i<n; i++)
+        {
+            //com[i+2] = e(g1,r) ^ (rhosig * rhot[i+1])
+            element_mul(temp1, rhosig[l], rhot[l][i+1]);
+	    element_pow_zn(com[l][i+2], eg1R, temp1);
+            if (i%2 == 0) //attribute revealed
+	    {
+
+	    }
+	    else //attribute not revealed
+	    {
+                //com[i+2] = e(g1,r) ^ (rhosig * rhot[i+1]) * e(g1,g2) ^ (-rhoa[i]) 
+                element_neg(negrhoa, rhoa[l][i]);
+                element_pow_zn(temp2, eg1g2, negrhoa);
+	        element_mul(com[l][i+2], com[l][i+2], temp2);
+	    }
+	    element_printf("com[%d][%d] = %B\n", l, i+2, com[l][i+2]);
+
+        }
     }
     printf("Done!\n");
 
