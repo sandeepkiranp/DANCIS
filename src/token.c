@@ -375,6 +375,7 @@ void verify_attribute_token(token_t *tk)
     element_t eg1g2;
     element_t one;
     token_element_t *tok;
+    element_t prevrescpk;
 
     element_init_Zr(temp1, pairing);
     element_init_GT(temp2, pairing);
@@ -393,6 +394,12 @@ void verify_attribute_token(token_t *tk)
     {
         tok = &tk->te[l];
 
+	if (l != 0)
+	{
+            element_init_same_as(prevrescpk ,tk->te[l-1].rescpk);
+            element_set(prevrescpk, tk->te[l-1].rescpk);
+	}
+
         comt[l]  = (element_t *)malloc((n+2) * sizeof(element_t));
         for(i=0; i<n+2; i++) //for s, cpk, and n attributes
         {
@@ -402,27 +409,59 @@ void verify_attribute_token(token_t *tk)
         if ((l+1) % 2)
         {
             //comt[0] = t(ress,r1) (e(y1[0],g2) * (e(g1,root_public_key))^(-c)
-            pairing_apply(temp2, tok->ress, tok->r1, pairing);
+            pairing_apply(comt[l][0], tok->ress, tok->r1, pairing);
+	    if(l != 0)
+	    {
+                //e(g1^(-1), rescpk[i-1])
+		element_neg(temp1, one);
+		pairing_apply(temp3, g1, prevrescpk, pairing);
+		element_pow_zn(temp3, temp3, temp1);
+		element_mul(comt[l][0], comt[l][0], temp3);
+	    }
 
             pairing_apply(temp3, Y1[0], g2, pairing);
-            pairing_apply(temp4, g1, root_public_key, pairing);
-            element_mul(temp3, temp3, temp4);
+	    if(l == 0)
+            {
+                pairing_apply(temp4, g1, root_public_key, pairing);
+                element_mul(temp3, temp3, temp4);
+	    }
             element_neg(temp1, tk->c);
             element_pow_zn(temp3, temp3, temp1); 
-            element_mul(comt[l][0], temp2, temp3);
+            element_mul(comt[l][0], comt[l][0], temp3);
             element_printf("comt[%d][0] = %B\n", l, comt[l][0]);
 
             //comt[1] = e(rest[0],r1) * e(g1,g2)^(-rescsk) * (e(y1[0],root_public_key))^(-c)
-            pairing_apply(temp2, tok->rest[0], tok->r1, pairing);
-            element_neg(temp1, tok->rescsk);
-            element_pow_zn(temp3, eg1g2, temp1);
-            element_mul(temp2, temp2, temp3);
+            pairing_apply(comt[l][1], tok->rest[0], tok->r1, pairing);
+            if(l == (tk->levels - 1))
+            {
+                element_neg(temp1, tok->rescsk);
+                element_pow_zn(temp3, eg1g2, temp1);
+                element_mul(comt[l][1], comt[l][1], temp3);
+	    }
+	    else
+	    {
+                //e(rescpk[i],g2^(-1))
+                element_neg(temp1, one);
+                pairing_apply(temp3, tok->rescpk, g2, pairing);
+                element_pow_zn(temp3, temp3, temp1);
+                element_mul(comt[l][1], comt[l][1], temp3);
+	    }
 
-            pairing_apply(temp3, Y1[0], root_public_key, pairing);
-            element_neg(temp1, tk->c);
-            element_pow_zn(temp4, temp3, temp1);
+            if(l == 0)
+            {
+                pairing_apply(temp3, Y1[0], root_public_key, pairing);
+                element_neg(temp1, tk->c);
+                element_pow_zn(temp3, temp3, temp1);
+	        element_mul(comt[l][1], comt[l][1], temp3);
+	    }
+	    else
+	    {
+                //e(Y1[0],rescpk[l-1]) TODO: is it Y1[0] ^ (-1)?
+                pairing_apply(temp3, Y1[0], prevrescpk, pairing);
+                element_mul(comt[l][1], comt[l][1], temp3);
+	    }
 
-            element_mul(comt[l][1], temp2, temp4);
+            element_mul(comt[l][1], comt[l][1], temp4);
             element_printf("comt[%d][1] = %B\n", l, comt[l][1]);
    
             for(i=0,j=0,k=0; i<n; i++)
@@ -432,13 +471,21 @@ void verify_attribute_token(token_t *tk)
          	{
                     //com[i+2] = e(rest[i+1], r1) * (e(attributes[i+1],g2) * e(y1[i+1],root_public_key)) ^ (-c)
     	            pairing_apply(temp2, tok->attributes[j++],g2, pairing);
-                    pairing_apply(temp3, Y1[i+1],root_public_key, pairing);
-    	            element_mul(temp2, temp2, temp3);
+		    if (l == 0)
+                    {
+                        pairing_apply(temp3, Y1[i+1],root_public_key, pairing);
+    	                element_mul(temp2, temp2, temp3);
+                    }
 	            element_neg(temp1, tk->c);
 	            element_pow_zn(temp2, temp2, temp1);
 
 	            element_mul(comt[l][i+2], comt[l][i+2], temp2);
-
+		    if (l != 0)
+		    {
+                        //e(Y1[0],rescpk[l-1]) TODO: is it Y1[0] ^ (-1)?
+                        pairing_apply(temp3, Y1[i+1], prevrescpk, pairing);
+	                element_mul(comt[l][i+2], comt[l][i+2], temp3);
+		    }
 	        }
 	        else
 	        {
@@ -447,52 +494,78 @@ void verify_attribute_token(token_t *tk)
 	            element_neg(temp1, one);
     	            element_pow_zn(temp2, temp2, temp1);
                     element_mul(comt[l][i+2], comt[l][i+2], temp2);
-
-                    pairing_apply(temp3, Y1[i+1],root_public_key, pairing);
-                    element_neg(temp1, tk->c);
-                    element_pow_zn(temp3, temp3, temp1);
-                    element_mul(comt[l][i+2], comt[l][i+2], temp3);
+                    if (l == 0)
+                    {
+                        pairing_apply(temp3, Y1[i+1],root_public_key, pairing);
+                        element_neg(temp1, tk->c);
+                        element_pow_zn(temp3, temp3, temp1);
+                        element_mul(comt[l][i+2], comt[l][i+2], temp3);
+		    }
+		    else
+		    {
+                        //e(Y1[0],rescpk[l-1]) TODO: is it Y1[0] ^ (-1)?
+                        pairing_apply(temp3, Y1[i+1], prevrescpk, pairing);
+                        element_mul(comt[l][i+2], comt[l][i+2], temp3);
+		    }
 	        }
 	        element_printf("comt[%d][%d] = %B\n", l, i+2,comt[l][i+2]);
             }
         }
 	else
         {
-            //comt[0] = t(ress,r1) (e(y1[0],g2) * (e(g1,root_public_key))^(-c)
-            pairing_apply(temp2, tok->ress, tok->r1, pairing);
+            //comt[0] = t(r1,ress) (e(y1[0],g2) * (e(g1,root_public_key))^(-c)
+            pairing_apply(comt[l][0], tok->r1, tok->ress, pairing);
 
-            pairing_apply(temp3, Y1[0], g2, pairing);
-            pairing_apply(temp4, g1, root_public_key, pairing);
-            element_mul(temp3, temp3, temp4);
+            //e(rescpk[i-1], g2^(-1))
+            element_neg(temp1, one);
+            pairing_apply(temp3, prevrescpk, g2, pairing);
+            element_pow_zn(temp3, temp3, temp1);
+            element_mul(comt[l][0], comt[l][0], temp3);
+
+            pairing_apply(temp3, g1, Y2[0], pairing);
             element_neg(temp1, tk->c);
             element_pow_zn(temp3, temp3, temp1); 
-            element_mul(comt[l][0], temp2, temp3);
+            element_mul(comt[l][0], comt[l][0], temp3);
             element_printf("comt[%d][0] = %B\n", l, comt[l][0]);
 
             //comt[1] = e(rest[0],r1) * e(g1,g2)^(-rescsk) * (e(y1[0],root_public_key))^(-c)
-            pairing_apply(temp2, tok->rest[0], tok->r1, pairing);
-            element_neg(temp1, tok->rescsk);
-            element_pow_zn(temp3, eg1g2, temp1);
-            element_mul(temp2, temp2, temp3);
+            pairing_apply(comt[l][1], tok->r1, tok->rest[0], pairing);
 
-            pairing_apply(temp3, Y1[0], root_public_key, pairing);
-            element_neg(temp1, tk->c);
-            element_pow_zn(temp4, temp3, temp1);
+            //e(rescpk[l-1],Y2[0]) TODO: is it Y2[0] ^ (-1)?
+            pairing_apply(temp3, prevrescpk, Y2[0], pairing);
+            element_mul(comt[l][1], comt[l][1], temp3);
 
-            element_mul(comt[l][1], temp2, temp4);
+	    if(l == (tk->levels -1))
+            {
+                element_neg(temp1, tok->rescsk);
+                element_pow_zn(temp3, eg1g2, temp1);
+                element_mul(comt[l][1], comt[l][1], temp3);
+	    }
+	    else
+	    {
+                //e(g1, rescpk[i]i)^(-1))
+                element_neg(temp1, one);
+                pairing_apply(temp3, g1, tok->rescpk, pairing);
+                element_pow_zn(temp3, temp3, temp1);
+                element_mul(comt[l][1], comt[l][1], temp3);
+	    }
+
             element_printf("comt[%d][1] = %B\n", l, comt[l][1]);
    
             for(i=0,j=0,k=0; i<n; i++)
             {
-                pairing_apply(comt[l][i+2], tok->rest[i+1], tok->r1, pairing);
+                pairing_apply(comt[l][i+2], tok->r1, tok->rest[i+1], pairing);
+		//TODO : is it Y2[i+1] ^ -1?
+                pairing_apply(temp3, prevrescpk, Y2[i+1], pairing);
+    	        element_mul(comt[l][i+2], comt[l][i+2], temp3);
+
                 if(tok->revealed[i])
          	{
                     //com[i+2] = e(rest[i+1], r1) * (e(attributes[i+1],g2) * e(y1[i+1],root_public_key)) ^ (-c)
-    	            pairing_apply(temp2, tok->attributes[j++],g2, pairing);
-                    pairing_apply(temp3, Y1[i+1],root_public_key, pairing);
-    	            element_mul(temp2, temp2, temp3);
+    	            pairing_apply(temp2, g1, tok->attributes[j++], pairing);
 	            element_neg(temp1, tk->c);
 	            element_pow_zn(temp2, temp2, temp1);
+
 
 	            element_mul(comt[l][i+2], comt[l][i+2], temp2);
 
@@ -500,15 +573,10 @@ void verify_attribute_token(token_t *tk)
 	        else
 	        {
                     //com[i+2] = e(rest[i+1], r1) * (e(resa[i],g2)^(-1)) * (e(y1[i+1],root_public_key)) ^ (-c)
-                    pairing_apply(temp2, tok->resa[k++],g2, pairing);
+                    pairing_apply(temp2, g1, tok->resa[k++], pairing);
 	            element_neg(temp1, one);
     	            element_pow_zn(temp2, temp2, temp1);
                     element_mul(comt[l][i+2], comt[l][i+2], temp2);
-
-                    pairing_apply(temp3, Y1[i+1],root_public_key, pairing);
-                    element_neg(temp1, tk->c);
-                    element_pow_zn(temp3, temp3, temp1);
-                    element_mul(comt[l][i+2], comt[l][i+2], temp3);
 	        }
 	        element_printf("comt[%d][%d] = %B\n", l, i+2,comt[l][i+2]);
             }
