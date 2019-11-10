@@ -31,6 +31,7 @@ typedef struct token_element
 {
     element_t r1;
     element_t ress;
+    element_t rescpk;
     element_t rescsk;
     element_t rest[n+1];
     int revealed[n];
