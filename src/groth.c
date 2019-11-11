@@ -107,10 +107,11 @@ int groth_verify_signature_2(element_t public_key, credential_attributes *ca, cr
     pairing_apply(temp3, public_key, g2, pairing);
     // e(g1,y1) * e(pk,g2)
     element_mul(temp4, temp2, temp3);
+    element_printf("temp1 = %B, temp2 = %B, temp3 = %B, temp4 = %B\n", temp1, temp2, temp3, temp4);
 
     if (element_cmp(temp1, temp4))
     {
-        printf("Failed!\n\n");
+        printf("Failed! File %s line %d\n\n", __FILE__, __LINE__);
 	return FAILURE;
     }
 
@@ -127,7 +128,7 @@ int groth_verify_signature_2(element_t public_key, credential_attributes *ca, cr
 
         if (element_cmp(temp1, temp4))
         {
-            printf("Failed\n\n");
+            printf("Failed! File %s line %d\n\n", __FILE__, __LINE__);
             return FAILURE;
         }
     }

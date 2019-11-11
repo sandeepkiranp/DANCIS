@@ -49,12 +49,13 @@ void dac_generate_parameters()
 
     printf("Done!\n\n");
 }
-/*
-element_t get_root_issuer_public_key()
+
+void get_root_public_key(element_t x)
 {
-    return root_public_key;
+    element_init_same_as(x,root_public_key);
+    element_set(x,root_public_key);
 }
-*/
+
 
 void get_root_secret_key(element_t x)
 {
@@ -62,7 +63,7 @@ void get_root_secret_key(element_t x)
     element_set(x,root_secret_key);
 }
 
-int issue_credential(element_t secret_key, credential_attributes *ca, credential_t *ic)
+int issue_credential(element_t secret_key, element_t public_key, credential_attributes *ca, credential_t *ic)
 {
     int i;
     credential_element_t *ce = (credential_element_t *)malloc(sizeof(credential_element_t));
@@ -71,12 +72,14 @@ int issue_credential(element_t secret_key, credential_attributes *ca, credential
     if (ic->levels % 2)
     {
         groth_generate_signature_1(secret_key, ca, ce);
-        groth_verify_signature_1(root_public_key, ca, ce);
+        if(groth_verify_signature_1(public_key, ca, ce) != SUCCESS)
+            return FAILURE;
     }
     else
     {
         groth_generate_signature_2(secret_key, ca, ce);
-        groth_verify_signature_2(root_public_key, ca, ce);
+        if(groth_verify_signature_2(public_key, ca, ce) != SUCCESS)
+	    return FAILURE;
     }
 
     for(i=0; i<n+1; i++)
@@ -86,6 +89,8 @@ int issue_credential(element_t secret_key, credential_attributes *ca, credential
     }
     ic->cred = (credential_element_t **) realloc(ic->cred, ic->levels * sizeof(credential_element_t *));
     ic->cred[ic->levels - 1] = ce;
+
+    return SUCCESS;
 }
 
 void credential_set_private_key(element_t secret_key, credential_t *ic)

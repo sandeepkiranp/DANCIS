@@ -56,11 +56,13 @@ extern void dac_generate_parameters();
 
 extern void set_credential_attributes(int level, element_t pub, credential_attributes *ca);
 
-extern int issue_credential(element_t key, credential_attributes *ca, credential_t *ic);
+extern int issue_credential(element_t secret_key, element_t public_key, credential_attributes *ca, credential_t *ic);
 
 extern void generate_user_keys(int level, element_t priv, element_t pub);
 
 extern void get_root_secret_key(element_t x);
+
+extern void get_root_public_key(element_t x);
 
 extern void credential_set_private_key(element_t secret_key, credential_t *ic);
 
