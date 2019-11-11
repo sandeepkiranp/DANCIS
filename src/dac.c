@@ -24,15 +24,6 @@ int main()
 
         set_credential_attributes(i, pub, &ca);
 
-	if (i != 1)
-	{
-	    element_init_same_as(x, priv);
-            element_set(x, priv);
-
-	    element_init_same_as(y, pub);
-            element_set(y, pub);
-
-	}
         ret = issue_credential(x, y, &ca, &ic); //called by issuer with its private key
 	if (ret != SUCCESS)
 	{
@@ -44,6 +35,12 @@ int main()
 
         generate_attribute_token(&tok, &ic);
         verify_attribute_token(&tok);
+
+        element_init_same_as(x, priv);
+        element_set(x, priv);
+
+        element_init_same_as(y, pub);
+        element_set(y, pub);
     }
 
     printf("Exit from main\n");
