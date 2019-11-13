@@ -164,9 +164,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
             //e(g1,g2)^(-rhocsk)
             element_neg(negrhocsk, rhocsk);
             element_pow_zn(temp2, eg1g2, negrhocsk);
-            element_printf("rhocsk temp2 = %B\n", temp2);
-
-            //element_mul(com[l][1], com[l][1], temp2);
+            element_mul(com[l][1], com[l][1], temp2);
         }
 	else
         {
@@ -240,7 +238,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
             element_snprintf(buffer+(strlen(buffer)),size,"%B",com[l][i]);
         }
     }
-    printf("Buffer = %s, len = %d\n", buffer, (int)strlen(buffer));
+    //printf("Buffer = %s, len = %d\n", buffer, (int)strlen(buffer));
     element_from_hash(tok->c, buffer, strlen(buffer));
     element_printf("c = %B\n", tok->c);
 
@@ -285,12 +283,10 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
             element_pow_zn(te->rescpk, g2, rhocpk[l]);
         }
 
-        //element_printf("g1^rhos = %B\n", ress);
         element_pow_zn(temp5, s1[l], tok->c);
-        //element_printf("temp5 = %B\n", temp5);
         element_mul(te->ress, te->ress, temp5);
     
-        element_printf("ress[%d] = %B\n", l, te->ress);
+        //element_printf("ress[%d] = %B\n", l, te->ress);
     
 	if (l == ci->levels - 1) 
 	{
@@ -299,15 +295,13 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
             element_set(te->rescsk, rhocsk);
             element_mul(temp1, tok->c, ci->secret_key);
             element_add(te->rescsk, te->rescsk, temp1);
-
-            element_printf("rhocsk = %B, secret_key = %B, rescsk = %B\n", rhocsk, ci->secret_key, te->rescsk);
 	}
 	else
 	{
             //cpk[l] ^ c
             element_pow_zn(temp5, ic->attributes[0], tok->c);
             element_mul(te->rescpk, te->rescpk, temp5);
-            element_printf("rescpk[%d] = %B\n", l, te->rescpk);
+            //element_printf("rescpk[%d] = %B\n", l, te->rescpk);
 	}
 
         for(i=0; i<n+1; i++)
@@ -325,7 +319,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
             element_pow_zn(temp5, t1[l][i], tok->c);
             element_mul(te->rest[i], te->rest[i], temp5);
 
-       	    element_printf("rest[%d][%d] = %B\n", l, i, te->rest[i]);
+       	    //element_printf("rest[%d][%d] = %B\n", l, i, te->rest[i]);
         }
 
         te->resa = (element_t *) malloc((n/2) * sizeof(element_t));
@@ -439,7 +433,6 @@ void verify_attribute_token(token_t *tk)
             {
                 element_neg(temp1, tok->rescsk);
                 element_pow_zn(temp3, eg1g2, temp1);
-		element_printf("rescsk comt[0][1] = %B\n", temp3);
                 element_mul(comt[l][1], comt[l][1], temp3);
 	    }
 	    else
@@ -467,7 +460,6 @@ void verify_attribute_token(token_t *tk)
                 element_mul(comt[l][1], comt[l][1], temp3);
 	    }
 
-            element_mul(comt[l][1], comt[l][1], temp4);
             element_printf("comt[%d][1] = %B\n", l, comt[l][1]);
    
             for(i=0,j=0,k=0; i<n; i++)
@@ -539,6 +531,8 @@ void verify_attribute_token(token_t *tk)
 
             //e(rescpk[l-1],Y2[0]) TODO: is it Y2[0] ^ (-1)?
             pairing_apply(temp3, prevrescpk, Y2[0], pairing);
+	    element_neg(temp1, one);
+	    element_pow_zn(temp3, temp3, temp1);
             element_mul(comt[l][1], comt[l][1], temp3);
 
 	    if(l == (tk->levels -1))
@@ -604,7 +598,7 @@ void verify_attribute_token(token_t *tk)
         }
     }
 
-    printf("Buffer = %s, len = %d\n", buffer, (int)strlen(buffer));
+    //printf("Buffer = %s, len = %d\n", buffer, (int)strlen(buffer));
 
     element_from_hash(ct, buffer, strlen(buffer));
 
