@@ -453,7 +453,7 @@ void verify_attribute_token(token_t *tk)
 	    }
 	    else
 	    {
-                //e(Y1[0],rescpk[l-1]) TODO: is it Y1[0] ^ (-1)?
+                //e(Y1[0],rescpk[l-1]) 
                 pairing_apply(temp3, Y1[0], prevrescpk, pairing);
                 element_neg(temp1, one);
                 element_pow_zn(temp3, temp3, temp1);
@@ -482,6 +482,8 @@ void verify_attribute_token(token_t *tk)
 		    {
                         //e(Y1[0],rescpk[l-1]) TODO: is it Y1[0] ^ (-1)?
                         pairing_apply(temp3, Y1[i+1], prevrescpk, pairing);
+			element_neg(temp1, one);
+                        element_pow_zn(temp3, temp3, temp1);
 	                element_mul(comt[l][i+2], comt[l][i+2], temp3);
 		    }
 	        }
@@ -503,6 +505,8 @@ void verify_attribute_token(token_t *tk)
 		    {
                         //e(Y1[0],rescpk[l-1]) TODO: is it Y1[0] ^ (-1)?
                         pairing_apply(temp3, Y1[i+1], prevrescpk, pairing);
+			element_neg(temp1, one);
+                        element_pow_zn(temp3, temp3, temp1);
                         element_mul(comt[l][i+2], comt[l][i+2], temp3);
 		    }
 	        }
@@ -529,7 +533,7 @@ void verify_attribute_token(token_t *tk)
             //comt[1] = e(rest[0],r1) * e(g1,g2)^(-rescsk) * (e(y1[0],root_public_key))^(-c)
             pairing_apply(comt[l][1], tok->r1, tok->rest[0], pairing);
 
-            //e(rescpk[l-1],Y2[0]) TODO: is it Y2[0] ^ (-1)?
+            //e(rescpk[l-1],Y2[0]) 
             pairing_apply(temp3, prevrescpk, Y2[0], pairing);
 	    element_neg(temp1, one);
 	    element_pow_zn(temp3, temp3, temp1);
@@ -555,8 +559,9 @@ void verify_attribute_token(token_t *tk)
             for(i=0,j=0,k=0; i<n; i++)
             {
                 pairing_apply(comt[l][i+2], tok->r1, tok->rest[i+1], pairing);
-		//TODO : is it Y2[i+1] ^ -1?
                 pairing_apply(temp3, prevrescpk, Y2[i+1], pairing);
+		element_neg(temp1, one);
+                element_pow_zn(temp3, temp3, temp1);
     	        element_mul(comt[l][i+2], comt[l][i+2], temp3);
 
                 if(tok->revealed[i])
@@ -565,7 +570,6 @@ void verify_attribute_token(token_t *tk)
     	            pairing_apply(temp2, g1, tok->attributes[j++], pairing);
 	            element_neg(temp1, tk->c);
 	            element_pow_zn(temp2, temp2, temp1);
-
 
 	            element_mul(comt[l][i+2], comt[l][i+2], temp2);
 
