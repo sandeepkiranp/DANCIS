@@ -77,3 +77,5 @@ extern int groth_verify_signature_1(element_t public_key, credential_attributes 
 extern void groth_generate_signature_2(element_t secret_key, credential_attributes *ca, credential_element_t *ic);
 
 extern int groth_verify_signature_2(element_t public_key, credential_attributes *ca, credential_element_t *ic);
+
+extern void SHA1(char *hash, unsigned char * str1);

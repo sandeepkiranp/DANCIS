@@ -225,8 +225,9 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
 
 
     printf("\t3. Compute c...");
-    char buffer[1024096] = {0};
-    int size = 1024096;
+    char buffer[150] = {0};
+    int size = 100;
+    char hash[50] = {0};
 
     //c = Hash(com[i] for i=0 to n+2)
     element_init_Zr(tok->c, pairing);
@@ -235,10 +236,11 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
     {
         for(i=0; i<n+2; i++)
         {
-            element_snprintf(buffer+(strlen(buffer)),size,"%B",com[l][i]);
+            element_snprintf(buffer,size,"%B",com[l][i]);
+	    strcat(buffer, hash);
+	    SHA1(hash, buffer);
         }
     }
-    //printf("Buffer = %s, len = %d\n", buffer, (int)strlen(buffer));
     element_from_hash(tok->c, buffer, strlen(buffer));
     element_printf("c = %B\n", tok->c);
 
@@ -587,9 +589,10 @@ void verify_attribute_token(token_t *tk)
         }
     }
 
-    printf("\t3. Compute c");
-    char buffer[1024096] = {0};
-    int size = 1024096;
+    printf("\t3. Compute c\n");
+    char buffer[150] = {0};
+    int size = 100;
+    char hash[50] = {0};
 
     //c = Hash(com[i] for i=0 to n+2)
     element_init_Zr(ct, pairing);
@@ -598,15 +601,12 @@ void verify_attribute_token(token_t *tk)
     {
         for(i=0; i<n+2; i++)
         {
-            element_snprintf(buffer+(strlen(buffer)),size,"%B",comt[l][i]);
+            element_snprintf(buffer,size,"%B",comt[l][i]);
+            strcat(buffer, hash);
+            SHA1(hash, buffer);
         }
     }
-
-    //printf("Buffer = %s, len = %d\n", buffer, (int)strlen(buffer));
-
     element_from_hash(ct, buffer, strlen(buffer));
-
-    element_printf(" = %B\n", ct);
 
     if (element_cmp(tk->c, ct))
     {
