@@ -239,9 +239,10 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
             element_snprintf(buffer,size,"%B",com[l][i]);
 	    strcat(buffer, hash);
 	    SHA1(hash, buffer);
+	    printf("Buffer = %s, Hash = %s\n", buffer, hash);
         }
     }
-    element_from_hash(tok->c, buffer, strlen(buffer));
+    element_from_hash(tok->c, hash, strlen(hash));
     element_printf("c = %B\n", tok->c);
 
     printf("Done!\n");
@@ -604,9 +605,10 @@ void verify_attribute_token(token_t *tk)
             element_snprintf(buffer,size,"%B",comt[l][i]);
             strcat(buffer, hash);
             SHA1(hash, buffer);
+	    printf("Buffer = %s, Hash = %s\n", buffer, hash);
         }
     }
-    element_from_hash(ct, buffer, strlen(buffer));
+    element_from_hash(ct, hash, strlen(hash));
 
     if (element_cmp(tk->c, ct))
     {
