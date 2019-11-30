@@ -367,7 +367,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
                 }
                 element_pow_zn(temp5, ic->attributes[i+2], tok->c);
                 element_mul(te->resa[j], te->resa[j], temp5);
-       	        element_printf("resa[%d][%d] = %B\n", l, j, te->resa[j]);
+       	        //element_printf("resa[%d][%d] = %B\n", l, j, te->resa[j]);
 	        te->revealed[i] = 0;
        	        j++;
 	    }
@@ -420,7 +420,7 @@ void verify_attribute_token(token_t *tk)
             element_set(prevrescpk, tk->te[l-1].rescpk);
 	}
 
-        comt[l]  = (element_t *)malloc((n+2) * sizeof(element_t));
+        comt[l]  = (element_t *)malloc((n+3) * sizeof(element_t));
         for(i=0; i<n+3; i++) //for s, cpk, credential hash and n attributes
         {
             element_init_GT(comt[l][i], pairing);
@@ -485,7 +485,7 @@ void verify_attribute_token(token_t *tk)
 
             element_printf("comt[%d][1] = %B\n", l, comt[l][1]);
 
-
+           // compute comt[l][2]
             pairing_apply(comt[l][2], tok->rest[1], tok->r1, pairing);
 	    if (l != 0)
 	    {
@@ -493,13 +493,12 @@ void verify_attribute_token(token_t *tk)
                 element_neg(temp1, one);
                 element_pow_zn(temp3, temp3, temp1);
                 element_mul(comt[l][2], comt[l][2], temp3);
-
 	    }
 
 	    pairing_apply(temp3, tok->credhash, g2, pairing);
             if(l == 0)
             {
-                pairing_apply(temp4, g1, root_public_key, pairing);
+                pairing_apply(temp4, Y1[1], root_public_key, pairing);
                 element_mul(temp3, temp3, temp4);
             }
             element_neg(temp1, tk->c);
@@ -614,7 +613,7 @@ void verify_attribute_token(token_t *tk)
             element_pow_zn(temp2, temp2, temp1);
 
             element_mul(comt[l][2], comt[l][2], temp2);
-	    
+            element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
    
             for(i=0,j=0,k=0; i<n; i++)
             {
@@ -657,7 +656,7 @@ void verify_attribute_token(token_t *tk)
 
     for (l=0; l< tk->levels; l++)
     {
-        for(i=0; i<n+2; i++)
+        for(i=0; i<n+3; i++)
         {
             element_snprintf(buffer,size,"%B",comt[l][i]);
             strcat(buffer, hash);
