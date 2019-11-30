@@ -7,7 +7,8 @@
 
 typedef struct attributes
 {
-    element_t attributes[n+1]; //attributes[0] represents the public key
+    element_t attributes[n+2]; //attributes[0] represents the public key
+                               //attribute[1] represents the hashed credential                   
     int num_of_attributes;
 }credential_attributes;
 
@@ -15,8 +16,9 @@ typedef struct credential_element
 {
     element_t R;
     element_t S;
-    element_t T[n+1]; //CPK + n attributes
-    element_t attributes[n+1]; //attributes[0] represents the public key
+    element_t T[n+2]; //CPK + credential hash + n attributes
+    element_t attributes[n+2]; //attributes[0] represents the public key
+                               //attribute[1] represents the hashed credential                   
     int num_of_attributes;
 }credential_element_t;
 
@@ -33,7 +35,8 @@ typedef struct token_element
     element_t ress;
     element_t rescpk;
     element_t rescsk;
-    element_t rest[n+1];
+    element_t rest[n+2];
+    element_t credhash;
     int revealed[n];
     element_t *attributes;
     element_t *resa;
@@ -48,7 +51,7 @@ typedef struct token
 }token_t;
 
 extern element_t g1, g2;
-extern element_t Y1[n+1], Y2[n+1];
+extern element_t Y1[n+2], Y2[n+2];
 extern pairing_t pairing;
 extern element_t root_public_key;
 

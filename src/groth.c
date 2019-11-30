@@ -1,46 +1,5 @@
 #include "dac.h"
 
-/*
-void groth_generate_parameters()
-{
-    if (g1_g2_initialized)
-        return;
-
-    printf("Generating System Parameters\n");
-
-    element_init_G1(g1, pairing);
-    element_init_G2(g2, pairing);
-
-    element_random(g1);
-    element_random(g2);
-
-    g1_g2_initialized = 1;
-    printf("Generated System Parameters\n");
-
-}
-void groth_generate_parameters_2()
-{
-    int i;
-
-    groth_generate_parameters();
-    printf("Generating Groth2 Parameters\n");
-
-    for(i=0; i<n; i++)
-    {
-        element_init_G2(y[i], pairing);
-        element_random(y[i]);
-    }
-
-    element_init_Zr(secret_key, pairing);
-    element_random(secret_key);
-
-    //pk = g1^sk
-    element_init_G1(public_key, pairing);
-    element_pow_zn(public_key, g1, secret_key);
-}
-
-*/
-
 void groth_generate_signature_2(element_t secret_key, credential_attributes *ca, credential_element_t *ic)
 {
     int i;
@@ -54,7 +13,7 @@ void groth_generate_signature_2(element_t secret_key, credential_attributes *ca,
     element_init_G1(ic->R, pairing);
     element_init_G2(ic->S, pairing);
 
-    for(i=0; i<n+1; i++)
+    for(i=0; i<n+2; i++)
         element_init_G2(ic->T[i], pairing);
 
     element_init_Zr(one_by_r, pairing);
@@ -76,7 +35,7 @@ void groth_generate_signature_2(element_t secret_key, credential_attributes *ca,
     element_pow_zn(ic->S, ic->S, one_by_r);
 
     //T = (y^sk * m)^(1/r)
-    for(i=0; i<n+1; i++) //n+1 attributes including CPK
+    for(i=0; i<n+2; i++) //n+2 attributes including CPK and hashed credential
     {
         element_pow_zn(ic->T[i], Y2[i], secret_key);
         element_mul(ic->T[i], ic->T[i], ca->attributes[i]);
@@ -114,7 +73,7 @@ int groth_verify_signature_2(element_t public_key, credential_attributes *ca, cr
 	return FAILURE;
     }
 
-    for(i=0; i<n+1; i++) //cpk(i-1) + n attributes
+    for(i=0; i<n+2; i++) //cpk(i-1) + n attributes + hashed credential
     {
         //Check if e(R,Ti ) = e(V, yi )e(g1, mi )
         pairing_apply(temp1, ic->R, ic->T[i], pairing);
@@ -136,30 +95,6 @@ int groth_verify_signature_2(element_t public_key, credential_attributes *ca, cr
     return SUCCESS;
 }
 
-/*
-
-void groth_generate_parameters_1()
-{
-    int i;
-
-    groth_generate_parameters();
-    printf("Generating Groth1 Parameters\n");	
-
-    for(i=0; i<n; i++)
-    {
-        element_init_G1(y[i], pairing);
-        element_random(y[i]);
-    }
-
-    element_init_Zr(secret_key, pairing);
-    element_init_G2(public_key, pairing);
-
-    element_random(secret_key);
-    element_pow_zn(public_key, g2, secret_key);
-}
-
-*/
-
 void groth_generate_signature_1(element_t secret_key, credential_attributes *ca, credential_element_t *ic)
 {
     int i;
@@ -173,7 +108,7 @@ void groth_generate_signature_1(element_t secret_key, credential_attributes *ca,
     element_init_G2(ic->R, pairing);
     element_init_G1(ic->S, pairing);
 
-    for(i=0; i<n+1; i++)
+    for(i=0; i<n+2; i++)
         element_init_G1(ic->T[i], pairing);
 
     element_init_Zr(one_by_r, pairing);
@@ -195,7 +130,7 @@ void groth_generate_signature_1(element_t secret_key, credential_attributes *ca,
     element_pow_zn(ic->S, ic->S, one_by_r);
 
     //T = (y^sk * m)^(1/r)
-    for(i=0; i<n+1; i++) //n+1 attributes
+    for(i=0; i<n+2; i++) //n+2 attributes
     {
         element_pow_zn(ic->T[i], Y1[i], secret_key);
         element_mul(ic->T[i], ic->T[i], ca->attributes[i]);
@@ -235,7 +170,7 @@ int groth_verify_signature_1(element_t public_key, credential_attributes *ca, cr
     }
     //element_printf("e(S,R) = %B\n", temp1);
 
-    for(i=0; i<n+1; i++) //cpk(i-1) + n attributes
+    for(i=0; i<n+2; i++) //cpk(i-1) + hashed credential + n attributes
     {
         //Check if e(Ti,R ) = e(yi,V )e(mi,g2 )
         pairing_apply(temp1, ic->T[i], ic->R, pairing);
@@ -256,35 +191,3 @@ int groth_verify_signature_1(element_t public_key, credential_attributes *ca, cr
     printf("Done!\n\n");
     return SUCCESS;
 }
-
-/*
-int main()
-{
-    char param[1024];
-
-    int count = fread(param, 1, 1024, stdin);
-    if (!count) pbc_die("input error");
-
-    printf("Reading (%d) parameters \n%s \n",count, param);
-    pairing_init_set_buf(pairing, param, count);	
-
-    
-    groth_generate_parameters_2();
-
-    groth_generate_signature_2();
-
-    if (groth_verify_signature_2())
-        return 1;
-    
-
-    groth_generate_parameters_1();
-
-    groth_generate_signature_1();
-
-    if (groth_verify_signature_1())
-        return 1;
-    
-    printf("Exit from main\n");
-    return 0;
-}
-*/

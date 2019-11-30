@@ -29,10 +29,10 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
 
     for(i=0; i<ci->levels; i++)
     { 
-        t1[i]   = (element_t *)malloc((n+1) * sizeof(element_t));
-        rhot[i] = (element_t *)malloc((n+1) * sizeof(element_t));
+        t1[i]   = (element_t *)malloc((n+2) * sizeof(element_t));
+        rhot[i] = (element_t *)malloc((n+2) * sizeof(element_t));
         rhoa[i] = (element_t *)malloc((n)   * sizeof(element_t));
-        com[i]  = (element_t *)malloc((n+2) * sizeof(element_t));
+        com[i]  = (element_t *)malloc((n+3) * sizeof(element_t));
     }
 
     element_init_Zr(one_by_r, pairing);
@@ -49,7 +49,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
             element_init_G2(r1[l], pairing);
             element_init_G1(s1[l], pairing);
 
-            for(i=0; i<n+1; i++)
+            for(i=0; i<n+2; i++)
             {
                 element_init_G1(t1[l][i], pairing);
             }
@@ -59,7 +59,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
             element_init_G1(r1[l], pairing);
             element_init_G2(s1[l], pairing);
 
-            for(i=0; i<n+1; i++)
+            for(i=0; i<n+2; i++)
             {
                 element_init_G2(t1[l][i], pairing);
             }
@@ -72,11 +72,11 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
 
         element_pow_zn(s1[l], ic->S, one_by_r);
 
-        for(i=0; i<n+1; i++)
+        for(i=0; i<n+2; i++)
         {
-            element_printf("level - %d, ic->T[%d] = %B\n", l, i, ic->T[i]);
+            //element_printf("level - %d, ic->T[%d] = %B\n", l, i, ic->T[i]);
             element_pow_zn(t1[l][i], ic->T[i], one_by_r);
-            element_printf("t1[%d][%d] = %B\n", l, i, t1[l][i]);
+            //element_printf("t1[%d][%d] = %B\n", l, i, t1[l][i]);
         }
     }
 
@@ -115,7 +115,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
         element_init_Zr(rhocpk[l], pairing);
         element_random(rhocpk[l]);
 
-        for(i=0; i<n+1; i++)
+        for(i=0; i<n+2; i++)
         {
             element_init_Zr(rhot[l][i], pairing);
 	    element_random(rhot[l][i]);
@@ -126,7 +126,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
 	    element_random(rhoa[l][i]);
         }    
 
-        for(i=0; i<n+2; i++) //for s, cpk, and n attributes
+        for(i=0; i<n+3; i++) //for s, cpk, credential hash and n attributes
         {
             element_init_GT(com[l][i], pairing);
         }
@@ -189,22 +189,38 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
 
         element_printf("com[%d][1] = %B\n", l, com[l][1]);
 
+	element_mul(temp1, rhosig[l], rhot[l][1]);
+        element_pow_zn(com[l][2], eg1R, temp1);
+        if (l != 0)
+        {
+            //com[2] = com[2] * e(Y1[1],g2) ^ (-rhocpk[l-1])
+            element_neg(negrhocpk, rhocpk[l-1]);
+            if((l+1) % 2)
+                pairing_apply(ey1g2, Y1[1], g2, pairing);
+            else
+                pairing_apply(ey1g2, g1, Y2[1], pairing);
+
+            element_pow_zn(temp2, ey1g2, negrhocpk);
+            element_mul(com[l][2], com[l][2], temp2);
+        }
+        element_printf("com[%d][2] = %B\n", l, com[l][2]);
+
         //we have n attributes. Let's assume half of them are disclosed and rest half not.
         for(i=0; i<n; i++)
         {
-            //com[i+2] = e(g1,r) ^ (rhosig * rhot[i+1])
-            element_mul(temp1, rhosig[l], rhot[l][i+1]);
-	    element_pow_zn(com[l][i+2], eg1R, temp1);
+            //com[i+3] = e(g1,r) ^ (rhosig * rhot[i+1])
+            element_mul(temp1, rhosig[l], rhot[l][i+2]);
+	    element_pow_zn(com[l][i+3], eg1R, temp1);
             if (i%2 == 0) //attribute revealed
 	    {
 
 	    }
 	    else //attribute not revealed
 	    {
-                //com[i+2] = e(g1,r) ^ (rhosig * rhot[i+1]) * e(g1,g2) ^ (-rhoa[i]) 
+                //com[i+3] = e(g1,r) ^ (rhosig * rhot[i+1]) * e(g1,g2) ^ (-rhoa[i]) 
                 element_neg(negrhoa, rhoa[l][i]);
                 element_pow_zn(temp2, eg1g2, negrhoa);
-	        element_mul(com[l][i+2], com[l][i+2], temp2);
+	        element_mul(com[l][i+3], com[l][i+3], temp2);
 	    }
 	    if (l !=0)
 	    {
@@ -215,10 +231,10 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
 
 		element_neg(negrhocpk, rhocpk[l-1]);
 		element_pow_zn(temp2, ey1g2, negrhocpk);
-		element_mul(com[l][i+2], com[l][i+2], temp2);
+		element_mul(com[l][i+3], com[l][i+3], temp2);
 
 	    }
-	    element_printf("com[%d][%d] = %B\n", l, i+2, com[l][i+2]);
+	    element_printf("com[%d][%d] = %B\n", l, i+3, com[l][i+3]);
         }
     }
     printf("Done!\n");
@@ -234,12 +250,12 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
 
     for (l=0; l< ci->levels; l++)
     {
-        for(i=0; i<n+2; i++)
+        for(i=0; i<n+3; i++)
         {
             element_snprintf(buffer,size,"%B",com[l][i]);
 	    strcat(buffer, hash);
 	    SHA1(hash, buffer);
-	    printf("Buffer = %s, Hash = %s\n", buffer, hash);
+	    //printf("Buffer = %s, Hash = %s\n", buffer, hash);
         }
     }
     element_from_hash(tok->c, hash, strlen(hash));
@@ -307,7 +323,10 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
             //element_printf("rescpk[%d] = %B\n", l, te->rescpk);
 	}
 
-        for(i=0; i<n+1; i++)
+        element_init_same_as(te->credhash, ic->attributes[1]);
+        element_set(te->credhash, ic->attributes[1]);
+
+        for(i=0; i<n+2; i++)
         {
             if((l+1) % 2)
             {
@@ -333,7 +352,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
         for(i=0,j=0,k=0; i<n; i++) //attributes[0] represents CPK
         {
     	    te->revealed[i] = 1;
-            if (i%2 != 0)
+            if (i%2 != 0) //not revealed
             {
                 if ((l+1) % 2)
                 {
@@ -345,16 +364,16 @@ void generate_attribute_token(token_t *tok, credential_t *ci)
                     element_init_G2(te->resa[j], pairing);
                     element_pow_zn(te->resa[j], g2, rhoa[l][i]);
                 }
-                element_pow_zn(temp5, ic->attributes[i+1], tok->c);
+                element_pow_zn(temp5, ic->attributes[i+2], tok->c);
                 element_mul(te->resa[j], te->resa[j], temp5);
        	        element_printf("resa[%d][%d] = %B\n", l, j, te->resa[j]);
 	        te->revealed[i] = 0;
        	        j++;
 	    }
-	    else
+	    else //revealed
             {
-                element_init_same_as(te->attributes[k],ic->attributes[i+1]);
-                element_set(te->attributes[k],ic->attributes[i+1]);
+                element_init_same_as(te->attributes[k],ic->attributes[i+2]);
+                element_set(te->attributes[k],ic->attributes[i+2]);
     	        k++;
 	    }
         }
@@ -605,7 +624,7 @@ void verify_attribute_token(token_t *tk)
             element_snprintf(buffer,size,"%B",comt[l][i]);
             strcat(buffer, hash);
             SHA1(hash, buffer);
-	    printf("Buffer = %s, Hash = %s\n", buffer, hash);
+	    //printf("Buffer = %s, Hash = %s\n", buffer, hash);
         }
     }
     element_from_hash(ct, hash, strlen(hash));

@@ -4,8 +4,8 @@ element_t g1, g2;
 static element_t root_secret_key;
 element_t root_public_key;
 pairing_t pairing;
-element_t Y1[n+1]; //cpk(i-1) + n attributes = n+1 attrbutes
-element_t Y2[n+1]; //cpk(i-1) + n attributes = n+1 attrbutes
+element_t Y1[n+2]; //cpk(i-1) + credential hash + n attributes = n+2 attrbutes
+element_t Y2[n+2]; //cpk(i-1) + credential hash + n attributes = n+2 attrbutes
 
 void dac_generate_parameters()
 {
@@ -35,13 +35,13 @@ void dac_generate_parameters()
     element_pow_zn(root_public_key, g2, root_secret_key);
 
     //Generate y1[n] and y2[n]
-    for(i=0; i<n+1; i++)
+    for(i=0; i<n+2; i++)
     {
         element_init_G1(Y1[i], pairing);
         element_random(Y1[i]);
     }
 
-    for(i=0; i<n+1; i++)
+    for(i=0; i<n+2; i++)
     {
         element_init_G2(Y2[i], pairing);
         element_random(Y2[i]);
@@ -82,7 +82,7 @@ int issue_credential(element_t secret_key, element_t public_key, credential_attr
 	    return FAILURE;
     }
 
-    for(i=0; i<n+1; i++)
+    for(i=0; i<n+2; i++) // CPK + credential hash + n attributes
     {
         element_init_same_as(ce->attributes[i], ca->attributes[i]);
         element_set(ce->attributes[i], ca->attributes[i]);
