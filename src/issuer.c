@@ -1,4 +1,5 @@
 #include "dac.h"
+#include <unistd.h>
 
 element_t g1, g2;
 static element_t root_secret_key;
@@ -6,6 +7,24 @@ element_t root_public_key;
 pairing_t pairing;
 element_t Y1[n+2]; //cpk(i-1) + credential hash + n attributes = n+2 attrbutes
 element_t Y2[n+2]; //cpk(i-1) + credential hash + n attributes = n+2 attrbutes
+
+void write_element_to_file(FILE *fp, char *param, element_t e)
+{
+    int len;
+    size_t outlen;
+    char *base64e;
+    unsigned char *buffer;
+
+    len = element_length_in_bytes_compressed(e);
+    buffer =  (unsigned char *)malloc(len);
+
+    element_to_bytes_compressed(buffer, e);
+    base64e = base64_encode(buffer, len, &outlen);
+    fprintf(fp, "%s = %s\n", param, base64e); 
+
+    free(base64e);
+    free(buffer);
+}
 
 void dac_generate_parameters()
 {
@@ -20,32 +39,62 @@ void dac_generate_parameters()
     printf("Reading (%d) parameters \n%s \n",count, param);
     pairing_init_set_buf(pairing, param, count);
 
-
     element_init_G1(g1, pairing);
     element_init_G2(g2, pairing);
-
-    element_random(g1);
-    element_random(g2);
 
     //root key (g2^sk,sk)
     element_init_Zr(root_secret_key, pairing);
     element_init_G2(root_public_key, pairing);
 
-    element_random(root_secret_key);
-    element_pow_zn(root_public_key, g2, root_secret_key);
-
-    //Generate y1[n] and y2[n]
     for(i=0; i<n+2; i++)
     {
         element_init_G1(Y1[i], pairing);
-        element_random(Y1[i]);
     }
 
     for(i=0; i<n+2; i++)
     {
         element_init_G2(Y2[i], pairing);
-        element_random(Y2[i]);
-    }    
+    }
+
+    // check if HOME_DIR/root/params.txt is existing
+    char paramfile[50];
+    sprintf(paramfile, "%s/root/params.txt", HOME_DIR);
+
+    if( access( paramfile, F_OK ) != -1 ) 
+    {
+        //Read parameters from file
+    } 
+    else
+    {
+	char str[10];
+        FILE *fp = fopen(paramfile, "w");
+
+        element_random(g1);
+	write_element_to_file(fp, "g1", g1);
+        element_random(g2);
+	write_element_to_file(fp, "g2", g2);
+
+        element_random(root_secret_key);
+	write_element_to_file(fp, "private_key", root_secret_key);
+        element_pow_zn(root_public_key, g2, root_secret_key);
+	write_element_to_file(fp, "public_key", root_public_key);
+
+        //Generate y1[n] and y2[n]
+        for(i=0; i<n+2; i++)
+        {
+            element_random(Y1[i]);
+	    sprintf(str, "Y1[%d]", i);
+	    write_element_to_file(fp, str, Y1[i]);
+        }
+
+        for(i=0; i<n+2; i++)
+        {
+            element_random(Y2[i]);
+	    sprintf(str, "Y2[%d]", i);
+	    write_element_to_file(fp, str, Y2[i]);
+        }
+	fclose(fp);
+    }
 
     printf("Done!\n\n");
 }
@@ -55,7 +104,6 @@ void get_root_public_key(element_t x)
     element_init_same_as(x,root_public_key);
     element_set(x,root_public_key);
 }
-
 
 void get_root_secret_key(element_t x)
 {

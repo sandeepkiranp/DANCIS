@@ -5,6 +5,8 @@
 #define FAILURE 1
 #define n 3
 
+#define HOME_DIR "~/dac"
+
 typedef struct attributes
 {
     element_t attributes[n+2]; //attributes[0] represents the public key
@@ -54,6 +56,13 @@ extern element_t g1, g2;
 extern element_t Y1[n+2], Y2[n+2];
 extern pairing_t pairing;
 extern element_t root_public_key;
+
+extern char *base64_encode(const unsigned char *data,
+                    size_t input_length,
+                    size_t *output_length) ;
+extern unsigned char *base64_decode(const char *data,
+                             size_t input_length,
+                             size_t *output_length) ;
 
 extern void dac_generate_parameters();
 
