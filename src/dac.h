@@ -5,7 +5,7 @@
 #define FAILURE 1
 #define n 3
 
-#define HOME_DIR "~/dac"
+#define HOME_DIR "/home/sandeep/dac"
 
 typedef struct attributes
 {

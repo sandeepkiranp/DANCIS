@@ -31,7 +31,7 @@ char *base64_encode(const unsigned char *data,
  
     *output_length = 4 * ((input_length + 2) / 3);
  
-    char *encoded_data = malloc(*output_length);
+    char *encoded_data = calloc(*output_length,1);
     if (encoded_data == NULL) return NULL;
  
     for (int i = 0, j = 0; i < input_length;) {
@@ -67,7 +67,7 @@ unsigned char *base64_decode(const char *data,
     if (data[input_length - 1] == '=') (*output_length)--;
     if (data[input_length - 2] == '=') (*output_length)--;
  
-    unsigned char *decoded_data = malloc(*output_length);
+    unsigned char *decoded_data = calloc(1, *output_length);
     if (decoded_data == NULL) return NULL;
  
     for (int i = 0, j = 0; i < input_length;) {

@@ -1,8 +1,12 @@
 #include "dac.h"
 #include <unistd.h>
+#include <errno.h>
+#include <string.h>
+
+#define PARAM_FILE HOME_DIR "/root/params.txt"
 
 element_t g1, g2;
-static element_t root_secret_key;
+element_t root_secret_key;
 element_t root_public_key;
 pairing_t pairing;
 element_t Y1[n+2]; //cpk(i-1) + credential hash + n attributes = n+2 attrbutes
@@ -15,15 +19,46 @@ void write_element_to_file(FILE *fp, char *param, element_t e)
     char *base64e;
     unsigned char *buffer;
 
-    len = element_length_in_bytes_compressed(e);
+    printf("Writing %s to param.txt...", param);
+
+    //element_printf("%s = %B\n", param, e);
+
+    len = element_length_in_bytes(e);
     buffer =  (unsigned char *)malloc(len);
 
-    element_to_bytes_compressed(buffer, e);
+    element_to_bytes(buffer, e);
     base64e = base64_encode(buffer, len, &outlen);
     fprintf(fp, "%s = %s\n", param, base64e); 
 
     free(base64e);
     free(buffer);
+    fflush(fp);
+    printf("Done\n");
+}
+
+void read_element_from_file(FILE *fp, char *param, element_t e)
+{
+    int len;
+    size_t outlen;
+    char *base64e;
+    unsigned char *buffer;
+    char c[200] = {0};
+    char str1[20];
+    char str2[200] = {0};
+
+    printf("Reading %s from param.txt...", param);
+
+    //fscanf(fp,"%[^\n]", c);
+    fgets(c, sizeof(c), fp);
+    sscanf(c, "%s = %s", str1, str2);
+    printf("%s--->%s\n", str1, str2);
+
+    buffer = base64_decode(str2, strlen(str2), &outlen);
+    element_from_bytes(e, buffer);
+    //element_printf("%s = %B\n", param, e);
+    free(buffer);
+
+    printf("Done\n");
 }
 
 void dac_generate_parameters()
@@ -57,17 +92,45 @@ void dac_generate_parameters()
     }
 
     // check if HOME_DIR/root/params.txt is existing
-    char paramfile[50];
-    sprintf(paramfile, "%s/root/params.txt", HOME_DIR);
-
-    if( access( paramfile, F_OK ) != -1 ) 
+    if( access( PARAM_FILE, F_OK ) != -1 ) 
     {
         //Read parameters from file
+	char str[10];
+        FILE *fp = fopen(PARAM_FILE, "r");
+
+        printf("param file %s\n", PARAM_FILE);
+        if (fp == NULL)
+        {
+            printf("errno %d, str %s\n", errno, strerror(errno));
+            return;
+        }
+	read_element_from_file(fp, "g1", g1);
+	read_element_from_file(fp, "g2", g2);
+	read_element_from_file(fp, "private_key", root_secret_key);
+	read_element_from_file(fp, "public_key", root_public_key);
+        for(i=0; i<n+2; i++)
+        {
+            sprintf(str, "Y1[%d]", i);
+            read_element_from_file(fp, str, Y1[i]);
+        }
+
+        for(i=0; i<n+2; i++)
+        {
+            sprintf(str, "Y2[%d]", i);
+            read_element_from_file(fp, str, Y2[i]);
+        }
     } 
     else
     {
 	char str[10];
-        FILE *fp = fopen(paramfile, "w");
+        FILE *fp = fopen(PARAM_FILE, "w");
+
+	printf("param file %s\n", PARAM_FILE);
+	if (fp == NULL)
+	{
+            printf("errno %d, str %s\n", errno, strerror(errno));
+	    return;
+	}
 
         element_random(g1);
 	write_element_to_file(fp, "g1", g1);
