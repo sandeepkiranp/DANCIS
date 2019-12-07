@@ -13,7 +13,8 @@ void groth_generate_signature_2(element_t secret_key, credential_attributes *ca,
     element_init_G1(ic->R, pairing);
     element_init_G2(ic->S, pairing);
 
-    for(i=0; i<n+2; i++)
+    ic->T = (element_t *)malloc(ca->num_of_attributes * sizeof(element_t));
+    for(i=0; i<ca->num_of_attributes; i++)
         element_init_G2(ic->T[i], pairing);
 
     element_init_Zr(one_by_r, pairing);
@@ -35,7 +36,7 @@ void groth_generate_signature_2(element_t secret_key, credential_attributes *ca,
     element_pow_zn(ic->S, ic->S, one_by_r);
 
     //T = (y^sk * m)^(1/r)
-    for(i=0; i<n+2; i++) //n+2 attributes including CPK and hashed credential
+    for(i=0; i<ca->num_of_attributes; i++) //n+2 attributes including CPK and hashed credential
     {
         element_pow_zn(ic->T[i], Y2[i], secret_key);
         element_mul(ic->T[i], ic->T[i], ca->attributes[i]);
@@ -73,7 +74,7 @@ int groth_verify_signature_2(element_t public_key, credential_attributes *ca, cr
 	return FAILURE;
     }
 
-    for(i=0; i<n+2; i++) //cpk(i-1) + n attributes + hashed credential
+    for(i=0; ca->num_of_attributes; i++) //cpk(i-1) + n attributes + hashed credential
     {
         //Check if e(R,Ti ) = e(V, yi )e(g1, mi )
         pairing_apply(temp1, ic->R, ic->T[i], pairing);
@@ -108,7 +109,8 @@ void groth_generate_signature_1(element_t secret_key, credential_attributes *ca,
     element_init_G2(ic->R, pairing);
     element_init_G1(ic->S, pairing);
 
-    for(i=0; i<n+2; i++)
+    ic->T = (element_t *)malloc(ca->num_of_attributes * sizeof(element_t));
+    for(i=0; i<ca->num_of_attributes; i++)
         element_init_G1(ic->T[i], pairing);
 
     element_init_Zr(one_by_r, pairing);
@@ -130,7 +132,7 @@ void groth_generate_signature_1(element_t secret_key, credential_attributes *ca,
     element_pow_zn(ic->S, ic->S, one_by_r);
 
     //T = (y^sk * m)^(1/r)
-    for(i=0; i<n+2; i++) //n+2 attributes
+    for(i=0; i<ca->num_of_attributes; i++) //n+2 attributes
     {
         element_pow_zn(ic->T[i], Y1[i], secret_key);
         element_mul(ic->T[i], ic->T[i], ca->attributes[i]);
@@ -170,7 +172,7 @@ int groth_verify_signature_1(element_t public_key, credential_attributes *ca, cr
     }
     //element_printf("e(S,R) = %B\n", temp1);
 
-    for(i=0; i<n+2; i++) //cpk(i-1) + hashed credential + n attributes
+    for(i=0; i<ca->num_of_attributes; i++) //cpk(i-1) + hashed credential + n attributes
     {
         //Check if e(Ti,R ) = e(yi,V )e(mi,g2 )
         pairing_apply(temp1, ic->T[i], ic->R, pairing);

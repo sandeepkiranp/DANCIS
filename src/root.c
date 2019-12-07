@@ -224,8 +224,10 @@ static int issue_user_credential(char *user, char *attributes)
     else if (ENOENT == errno) 
     {
 	credential_attributes ca;
+	credential_t ic;
 	int a[50] = {0};
 	int i = 0;
+	int ret;
         printf("Issuing credentials to %s with attributes %s\n", user, attributes);
 
         /* Directory does not exist. */
@@ -249,10 +251,17 @@ static int issue_user_credential(char *user, char *attributes)
 	{
 	    int attrindx = atoi(token + 1);
 	    a[i++] = attrindx;
-            printf("attribute %s index %d\n", token, attrindx);
             token = strtok(NULL, ","); 
         }
 	set_credential_attributes(1, pub, i, a, &ca);
+
+	memset(&ic, 0, sizeof(ic));
+        ret = issue_credential(root_secret_key, root_public_key, &ca, &ic); //called by issuer with its private and public key
+        if (ret != SUCCESS)
+        {
+            printf("issue_credential Failed\n");
+            exit(FAILURE);
+        }	
 
 	// Generate Groth Signature
 	

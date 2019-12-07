@@ -20,10 +20,8 @@ typedef struct credential_element
 {
     element_t R;
     element_t S;
-    element_t T[n+2]; //CPK + credential hash + n attributes
-    element_t attributes[n+2]; //attributes[0] represents the public key
-                               //attribute[1] represents the hashed credential                   
-    int num_of_attributes;
+    element_t *T; //CPK + credential hash + n attributes
+    credential_attributes *ca;
 }credential_element_t;
 
 typedef struct credential

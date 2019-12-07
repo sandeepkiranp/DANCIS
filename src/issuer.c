@@ -58,6 +58,8 @@ int issue_credential(element_t secret_key, element_t public_key, credential_attr
     int i;
     credential_element_t *ce = (credential_element_t *)malloc(sizeof(credential_element_t));
 
+    ce->ca = ca;
+
     ic->levels++;
     if (ic->levels % 2)
     {
@@ -72,11 +74,6 @@ int issue_credential(element_t secret_key, element_t public_key, credential_attr
 	    return FAILURE;
     }
 
-    for(i=0; i<n+2; i++) // CPK + credential hash + n attributes
-    {
-        element_init_same_as(ce->attributes[i], ca->attributes[i]);
-        element_set(ce->attributes[i], ca->attributes[i]);
-    }
     ic->cred = (credential_element_t **) realloc(ic->cred, ic->levels * sizeof(credential_element_t *));
     ic->cred[ic->levels - 1] = ce;
 
