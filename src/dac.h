@@ -59,6 +59,10 @@ extern element_t Y1[TOTAL_ATTRIBUTES], Y2[TOTAL_ATTRIBUTES];
 extern pairing_t pairing;
 extern element_t root_public_key;
 
+extern void read_element_from_file(FILE *fp, char *param, element_t e, int skipline);
+
+extern void write_element_to_file(FILE *fp, char *param, element_t e);
+
 extern char *base64_encode(const unsigned char *data,
                     size_t input_length,
                     size_t *output_length) ;

@@ -1,63 +1,140 @@
 #include <stdio.h>
+#include <errno.h>
 #include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
+
 #include "dac.h"
 
-void generate_user_keys(int level, element_t priv, element_t pub)
+#define USER_DIR HOME_DIR "/users"
+#define PARAM_FILE HOME_DIR "/root/params.txt"
+
+element_t user_private_key;
+element_t user_public_key;
+
+element_t g1, g2;
+element_t root_secret_key;
+element_t root_public_key;
+pairing_t pairing;
+element_t system_attributes_g1[MAX_NUM_ATTRIBUTES];
+element_t system_attributes_g2[MAX_NUM_ATTRIBUTES];
+element_t Y1[TOTAL_ATTRIBUTES];
+element_t Y2[TOTAL_ATTRIBUTES];
+
+int initialize_system_params()
 {
-    printf("Generating User Keys...");
+    char param[1024];
+    int i;
+    element_t dummy;
 
-    element_init_Zr(priv, pairing);
-    element_random(priv);
+    printf("Generating System Parameters...");
 
-    if (level % 2)
+    int count = fread(param, 1, 1024, stdin);
+    if (!count) pbc_die("input error");
+
+    printf("Reading (%d) parameters \n%s \n",count, param);
+    pairing_init_set_buf(pairing, param, count);
+
+    element_init_G1(g1, pairing);
+    element_init_G2(g2, pairing);
+
+    for(i=0; i<TOTAL_ATTRIBUTES; i++)
     {
-        element_init_G1(pub, pairing);
-        element_pow_zn(pub, g1, priv);
+        element_init_G1(Y1[i], pairing);
+    }
+
+    for(i=0; i<TOTAL_ATTRIBUTES; i++)
+    {
+        element_init_G2(Y2[i], pairing);
+    }
+
+    for(i=0; i<MAX_NUM_ATTRIBUTES; i++)
+    {
+        element_init_G1(system_attributes_g1[i], pairing);
+        element_init_G2(system_attributes_g2[i], pairing);
+    }
+
+    // check if HOME_DIR/root/params.txt is existing
+    if( access( PARAM_FILE, F_OK ) != -1 )
+    {
+        //Read parameters from file
+        char str[10];
+        FILE *fp = fopen(PARAM_FILE, "r");
+
+        printf("param file %s\n", PARAM_FILE);
+        if (fp == NULL)
+        {
+            printf("errno %d, str %s\n", errno, strerror(errno));
+            return FAILURE;
+        }
+        read_element_from_file(fp, "g1", g1, 0);
+        read_element_from_file(fp, "g2", g2, 0);
+        read_element_from_file(fp, "dummy", dummy, 1);
+        read_element_from_file(fp, "dummy", dummy, 1);
+
+        for(i=0; i<MAX_NUM_ATTRIBUTES; i++)
+        {
+            sprintf(str, "att_g1[%d]", i);
+            read_element_from_file(fp, str, system_attributes_g1[i], 0);
+            sprintf(str, "att_g2[%d]", i);
+            read_element_from_file(fp, str, system_attributes_g2[i], 0);
+        }
+
+        for(i=0; i<TOTAL_ATTRIBUTES; i++)
+        {
+            sprintf(str, "Y1[%d]", i);
+            read_element_from_file(fp, str, Y1[i], 0);
+        }
+
+        for(i=0; i<TOTAL_ATTRIBUTES; i++)
+        {
+            sprintf(str, "Y2[%d]", i);
+            read_element_from_file(fp, str, Y2[i], 0);
+        }
+        fclose(fp);	    
     }
     else
     {
-        element_init_G2(pub, pairing);
-        element_pow_zn(pub, g2, priv);
+        printf("error reading %s, %s\n", PARAM_FILE, strerror(errno));
     }
-    
-    printf("Done!\n\n");
+    printf("Done!\n");
 }
 
-void set_credential_attributes(int level, element_t pub, credential_attributes *ca)
+int read_user_params(char *user)
 {
-    int i;
-    char buffer[150] = {0};
-    int size = 100;
-    char hash[50] = {0};
+    char str[50] = {0};
+    char luser[30] = {0};
+    int levels;
+    char attributes[100] = {0};
 
-    printf("Generating User Credential Attributes...");
+    sprintf(str, "%s/%s/params.txt", USER_DIR, user);
+    printf("Reading parameters from %s\n", str);
 
-    for(i=0; i<n+2; i++)
+    FILE *fp = fopen(str, "r");
+    if (fp == NULL)
     {
-	if (level % 2)
-            element_init_G1(ca->attributes[i], pairing);	    
-	else
-            element_init_G2(ca->attributes[i], pairing);
+	printf("Error opening file %s\n", strerror(errno));
+        return FAILURE;
     }
 
-    element_set(ca->attributes[0],pub);
+    fscanf(fp,"user = %s,", luser);
+    fscanf(fp,", levels = %d", &levels);
+    fscanf(fp,", attributes = %s\n", attributes);
 
-    element_snprintf(buffer,size,"%B",ca->attributes[0]);
-    SHA1(hash, buffer);
+    printf("user = %s, levels = %d, attributes = %s\n", luser, levels, attributes);
 
-    for(i=2; i<n+2; i++)
-    {
-	// TODO take a text attribute and convert it to a hash element
-        element_random(ca->attributes[i]);
-	element_snprintf(buffer,size,"%B",ca->attributes[i]);
-        strcat(buffer, hash);
-        SHA1(hash, buffer);
-    }
+    element_init_Zr(user_private_key, pairing);
 
-    //attributes[1] is the hash of all the attributes including public key
-    element_from_hash(ca->attributes[1], hash, strlen(hash));
+    element_init_G1(user_public_key, pairing);
 
-    ca->num_of_attributes = n+2; //for now
-
-    printf("Done!\n\n");
+    read_element_from_file(fp, "private_key", user_private_key, 0);
+    read_element_from_file(fp, "public_key", user_public_key, 0);
 }
+
+int main(int argc, char *argv[])
+{
+    initialize_system_params();
+    read_user_params(argv[1]);
+    return 0;
+}
+

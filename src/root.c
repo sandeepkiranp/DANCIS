@@ -20,54 +20,6 @@ element_t system_attributes_g2[MAX_NUM_ATTRIBUTES];
 element_t Y1[TOTAL_ATTRIBUTES];
 element_t Y2[TOTAL_ATTRIBUTES];
 
-void write_element_to_file(FILE *fp, char *param, element_t e)
-{
-    int len;
-    size_t outlen;
-    char *base64e;
-    unsigned char *buffer;
-
-    //printf("Writing %s to param.txt...", param);
-
-    //element_printf("%s = %B\n", param, e);
-
-    len = element_length_in_bytes(e);
-    buffer =  (unsigned char *)malloc(len);
-
-    element_to_bytes(buffer, e);
-    base64e = base64_encode(buffer, len, &outlen);
-    fprintf(fp, "%s = %s\n", param, base64e);
-
-    free(base64e);
-    free(buffer);
-    fflush(fp);
-    //printf("Done\n");
-}
-
-void read_element_from_file(FILE *fp, char *param, element_t e)
-{
-    int len;
-    size_t outlen;
-    char *base64e;
-    unsigned char *buffer;
-    char c[200] = {0};
-    char str1[20];
-    char str2[200] = {0};
-
-    //printf("Reading %s from param.txt...", param);
-
-    fgets(c, sizeof(c), fp);
-    sscanf(c, "%s = %s", str1, str2);
-    //printf("%s--->%s\n", str1, str2);
-
-    buffer = base64_decode(str2, strlen(str2), &outlen);
-    element_from_bytes(e, buffer);
-    //element_printf("%s = %B\n", param, e);
-    free(buffer);
-
-    //printf("Done\n");
-}
-
 void dac_generate_parameters()
 {
     char param[1024];
@@ -117,29 +69,29 @@ void dac_generate_parameters()
             printf("errno %d, str %s\n", errno, strerror(errno));
             return;
         }
-	read_element_from_file(fp, "g1", g1);
-	read_element_from_file(fp, "g2", g2);
-	read_element_from_file(fp, "private_key", root_secret_key);
-	read_element_from_file(fp, "public_key", root_public_key);
+	read_element_from_file(fp, "g1", g1, 0);
+	read_element_from_file(fp, "g2", g2, 0);
+	read_element_from_file(fp, "private_key", root_secret_key, 0);
+	read_element_from_file(fp, "public_key", root_public_key, 0);
 
         for(i=0; i<MAX_NUM_ATTRIBUTES; i++)
         {
             sprintf(str, "att_g1[%d]", i);
-            read_element_from_file(fp, str, system_attributes_g1[i]);
+            read_element_from_file(fp, str, system_attributes_g1[i], 0);
             sprintf(str, "att_g2[%d]", i);
-            read_element_from_file(fp, str, system_attributes_g2[i]);
+            read_element_from_file(fp, str, system_attributes_g2[i], 0);
         }
 
         for(i=0; i<TOTAL_ATTRIBUTES; i++)
         {
             sprintf(str, "Y1[%d]", i);
-            read_element_from_file(fp, str, Y1[i]);
+            read_element_from_file(fp, str, Y1[i], 0);
         }
 
         for(i=0; i<TOTAL_ATTRIBUTES; i++)
         {
             sprintf(str, "Y2[%d]", i);
-            read_element_from_file(fp, str, Y2[i]);
+            read_element_from_file(fp, str, Y2[i], 0);
         }
 	fclose(fp);
     }
@@ -263,6 +215,10 @@ static int issue_user_credential(char *user, char *attributes)
 	// Write everything to the file
 	strcat(str, "/params.txt");
 	FILE *fp = fopen(str, "w");
+	fprintf(fp, "user = %s, levels = %d, attributes = ", user, ic.levels);
+	for(i=0; a[i] != 0; i++)
+            fprintf(fp, "A%d,", a[i]);
+	fprintf(fp, "\n");
 	write_element_to_file(fp, "private_key", priv);
 	write_element_to_file(fp, "public_key", pub);
 
