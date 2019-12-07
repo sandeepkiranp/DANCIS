@@ -32,7 +32,7 @@ void set_credential_attributes(int level, element_t pub, int num_attr, int *attr
     element_snprintf(buffer,size,"%B",ca->attributes[0]);
     SHA1(hash, buffer);
 
-    for(i=2; i<num_attr; i++)
+    for(i=2; i<num_attr + 2; i++)
     {
         element_random(ca->attributes[i]);
 	if (level % 2)

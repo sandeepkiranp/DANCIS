@@ -36,7 +36,7 @@ void write_element_to_file(FILE *fp, char *param, element_t e)
 
     element_to_bytes(buffer, e);
     base64e = base64_encode(buffer, len, &outlen);
-    //fprintf(fp, "%s = %s\n", param, base64e);
+    fprintf(fp, "%s = %s\n", param, base64e);
 
     free(base64e);
     free(buffer);
@@ -141,6 +141,7 @@ void dac_generate_parameters()
             sprintf(str, "Y2[%d]", i);
             read_element_from_file(fp, str, Y2[i]);
         }
+	fclose(fp);
     }
     else
     {
@@ -210,7 +211,7 @@ void get_root_secret_key(element_t x)
 
 static int issue_user_credential(char *user, char *attributes)
 {
-    char str[30];
+    char str[100] = {0};
 
     sprintf(str, "%s/%s", USER_DIR, user);
     DIR* dir = opendir(str);
@@ -226,7 +227,7 @@ static int issue_user_credential(char *user, char *attributes)
 	credential_attributes ca;
 	credential_t ic;
 	int a[50] = {0};
-	int i = 0;
+	int i = 0, j=0;
 	int ret;
         printf("Issuing credentials to %s with attributes %s\n", user, attributes);
 
@@ -241,12 +242,8 @@ static int issue_user_credential(char *user, char *attributes)
         element_init_G1(pub, pairing);
         element_pow_zn(pub, g1, priv);
 
-	// Generate Attributes
-        // Returns first token 
         char* token = strtok(attributes, ","); 
   
-        // Keep printing tokens while one of the 
-        // delimiters present in str[]. 
         while (token != NULL) 
 	{
 	    int attrindx = atoi(token + 1);
@@ -263,12 +260,27 @@ static int issue_user_credential(char *user, char *attributes)
             exit(FAILURE);
         }	
 
-	// Generate Groth Signature
-	
-
 	// Write everything to the file
+	strcat(str, "/params.txt");
+	FILE *fp = fopen(str, "w");
+	write_element_to_file(fp, "private_key", priv);
+	write_element_to_file(fp, "public_key", pub);
 
-
+	for(i=0; i<ic.levels; i++)
+	{
+            credential_element_t *ce = ic.cred[i];
+	    write_element_to_file(fp, "R", ce->R);
+	    write_element_to_file(fp, "S", ce->S);
+	    for(j=0; j<ce->ca->num_of_attributes; j++)
+	    {
+		char s[10];
+		sprintf(s, "T[%d]", j);
+                write_element_to_file(fp, s, ce->T[j]);
+		sprintf(s, "attr[%d]", j);
+		write_element_to_file(fp, s, ce->ca->attributes[j]);
+	    }
+	}
+        fclose(fp);	
 	return SUCCESS;
     } 
     else 
