@@ -70,7 +70,7 @@ extern unsigned char *base64_decode(const char *data,
 
 extern void dac_generate_parameters();
 
-extern void set_credential_attributes(int level, element_t pub, credential_attributes *ca);
+extern void set_credential_attributes(int level, element_t pub, int num_attr, int *attr, credential_attributes *ca);
 
 extern int issue_credential(element_t secret_key, element_t public_key, credential_attributes *ca, credential_t *ic);
 

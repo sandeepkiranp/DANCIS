@@ -225,6 +225,7 @@ static int issue_user_credential(char *user, char *attributes)
     {
 	credential_attributes ca;
 	int a[50] = {0};
+	int i = 0;
         printf("Issuing credentials to %s with attributes %s\n", user, attributes);
 
         /* Directory does not exist. */
@@ -251,7 +252,7 @@ static int issue_user_credential(char *user, char *attributes)
             printf("attribute %s index %d\n", token, attrindx);
             token = strtok(NULL, ","); 
         }
-	set_credential_attributes(1, pub, a, &ca)
+	set_credential_attributes(1, pub, i, a, &ca);
 
 	// Generate Groth Signature
 	

@@ -3,21 +3,28 @@
 #include <errno.h>
 #include <string.h>
 
-void set_credential_attributes(int level, element_t pub, int *attr, credential_attributes *ca)
+void set_credential_attributes(int level, element_t pub, int num_attr, int *attr, credential_attributes *ca)
 {
-    int i;
+    int i=0,j=0;
     char buffer[150] = {0};
     int size = 100;
     char hash[50] = {0};
 
     printf("Generating User Credential Attributes...");
 
-    for(i=0; i<n+2; i++)
+    //total attrs = num_attr + 2 (one for cpk, one for cred hash)
+    ca->attributes = (element_t *) malloc((num_attr + 2)* sizeof(element_t));
+
+    for(i=0; i<num_attr + 2; i++)
     {
         if (level % 2)
+	{
             element_init_G1(ca->attributes[i], pairing);
+	}
         else
+	{
             element_init_G2(ca->attributes[i], pairing);
+	}
     }
 
     element_set(ca->attributes[0],pub);
@@ -25,10 +32,14 @@ void set_credential_attributes(int level, element_t pub, int *attr, credential_a
     element_snprintf(buffer,size,"%B",ca->attributes[0]);
     SHA1(hash, buffer);
 
-    for(i=2; i<n+2; i++)
+    for(i=2; i<num_attr; i++)
     {
-        // TODO take a text attribute and convert it to a hash element
         element_random(ca->attributes[i]);
+	if (level % 2)
+	    element_set(ca->attributes[i], system_attributes_g1[attr[j++]]);
+	else
+	    element_set(ca->attributes[i], system_attributes_g2[attr[j++]]);
+
         element_snprintf(buffer,size,"%B",ca->attributes[i]);
         strcat(buffer, hash);
         SHA1(hash, buffer);
@@ -37,7 +48,7 @@ void set_credential_attributes(int level, element_t pub, int *attr, credential_a
     //attributes[1] is the hash of all the attributes including public key
     element_from_hash(ca->attributes[1], hash, strlen(hash));
 
-    ca->num_of_attributes = n+2; //for now
+    ca->num_of_attributes = num_attr + 2;
 
     printf("Done!\n\n");
 }
