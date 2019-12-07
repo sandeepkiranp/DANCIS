@@ -6,10 +6,12 @@
 #define n 3
 
 #define HOME_DIR "/home/sandeep/dac"
+#define MAX_NUM_ATTRIBUTES 50
+#define TOTAL_ATTRIBUTES (MAX_NUM_ATTRIBUTES + 2) //cpk(i-1) + credential hash + MAX_NUM_ATTRIBUTES attributes
 
 typedef struct attributes
 {
-    element_t attributes[n+2]; //attributes[0] represents the public key
+    element_t *attributes;     //attributes[0] represents the public key
                                //attribute[1] represents the hashed credential                   
     int num_of_attributes;
 }credential_attributes;
@@ -53,7 +55,9 @@ typedef struct token
 }token_t;
 
 extern element_t g1, g2;
-extern element_t Y1[n+2], Y2[n+2];
+extern element_t system_attributes_g1[MAX_NUM_ATTRIBUTES];
+extern element_t system_attributes_g2[MAX_NUM_ATTRIBUTES];
+extern element_t Y1[TOTAL_ATTRIBUTES], Y2[TOTAL_ATTRIBUTES];
 extern pairing_t pairing;
 extern element_t root_public_key;
 

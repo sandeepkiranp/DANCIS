@@ -3,175 +3,43 @@
 #include <errno.h>
 #include <string.h>
 
-#define PARAM_FILE HOME_DIR "/root/params.txt"
-
-element_t g1, g2;
-element_t root_secret_key;
-element_t root_public_key;
-pairing_t pairing;
-element_t Y1[n+2]; //cpk(i-1) + credential hash + n attributes = n+2 attrbutes
-element_t Y2[n+2]; //cpk(i-1) + credential hash + n attributes = n+2 attrbutes
-
-void write_element_to_file(FILE *fp, char *param, element_t e)
+void set_credential_attributes(int level, element_t pub, int *attr, credential_attributes *ca)
 {
-    int len;
-    size_t outlen;
-    char *base64e;
-    unsigned char *buffer;
-
-    printf("Writing %s to param.txt...", param);
-
-    //element_printf("%s = %B\n", param, e);
-
-    len = element_length_in_bytes(e);
-    buffer =  (unsigned char *)malloc(len);
-
-    element_to_bytes(buffer, e);
-    base64e = base64_encode(buffer, len, &outlen);
-    fprintf(fp, "%s = %s\n", param, base64e); 
-
-    free(base64e);
-    free(buffer);
-    fflush(fp);
-    printf("Done\n");
-}
-
-void read_element_from_file(FILE *fp, char *param, element_t e)
-{
-    int len;
-    size_t outlen;
-    char *base64e;
-    unsigned char *buffer;
-    char c[200] = {0};
-    char str1[20];
-    char str2[200] = {0};
-
-    printf("Reading %s from param.txt...", param);
-
-    //fscanf(fp,"%[^\n]", c);
-    fgets(c, sizeof(c), fp);
-    sscanf(c, "%s = %s", str1, str2);
-    printf("%s--->%s\n", str1, str2);
-
-    buffer = base64_decode(str2, strlen(str2), &outlen);
-    element_from_bytes(e, buffer);
-    //element_printf("%s = %B\n", param, e);
-    free(buffer);
-
-    printf("Done\n");
-}
-
-void dac_generate_parameters()
-{
-    char param[1024];
     int i;
+    char buffer[150] = {0};
+    int size = 100;
+    char hash[50] = {0};
 
-    printf("Generating System Parameters...");
-
-    int count = fread(param, 1, 1024, stdin);
-    if (!count) pbc_die("input error");
-
-    printf("Reading (%d) parameters \n%s \n",count, param);
-    pairing_init_set_buf(pairing, param, count);
-
-    element_init_G1(g1, pairing);
-    element_init_G2(g2, pairing);
-
-    //root key (g2^sk,sk)
-    element_init_Zr(root_secret_key, pairing);
-    element_init_G2(root_public_key, pairing);
+    printf("Generating User Credential Attributes...");
 
     for(i=0; i<n+2; i++)
     {
-        element_init_G1(Y1[i], pairing);
+        if (level % 2)
+            element_init_G1(ca->attributes[i], pairing);
+        else
+            element_init_G2(ca->attributes[i], pairing);
     }
 
-    for(i=0; i<n+2; i++)
+    element_set(ca->attributes[0],pub);
+
+    element_snprintf(buffer,size,"%B",ca->attributes[0]);
+    SHA1(hash, buffer);
+
+    for(i=2; i<n+2; i++)
     {
-        element_init_G2(Y2[i], pairing);
+        // TODO take a text attribute and convert it to a hash element
+        element_random(ca->attributes[i]);
+        element_snprintf(buffer,size,"%B",ca->attributes[i]);
+        strcat(buffer, hash);
+        SHA1(hash, buffer);
     }
 
-    // check if HOME_DIR/root/params.txt is existing
-    if( access( PARAM_FILE, F_OK ) != -1 ) 
-    {
-        //Read parameters from file
-	char str[10];
-        FILE *fp = fopen(PARAM_FILE, "r");
+    //attributes[1] is the hash of all the attributes including public key
+    element_from_hash(ca->attributes[1], hash, strlen(hash));
 
-        printf("param file %s\n", PARAM_FILE);
-        if (fp == NULL)
-        {
-            printf("errno %d, str %s\n", errno, strerror(errno));
-            return;
-        }
-	read_element_from_file(fp, "g1", g1);
-	read_element_from_file(fp, "g2", g2);
-	read_element_from_file(fp, "private_key", root_secret_key);
-	read_element_from_file(fp, "public_key", root_public_key);
-        for(i=0; i<n+2; i++)
-        {
-            sprintf(str, "Y1[%d]", i);
-            read_element_from_file(fp, str, Y1[i]);
-        }
-
-        for(i=0; i<n+2; i++)
-        {
-            sprintf(str, "Y2[%d]", i);
-            read_element_from_file(fp, str, Y2[i]);
-        }
-    } 
-    else
-    {
-	char str[10];
-        FILE *fp = fopen(PARAM_FILE, "w");
-
-	printf("param file %s\n", PARAM_FILE);
-	if (fp == NULL)
-	{
-            printf("errno %d, str %s\n", errno, strerror(errno));
-	    return;
-	}
-
-        element_random(g1);
-	write_element_to_file(fp, "g1", g1);
-        element_random(g2);
-	write_element_to_file(fp, "g2", g2);
-
-        element_random(root_secret_key);
-	write_element_to_file(fp, "private_key", root_secret_key);
-        element_pow_zn(root_public_key, g2, root_secret_key);
-	write_element_to_file(fp, "public_key", root_public_key);
-
-        //Generate y1[n] and y2[n]
-        for(i=0; i<n+2; i++)
-        {
-            element_random(Y1[i]);
-	    sprintf(str, "Y1[%d]", i);
-	    write_element_to_file(fp, str, Y1[i]);
-        }
-
-        for(i=0; i<n+2; i++)
-        {
-            element_random(Y2[i]);
-	    sprintf(str, "Y2[%d]", i);
-	    write_element_to_file(fp, str, Y2[i]);
-        }
-	fclose(fp);
-    }
+    ca->num_of_attributes = n+2; //for now
 
     printf("Done!\n\n");
-}
-
-void get_root_public_key(element_t x)
-{
-    element_init_same_as(x,root_public_key);
-    element_set(x,root_public_key);
-}
-
-void get_root_secret_key(element_t x)
-{
-    element_init_same_as(x,root_secret_key);
-    element_set(x,root_secret_key);
 }
 
 int issue_credential(element_t secret_key, element_t public_key, credential_attributes *ca, credential_t *ic)
