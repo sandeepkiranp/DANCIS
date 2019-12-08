@@ -215,7 +215,9 @@ static int issue_user_credential(char *user, char *attributes)
 	// Write everything to the file
 	strcat(str, "/params.txt");
 	FILE *fp = fopen(str, "w");
-	fprintf(fp, "user = %s, levels = %d, attributes = ", user, ic.levels);
+	fprintf(fp, "user = %s\n", user);
+	fprintf(fp, "levels = %d\n",ic.levels);
+	fprintf(fp, "attributes = ");
 	for(i=0; a[i] != 0; i++)
             fprintf(fp, "A%d,", a[i]);
 	fprintf(fp, "\n");

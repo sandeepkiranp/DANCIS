@@ -12,7 +12,7 @@
 typedef struct attributes
 {
     element_t *attributes;     //attributes[0] represents the public key
-                               //attribute[1] represents the hashed credential                   
+                               //attribute[1] represents the hashed credential
     int num_of_attributes;
 }credential_attributes;
 

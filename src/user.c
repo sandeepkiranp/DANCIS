@@ -21,6 +21,8 @@ element_t system_attributes_g2[MAX_NUM_ATTRIBUTES];
 element_t Y1[TOTAL_ATTRIBUTES];
 element_t Y2[TOTAL_ATTRIBUTES];
 
+credential_t ic;
+
 int initialize_system_params()
 {
     char param[1024];
@@ -99,13 +101,18 @@ int initialize_system_params()
     }
     printf("Done!\n");
 }
-
 int read_user_params(char *user)
 {
+    char c[200] = {0};
     char str[50] = {0};
     char luser[30] = {0};
     int levels;
     char attributes[100] = {0};
+    credential_attributes ca;
+    int a[50];
+    int attcount = 0;
+    int i = 0, j = 0;
+    credential_element_t *ce;
 
     sprintf(str, "%s/%s/params.txt", USER_DIR, user);
     printf("Reading parameters from %s\n", str);
@@ -117,11 +124,19 @@ int read_user_params(char *user)
         return FAILURE;
     }
 
-    fscanf(fp,"user = %s,", luser);
-    fscanf(fp,", levels = %d", &levels);
-    fscanf(fp,", attributes = %s\n", attributes);
+    fscanf(fp,"user = %s\n", luser);
+    fscanf(fp,"levels = %d\n", &ic.levels);
+    fscanf(fp,"attributes = %s\n", attributes);
 
-    printf("user = %s, levels = %d, attributes = %s\n", luser, levels, attributes);
+    printf("user = %s, levels = %d, attributes = %s\n", luser, ic.levels, attributes);
+    char* token = strtok(attributes, ",");
+
+    while (token != NULL)
+    {
+        int attrindx = atoi(token + 1);
+        a[attcount++] = attrindx;
+        token = strtok(NULL, ",");
+    }
 
     element_init_Zr(user_private_key, pairing);
 
@@ -129,6 +144,62 @@ int read_user_params(char *user)
 
     read_element_from_file(fp, "private_key", user_private_key, 0);
     read_element_from_file(fp, "public_key", user_public_key, 0);
+
+    ic.cred = (credential_element_t **) malloc (ic.levels * sizeof(credential_element_t *));
+    for (i = 0; i < ic.levels; i++)
+    {
+        ce = ic.cred[i] = (credential_element_t *) malloc(sizeof(credential_element_t));
+        ce->T = (element_t *) malloc((attcount + 2) * sizeof(element_t));
+	ce->ca = (credential_attributes *) malloc (sizeof(credential_attributes));
+	ce->ca->attributes = (element_t *) malloc((attcount + 2) * sizeof(element_t));
+	ce->ca->num_of_attributes = attcount + 2;
+    }
+
+    for(i=0; i<ic.levels; i++)
+    {
+        credential_element_t *ce = ic.cred[i];
+        if ((i + 1) % 2)
+        {
+            element_init_G2(ce->R, pairing);
+            element_init_G1(ce->S, pairing);
+        }
+        else
+        {
+            element_init_G1(ce->R, pairing);
+            element_init_G2(ce->S, pairing);
+        }
+        for(j=0; j<ce->ca->num_of_attributes; j++)
+        {
+            if ((i + 1) % 2)
+            {
+                element_init_G1(ce->T[j], pairing);
+                element_init_G1(ce->ca->attributes[j], pairing);
+            }
+            else
+            {
+                element_init_G2(ce->T[j], pairing);
+                element_init_G2(ce->ca->attributes[j], pairing);
+            }
+        }
+    }
+
+    for(i=0; i<ic.levels; i++)
+    {
+        credential_element_t *ce = ic.cred[i];
+        read_element_from_file(fp, "R", ce->R, 0);
+        read_element_from_file(fp, "S", ce->S, 0);
+        for(j=0; j<ce->ca->num_of_attributes; j++)
+        {
+            char s[10];
+            sprintf(s, "T[%d]", j);
+            read_element_from_file(fp, s, ce->T[j], 0);
+            sprintf(s, "attr[%d]", j);
+            read_element_from_file(fp, s, ce->ca->attributes[j], 0);
+        }
+    }
+    
+    fclose(fp);
+    return SUCCESS;
 }
 
 int main(int argc, char *argv[])
