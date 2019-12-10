@@ -55,14 +55,18 @@ void read_element_from_file(FILE *fp, char *param, element_t e, int skipline)
     //printf("Done\n");
 }
 
-void set_credential_attributes(int level, element_t pub, int num_attr, int *attr, credential_attributes *ca)
+credential_attributes * set_credential_attributes(int level, element_t pub, int num_attr, int *attr)
 {
     int i=0,j=0;
     char buffer[150] = {0};
     int size = 100;
     char hash[50] = {0};
+    credential_attributes *ca;
+
 
     printf("Generating User Credential Attributes...");
+
+    ca = (credential_attributes *) malloc(sizeof(credential_attributes));
 
     //total attrs = num_attr + 2 (one for cpk, one for cred hash)
     ca->attributes = (element_t *) malloc((num_attr + 2)* sizeof(element_t));
@@ -103,6 +107,7 @@ void set_credential_attributes(int level, element_t pub, int num_attr, int *attr
     ca->num_of_attributes = num_attr + 2;
 
     printf("Done!\n\n");
+    return ca;
 }
 
 int issue_credential(element_t secret_key, element_t public_key, credential_attributes *ca, credential_t *ic)

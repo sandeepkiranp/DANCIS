@@ -74,7 +74,7 @@ int groth_verify_signature_2(element_t public_key, credential_attributes *ca, cr
 	return FAILURE;
     }
 
-    for(i=0; ca->num_of_attributes; i++) //cpk(i-1) + n attributes + hashed credential
+    for(i=0; i<ca->num_of_attributes; i++) //cpk(i-1) + n attributes + hashed credential
     {
         //Check if e(R,Ti ) = e(V, yi )e(g1, mi )
         pairing_apply(temp1, ic->R, ic->T[i], pairing);

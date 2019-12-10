@@ -176,7 +176,7 @@ static int issue_user_credential(char *user, char *attributes)
     }
     else if (ENOENT == errno) 
     {
-	credential_attributes ca;
+	credential_attributes *ca;
 	credential_t ic;
 	int a[50] = {0};
 	int i = 0, j=0;
@@ -202,10 +202,10 @@ static int issue_user_credential(char *user, char *attributes)
 	    a[i++] = attrindx;
             token = strtok(NULL, ","); 
         }
-	set_credential_attributes(1, pub, i, a, &ca);
+	ca = set_credential_attributes(1, pub, i, a);
 
 	memset(&ic, 0, sizeof(ic));
-        ret = issue_credential(root_secret_key, root_public_key, &ca, &ic); //called by issuer with its private and public key
+        ret = issue_credential(root_secret_key, root_public_key, ca, &ic); //called by issuer with its private and public key
         if (ret != SUCCESS)
         {
             printf("issue_credential Failed\n");
