@@ -21,7 +21,7 @@ void SHA1(char *hash, unsigned char * str1)
     h3 = 0x10325476;
     h4 = 0xC3D2E1F0;
     unsigned char * str;
-    int i, j;
+    int i, j, m;
     str = (unsigned char *)malloc(strlen((const char *)str1)+100);
     strcpy((char *)str,(const char *)str1);
     int current_length = strlen((const char *)str);
@@ -35,7 +35,7 @@ void SHA1(char *hash, unsigned char * str1)
         ib = 56-ib;
     else
         ib = 120 - ib;
-    for(int i=0;i < ib;i++)
+    for(i=0;i < ib;i++)
     {
         str[current_length]=0x00;
         current_length++;
@@ -55,7 +55,7 @@ void SHA1(char *hash, unsigned char * str1)
     unsigned long int word[80];
     for(i=0;i<number_of_chunks;i++)
     {
-        for(int j=0;j<16;j++)
+        for(j=0;j<16;j++)
         {
             word[j] = str[i*64 + j*4 + 0] * 0x1000000 + str[i*64 + j*4 + 1] * 0x10000 + str[i*64 + j*4 + 2] * 0x100 + str[i*64 + j*4 + 3];
         }
@@ -68,7 +68,7 @@ void SHA1(char *hash, unsigned char * str1)
         c = h2;
         d = h3;
         e = h4;
-        for(int m=0;m<80;m++)
+        for(m=0;m<80;m++)
         {
             if(m<=19)
             {

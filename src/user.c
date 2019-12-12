@@ -213,18 +213,59 @@ int read_user_params(char *user)
 
 initialize_credential(credential_t *src, credential_t *dst)
 {
+    credential_element_t *ced, *ces;
+    int i, j;
+
     dst->levels = src->levels;
     dst->cred = (credential_element_t **) malloc(dst->levels * sizeof(credential_element_t *));
     for(i = 0; i < dst->levels; i++)
     {
-        ce = dst->cred[i] = (credential_element_t *)malloc(sizeof(credential_element_t));
+        ced = dst->cred[i] = (credential_element_t *)malloc(sizeof(credential_element_t));
+        ces = src->cred[i];
 
-	
+        element_init_same_as(ced->R, ces->R);
+        element_set(ced->R, ces->R);
 
+        element_init_same_as(ced->S, ces->S);
+        element_set(ced->S, ces->S);
+
+        ced->ca = (credential_attributes *) malloc(sizeof(credential_attributes));
+        ced->ca->num_of_attributes = ces->ca->num_of_attributes;
+        ced->T = (element_t *)malloc(ces->ca->num_of_attributes * sizeof(element_t));
+        ced->ca->attributes = (element_t *)malloc(ces->ca->num_of_attributes * sizeof(element_t));
+        for(j = 0; j < ces->ca->num_of_attributes; j++)
+        {
+            element_init_same_as(ced->T[j], ces->T[j]);
+            element_set(ced->T[j], ces->T[j]);
+
+            element_init_same_as(ced->ca->attributes[j], ces->ca->attributes[j]);
+            element_set(ced->ca->attributes[j], ces->ca->attributes[j]);
+        }
     }
+}
 
+free_credential(credential_t *dst)
+{
+    credential_element_t *ced;
+    int i, j;
 
+    for(i = 0; i < dst->levels; i++)
+    {
+        ced = dst->cred[i];
 
+        element_clear(ced->R);
+        element_clear(ced->S);
+
+        for(j = 0; j < ced->ca->num_of_attributes; j++)
+        {
+            element_clear(ced->T[j]);
+            element_clear(ced->ca->attributes[j]);
+        }
+        free(ced->ca->attributes);
+        free(ced->ca);
+        free(ced->T);
+        free(ced);
+    }
 }
 
 int delegate_credential(char *duser, char *attributes)
@@ -234,8 +275,8 @@ int delegate_credential(char *duser, char *attributes)
     element_t dummy;
     int i=0, j=0;
     element_t duser_public_key;
-    int a[50];
-    char attr[100];
+    int a[50] = {0};
+    char attr[100] = {0};
     credential_attributes *ca;
     credential_t dic;
     int ret;
@@ -253,8 +294,10 @@ int delegate_credential(char *duser, char *attributes)
 
     fclose(fp);
 
-    if (strcasecmp(attributes, "ALL"))
+    if (!strcasecmp(attributes, "ALL"))
+    {
         memcpy(attr, user_attributes, strlen(user_attributes));
+    }
     else
         memcpy(attr, attributes, strlen(attributes));
 
@@ -267,11 +310,12 @@ int delegate_credential(char *duser, char *attributes)
         a[i++] = attrindx;
         token = strtok(NULL, ",");
     }
+
     ca = set_credential_attributes(user_level + 1, duser_public_key, i, a);
 
     memset(&dic, 0, sizeof(dic));
     //initialize dic with ic so that we can add the next level credential to dic
-    initialize_credential(&dic,&ic);
+    initialize_credential(&ic, &dic);
     ret = issue_credential(user_private_key, user_public_key, ca, &dic); //called by issuer with its private and public key
     if (ret != SUCCESS)
     {
@@ -292,6 +336,7 @@ int delegate_credential(char *duser, char *attributes)
     // write the delegated signture details
     for(i=0; i<dic.levels; i++)
     {
+        printf("Writing Level-%d Credentials\n", i+1);
         credential_element_t *ce = dic.cred[i];
         write_element_to_file(fp, "R", ce->R);
         write_element_to_file(fp, "S", ce->S);
@@ -305,6 +350,7 @@ int delegate_credential(char *duser, char *attributes)
         }
     }
     printf("Finished writing delegated credentials\n");
+    free_credential(&dic);
 }
 
 int main(int argc, char *argv[])
