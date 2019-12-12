@@ -10,9 +10,9 @@ void write_element_to_file(FILE *fp, char *param, element_t e)
     char *base64e;
     unsigned char *buffer;
 
-    //printf("Writing %s to param.txt...", param);
+    printf("Writing %s to param.txt...", param);
 
-    //element_printf("%s = %B\n", param, e);
+    element_printf("%s = %B\n", param, e);
 
     len = element_length_in_bytes(e);
     buffer =  (unsigned char *)malloc(len);

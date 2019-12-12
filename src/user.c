@@ -211,6 +211,22 @@ int read_user_params(char *user)
     return SUCCESS;
 }
 
+initialize_credential(credential_t *src, credential_t *dst)
+{
+    dst->levels = src->levels;
+    dst->cred = (credential_element_t **) malloc(dst->levels * sizeof(credential_element_t *));
+    for(i = 0; i < dst->levels; i++)
+    {
+        ce = dst->cred[i] = (credential_element_t *)malloc(sizeof(credential_element_t));
+
+	
+
+    }
+
+
+
+}
+
 int delegate_credential(char *duser, char *attributes)
 {
     // Get duser's public key
@@ -254,7 +270,8 @@ int delegate_credential(char *duser, char *attributes)
     ca = set_credential_attributes(user_level + 1, duser_public_key, i, a);
 
     memset(&dic, 0, sizeof(dic));
-    dic.levels = ic.levels;
+    //initialize dic with ic so that we can add the next level credential to dic
+    initialize_credential(&dic,&ic);
     ret = issue_credential(user_private_key, user_public_key, ca, &dic); //called by issuer with its private and public key
     if (ret != SUCCESS)
     {
@@ -272,22 +289,7 @@ int delegate_credential(char *duser, char *attributes)
         fprintf(fp, "A%d,", a[i]);
     fprintf(fp, "\n");
 
-    // write the user signature details
-    for(i=0; i<ic.levels; i++)
-    {
-        credential_element_t *ce = ic.cred[i];
-        write_element_to_file(fp, "R", ce->R);
-        write_element_to_file(fp, "S", ce->S);
-        for(j=0; j<ce->ca->num_of_attributes; j++)
-        {
-            char s[10];
-            sprintf(s, "T[%d]", j);
-            write_element_to_file(fp, s, ce->T[j]);
-            sprintf(s, "attr[%d]", j);
-            write_element_to_file(fp, s, ce->ca->attributes[j]);
-        }
-    }
-    // write teh delegated signture details
+    // write the delegated signture details
     for(i=0; i<dic.levels; i++)
     {
         credential_element_t *ce = dic.cred[i];
@@ -301,7 +303,8 @@ int delegate_credential(char *duser, char *attributes)
             sprintf(s, "attr[%d]", j);
             write_element_to_file(fp, s, ce->ca->attributes[j]);
         }
-    }    
+    }
+    printf("Finished writing delegated credentials\n");
 }
 
 int main(int argc, char *argv[])
