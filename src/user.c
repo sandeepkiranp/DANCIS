@@ -386,6 +386,7 @@ int load_delegated_credentials(char *user)
     char dusers[100][30];
     char name[30] = {0};
     FILE *fp;
+    int old_dusers_count = dusers_count;
 
     memset(dusers, 0, sizeof(dusers));
     //If user is NULL, load all delegated credentials in the directory
@@ -405,13 +406,23 @@ int load_delegated_credentials(char *user)
     }
     else
     {
-        strcpy(dusers[0],user); 
+	//check if the we already have the delegated credential for this delegator
+	for (i = 0; i < dusers_count; i++)
+	{
+            if(!strcmp(dc[i].delegator, user))
+	    {
+	        printf("Delegated credentials from %s are already loaded\n", user);
+		return SUCCESS;
+	    }
+	}
+        
+        strcpy(dusers[old_dusers_count],user); 
 	dusers_count++;
     }
 
-    dc = (delegated_credential_t *)malloc(dusers_count * (sizeof(delegated_credential_t)));
+    dc = (delegated_credential_t *)realloc(dc, dusers_count * (sizeof(delegated_credential_t)));
 
-    for(i = 0; i<dusers_count; i++)
+    for(i = old_dusers_count; i<dusers_count; i++)
     {
 	printf("\nLoading Delegated Credentials for %s\n", dusers[i]);
 	memset(&dc[i], 0, sizeof(dc[i]));
@@ -453,16 +464,12 @@ int main(int argc, char *argv[])
     initialize_system_params();
     read_user_params(argv[1]);
 
+    load_delegated_credentials(NULL);
+
     //./user user1  DELEGATE user2 all|A1,A2
     if (argc > 2 && !strcmp(argv[2],"DELEGATE"))
     {
         delegate_credential(argv[3],argv[4]);
-    }
-
-    //./user user1 LOAD user2
-    if (argc > 2 && !strcmp(argv[2],"LOAD"))
-    {
-        load_delegated_credentials(NULL);
     }
 
     return 0;
