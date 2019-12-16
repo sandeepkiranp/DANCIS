@@ -16,7 +16,7 @@ int attributes[50] = {0};
 
 void init_stack(stack *s)
 {
-    s->top = -1;
+    s->top = 0;
     s->n = 100;
     memset(s->stack, 0, sizeof(s->stack));
 }
@@ -29,8 +29,8 @@ void push(stack *s, int x)
     }
     else
     {
-	s->top++;
-        s->stack[s->top] = x;
+        s->top++;
+        s->stack[s->top]=x;
     }
 }
 
@@ -42,9 +42,9 @@ int pop(stack *s)
     }
     else
     {
-        int x = s->stack[s->top];
+    int x = s->stack[s->top];
         s->top--;
-        return x;
+    return x;
     }
 }
 
@@ -62,7 +62,7 @@ int top(stack *s)
 
 int empty(stack *s)
 {
-    if(s->top < 0)
+    if(s->top == 0)
         return 1;
     else
 	return 0;
@@ -84,29 +84,10 @@ int precedence(char op){
 int applyOp(int a, int b, char op){ 
     switch(op){ 
         case '&': return (a && b); 
-        case '|': return (a || b); 
+        case '|': return (a | b); 
         case '!': return !a; 
     } 
 } 
-
-void perform_operation(stack *values, stack *ops)
-{
-    int val1, val2;
-
-    char op = top(ops);
-    pop(ops);
-
-    val1 = top(values);
-    pop(values);
-
-    if (op != '!')
-    {
-        val2 = top(values);
-        pop(values);
-    }
-
-    push(values, applyOp(val1, val2, op));
-}
 
 // Function that returns value of 
 // expression after evaluation. 
@@ -135,7 +116,7 @@ int evaluate(char * tokens){
             push(&ops, tokens[i]); 
         } 
         
-        // Current token is an attribute, push 
+        // Current token is a number, push 
         // it to stack for numbers. 
         else if(tokens[i] == 'A'){ 
             int val = 0; 
@@ -148,6 +129,7 @@ int evaluate(char * tokens){
                 val = (val*10) + (tokens[i]-'0'); 
                 i++; 
             } 
+            
             push(&values, attributes[val]); 
         } 
         
@@ -157,7 +139,16 @@ int evaluate(char * tokens){
         { 
             while(!empty(&ops) && top(&ops) != '(') 
             { 
-		perform_operation(&values, &ops);
+                int val2 = top(&values); 
+                pop(&values); 
+                
+                int val1 = top(&values); 
+                pop(&values); 
+                
+                char op = top(&ops); 
+                pop(&ops); 
+                
+                push(&values, applyOp(val1, val2, op)); 
             }
             
             // pop opening brace. 
@@ -174,7 +165,16 @@ int evaluate(char * tokens){
             // of 'ops' to top two elements in values stack. 
             while(!empty(&ops) && precedence(top(&ops)) 
                                 >= precedence(tokens[i])){ 
-		perform_operation(&values, &ops);
+                int val2 = top(&values); 
+                pop(&values); 
+                
+                int val1 = top(&values); 
+                pop(&values); 
+                
+                char op = top(&ops); 
+                pop(&ops); 
+                
+                push(&values, applyOp(val1, val2, op)); 
             } 
             
             // Push current token to 'ops'. 
@@ -186,7 +186,16 @@ int evaluate(char * tokens){
     // point, apply remaining ops to remaining 
     // values. 
     while(!empty(&ops)){ 
-	perform_operation(&values, &ops);    
+        int val2 = top(&values); 
+        pop(&values); 
+                
+        int val1 = top(&values); 
+        pop(&values); 
+                
+        char op = top(&ops); 
+        pop(&ops); 
+                
+        push(&values,applyOp(val1, val2, op)); 
     } 
     
     // Top of 'values' contains result, return it. 
@@ -194,25 +203,21 @@ int evaluate(char * tokens){
 } 
 
 int main() { 
-    attributes[0] = 1;
-    attributes[1] = 0;
-    attributes[2] = 1;
+    attributes[1] = 1;
+    attributes[2] = 0;
     attributes[3] = 1;
-    attributes[4] = 0;
+    attributes[4] = 1;
+    attributes[5] = 0;
     //cout << evaluate("10 + 2 * 6") << "\n"; 
     //cout << evaluate("100 * 2 + 12") << "\n"; 
     //cout << evaluate("100 * ( 2 + 12 )") << "\n"; 
     //cout << evaluate("10 + (3 - 2 ) + (100 * ( 2 + 12 ) / 14 )"); 
     //cout << evaluate("10 + (3 - 2 ) + 100"); 
     //cout << evaluate("10 + ( 3 * 4 )"); 
-    /*
     printf("result = %d\n", evaluate("A2 | A2"));
     printf("result = %d\n", evaluate("A1 | A2"));
     printf("result = %d\n", evaluate("A1 & A3"));
     printf("result = %d\n", evaluate("A1 | A2 & A1"));
     printf("result = %d\n", evaluate("( A1 | A2 ) & A2"));
-    */
-    printf("result = %d\n", evaluate("( A1 | A1 & ( A3 | A4 ) ) & A0 & ! ( A0 & A1 )"));
-    //printf("result = %d\n", evaluate("A0 & ! ( A0 )"));
     return 0; 
 } 
