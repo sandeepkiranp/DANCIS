@@ -1,6 +1,9 @@
 import random
+import os
 
-ops = ["&","|","!"]
+services_dir = "/home/sandeep/dac/services"
+
+ops = ["&","|","& !", "| !"]
 
 def generate_term(attr_list):
     term = ''
@@ -32,7 +35,7 @@ def generate_sub_component():
 
 def generate_policy_component():
     component = ''
-    num_comp = random.randint(3,8)
+    num_comp = random.randint(3,5)
     print "num_comp = " , num_comp
     for x in range(num_comp):
         component = component + \
@@ -41,4 +44,21 @@ def generate_policy_component():
             component += " " + ops[random.randint(0,len(ops) - 1)] + " "
     return "( " + component + " )"
 
-print generate_policy_component()
+dir_list = [x[0] for x in os.walk(services_dir)]
+for x in dir_list:
+    if (x == services_dir):
+        continue
+    f = open(x + "/policy.txt", "w");
+    num_policies = random.randint(5,10)
+    for x in range(num_policies):
+        policy = generate_policy_component()
+        num_services = random.randint(1,3)
+        services = ''
+        for y in range(num_services):
+            service_id = random.randint(0,49)
+            services += "service" + str(service_id) + " "
+        f.write(policy)
+        f.write("\n\n")
+        f.write(services)
+        f.write("\n\n")
+    f.close()

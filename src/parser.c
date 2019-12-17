@@ -211,8 +211,9 @@ int main() {
     printf("result = %d\n", evaluate("A1 & A3"));
     printf("result = %d\n", evaluate("A1 | A2 & A1"));
     printf("result = %d\n", evaluate("( A1 | A2 ) & A2"));
-    */
     printf("result = %d\n", evaluate("( A1 | A1 & ( A3 | A4 ) ) & A0 & ! ( A0 & A1 )"));
-    //printf("result = %d\n", evaluate("A0 & ! ( A0 )"));
+    */
+    printf("result = %d\n", evaluate("( A2 | ! A3 ) & ( A0 | A1 & A2 | ! A4 ) & ! ( A0 & A0 | A2 )"));
+    printf("result = %d\n", evaluate("( A2 | ! A3 ) & ( A0 | A1 & A2 | ! A4 ) & ( A0 & A0 | A2 )"));
     return 0; 
 } 
