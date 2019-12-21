@@ -72,6 +72,8 @@ extern unsigned char *base64_decode(const char *data,
 
 extern void dac_generate_parameters();
 
+extern int initialize_system_params();
+
 extern credential_attributes *set_credential_attributes(int level, element_t pub, int num_attr, int *attr);
 
 extern int issue_credential(element_t secret_key, element_t public_key, credential_attributes *ca, credential_t *ic);

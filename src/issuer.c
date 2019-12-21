@@ -3,58 +3,6 @@
 #include <errno.h>
 #include <string.h>
 
-void write_element_to_file(FILE *fp, char *param, element_t e)
-{
-    int len;
-    size_t outlen;
-    char *base64e;
-    unsigned char *buffer;
-
-    printf("Writing %s to param.txt...", param);
-
-    element_printf("%s = %B\n", param, e);
-
-    len = element_length_in_bytes(e);
-    buffer =  (unsigned char *)malloc(len);
-
-    element_to_bytes(buffer, e);
-    base64e = base64_encode(buffer, len, &outlen);
-    fprintf(fp, "%s = %s\n", param, base64e);
-
-    free(base64e);
-    free(buffer);
-    fflush(fp);
-    //printf("Done\n");
-}
-
-void read_element_from_file(FILE *fp, char *param, element_t e, int skipline)
-{
-    int len;
-    size_t outlen;
-    char *base64e;
-    unsigned char *buffer;
-    char c[200] = {0};
-    char str1[20];
-    char str2[200] = {0};
-
-    //printf("Reading %s from param.txt...", param);
-
-    fgets(c, sizeof(c), fp);
-
-    if (skipline)
-        return;
-
-    sscanf(c, "%s = %s", str1, str2);
-    //printf("%s--->%s\n", str1, str2);
-
-    buffer = base64_decode(str2, strlen(str2), &outlen);
-    element_from_bytes(e, buffer);
-    //element_printf("%s = %B\n", param, e);
-    free(buffer);
-
-    //printf("Done\n");
-}
-
 credential_attributes * set_credential_attributes(int level, element_t pub, int num_attr, int *attr)
 {
     int i=0,j=0;

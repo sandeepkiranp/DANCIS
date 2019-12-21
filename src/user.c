@@ -17,15 +17,6 @@ int attcount = 0;
 int attribute_indx_array[50];
 int user_level;
 
-element_t g1, g2;
-element_t root_secret_key;
-element_t root_public_key;
-pairing_t pairing;
-element_t system_attributes_g1[MAX_NUM_ATTRIBUTES];
-element_t system_attributes_g2[MAX_NUM_ATTRIBUTES];
-element_t Y1[TOTAL_ATTRIBUTES];
-element_t Y2[TOTAL_ATTRIBUTES];
-
 credential_t ic;
 
 typedef struct delegted_credential
@@ -38,85 +29,6 @@ typedef struct delegted_credential
 
 int dusers_count = 0;
 delegated_credential_t *dc;
-
-int initialize_system_params()
-{
-    char param[1024];
-    int i;
-    element_t dummy;
-
-    printf("Generating System Parameters...");
-
-    int count = fread(param, 1, 1024, stdin);
-    if (!count) pbc_die("input error");
-
-    printf("Reading (%d) parameters \n%s \n",count, param);
-    pairing_init_set_buf(pairing, param, count);
-
-    element_init_G1(g1, pairing);
-    element_init_G2(g2, pairing);
-
-    for(i=0; i<TOTAL_ATTRIBUTES; i++)
-    {
-        element_init_G1(Y1[i], pairing);
-    }
-
-    for(i=0; i<TOTAL_ATTRIBUTES; i++)
-    {
-        element_init_G2(Y2[i], pairing);
-    }
-
-    for(i=0; i<MAX_NUM_ATTRIBUTES; i++)
-    {
-        element_init_G1(system_attributes_g1[i], pairing);
-        element_init_G2(system_attributes_g2[i], pairing);
-    }
-
-    // check if HOME_DIR/root/params.txt is existing
-    if( access( PARAM_FILE, F_OK ) != -1 )
-    {
-        //Read parameters from file
-        char str[10];
-        FILE *fp = fopen(PARAM_FILE, "r");
-
-        printf("param file %s\n", PARAM_FILE);
-        if (fp == NULL)
-        {
-            printf("errno %d, str %s\n", errno, strerror(errno));
-            return FAILURE;
-        }
-        read_element_from_file(fp, "g1", g1, 0);
-        read_element_from_file(fp, "g2", g2, 0);
-        read_element_from_file(fp, "dummy", dummy, 1);
-        read_element_from_file(fp, "dummy", dummy, 1);
-
-        for(i=0; i<MAX_NUM_ATTRIBUTES; i++)
-        {
-            sprintf(str, "att_g1[%d]", i);
-            read_element_from_file(fp, str, system_attributes_g1[i], 0);
-            sprintf(str, "att_g2[%d]", i);
-            read_element_from_file(fp, str, system_attributes_g2[i], 0);
-        }
-
-        for(i=0; i<TOTAL_ATTRIBUTES; i++)
-        {
-            sprintf(str, "Y1[%d]", i);
-            read_element_from_file(fp, str, Y1[i], 0);
-        }
-
-        for(i=0; i<TOTAL_ATTRIBUTES; i++)
-        {
-            sprintf(str, "Y2[%d]", i);
-            read_element_from_file(fp, str, Y2[i], 0);
-        }
-        fclose(fp);	    
-    }
-    else
-    {
-        printf("error reading %s, %s\n", PARAM_FILE, strerror(errno));
-    }
-    printf("Done!\n");
-}
 
 void setup_credentials_from_file(FILE *fp, credential_t *c)
 {
