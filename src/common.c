@@ -146,3 +146,62 @@ int initialize_system_params()
     printf("Done!\n");
     return SUCCESS;
 }
+
+void setup_credentials_from_file(FILE *fp, int attcount, credential_t *c)
+{
+    credential_element_t *ce;
+    int i,j;
+
+    c->cred = (credential_element_t **) malloc (c->levels * sizeof(credential_element_t *));
+    for (i = 0; i < c->levels; i++)
+    {
+        ce = c->cred[i] = (credential_element_t *) malloc(sizeof(credential_element_t));
+        ce->T = (element_t *) malloc((attcount + 2) * sizeof(element_t));
+	ce->ca = (credential_attributes *) malloc (sizeof(credential_attributes));
+	ce->ca->attributes = (element_t *) malloc((attcount + 2) * sizeof(element_t));
+	ce->ca->num_of_attributes = attcount + 2;
+    }
+
+    for(i=0; i<c->levels; i++)
+    {
+        credential_element_t *ce = c->cred[i];
+        if ((i + 1) % 2)
+        {
+            element_init_G2(ce->R, pairing);
+            element_init_G1(ce->S, pairing);
+        }
+        else
+        {
+            element_init_G1(ce->R, pairing);
+            element_init_G2(ce->S, pairing);
+        }
+        for(j=0; j<ce->ca->num_of_attributes; j++)
+        {
+            if ((i + 1) % 2)
+            {
+                element_init_G1(ce->T[j], pairing);
+                element_init_G1(ce->ca->attributes[j], pairing);
+            }
+            else
+            {
+                element_init_G2(ce->T[j], pairing);
+                element_init_G2(ce->ca->attributes[j], pairing);
+            }
+        }
+    }
+
+    for(i=0; i<c->levels; i++)
+    {
+        credential_element_t *ce = c->cred[i];
+        read_element_from_file(fp, "R", ce->R, 0);
+        read_element_from_file(fp, "S", ce->S, 0);
+        for(j=0; j<ce->ca->num_of_attributes; j++)
+        {
+            char s[10];
+            sprintf(s, "T[%d]", j);
+            read_element_from_file(fp, s, ce->T[j], 0);
+            sprintf(s, "attr[%d]", j);
+            read_element_from_file(fp, s, ce->ca->attributes[j], 0);
+        }
+    }
+}

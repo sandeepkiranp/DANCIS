@@ -19,76 +19,6 @@ int user_level;
 
 credential_t ic;
 
-typedef struct delegted_credential
-{
-    char delegator[30];
-    int num_dattrs;
-    int  dattrs[50];
-    credential_t dic;
-}delegated_credential_t;
-
-int dusers_count = 0;
-delegated_credential_t *dc;
-
-void setup_credentials_from_file(FILE *fp, credential_t *c)
-{
-    credential_element_t *ce;
-    int i,j;
-
-    c->cred = (credential_element_t **) malloc (c->levels * sizeof(credential_element_t *));
-    for (i = 0; i < c->levels; i++)
-    {
-        ce = c->cred[i] = (credential_element_t *) malloc(sizeof(credential_element_t));
-        ce->T = (element_t *) malloc((attcount + 2) * sizeof(element_t));
-	ce->ca = (credential_attributes *) malloc (sizeof(credential_attributes));
-	ce->ca->attributes = (element_t *) malloc((attcount + 2) * sizeof(element_t));
-	ce->ca->num_of_attributes = attcount + 2;
-    }
-
-    for(i=0; i<c->levels; i++)
-    {
-        credential_element_t *ce = c->cred[i];
-        if ((i + 1) % 2)
-        {
-            element_init_G2(ce->R, pairing);
-            element_init_G1(ce->S, pairing);
-        }
-        else
-        {
-            element_init_G1(ce->R, pairing);
-            element_init_G2(ce->S, pairing);
-        }
-        for(j=0; j<ce->ca->num_of_attributes; j++)
-        {
-            if ((i + 1) % 2)
-            {
-                element_init_G1(ce->T[j], pairing);
-                element_init_G1(ce->ca->attributes[j], pairing);
-            }
-            else
-            {
-                element_init_G2(ce->T[j], pairing);
-                element_init_G2(ce->ca->attributes[j], pairing);
-            }
-        }
-    }
-
-    for(i=0; i<ic.levels; i++)
-    {
-        credential_element_t *ce = c->cred[i];
-        read_element_from_file(fp, "R", ce->R, 0);
-        read_element_from_file(fp, "S", ce->S, 0);
-        for(j=0; j<ce->ca->num_of_attributes; j++)
-        {
-            char s[10];
-            sprintf(s, "T[%d]", j);
-            read_element_from_file(fp, s, ce->T[j], 0);
-            sprintf(s, "attr[%d]", j);
-            read_element_from_file(fp, s, ce->ca->attributes[j], 0);
-        }
-    }
-}
-
 int read_user_params(char *user)
 {
     char c[200] = {0};
@@ -136,7 +66,7 @@ int read_user_params(char *user)
     read_element_from_file(fp, "private_key", user_private_key, 0);
     read_element_from_file(fp, "public_key", user_public_key, 0);
 
-    setup_credentials_from_file(fp, &ic);
+    setup_credentials_from_file(fp, attcount, &ic);
 
     fclose(fp);
     return SUCCESS;
@@ -212,6 +142,14 @@ int delegate_credential(char *duser, char *attributes)
     credential_t dic;
     int ret;
 
+    //check if credentials are already delegated
+    sprintf(str, "%s/%s/%s.txt", USER_DIR, duser,username);
+    if( access( str, F_OK ) == 0 )
+    {
+        printf("Credentials already delegated to %s\n", duser);
+        return SUCCESS;
+    }
+
     sprintf(str, "%s/%s", USER_DIR, duser);
     strcat(str, "/params.txt");
     FILE *fp = fopen(str, "r");
@@ -284,99 +222,10 @@ int delegate_credential(char *duser, char *attributes)
     free_credential(&dic);
 }
 
-int load_delegated_credentials(char *user)
-{
-    char c[200] = {0};
-    char str[50] = {0};
-    char luser[30] = {0};
-    int levels;
-    char attributes[100] = {0};
-    credential_attributes ca;
-    int i = 0, j = 0;
-    credential_element_t *ce;
-    char cmd[100];
-    char dusers[100][30];
-    char name[30] = {0};
-    FILE *fp;
-    int old_dusers_count = dusers_count;
-
-    memset(dusers, 0, sizeof(dusers));
-    //If user is NULL, load all delegated credentials in the directory
-    //else load only that user's delegated credentials
-
-    if (user == NULL)
-    {
-        sprintf(cmd, "ls %s/%s | grep -v params | sed -e 's/\\.txt$//'", USER_DIR, username);
-	fp = popen(cmd, "r");
-        while (fgets(name, sizeof(name), fp) != NULL) 
-	{
-	    name[strlen(name) - 1] = 0;
-            strcpy(dusers[dusers_count++], name);
-	    memset(name, 0, sizeof(name));
-        }
-	pclose(fp);
-    }
-    else
-    {
-	//check if the we already have the delegated credential for this delegator
-	for (i = 0; i < dusers_count; i++)
-	{
-            if(!strcmp(dc[i].delegator, user))
-	    {
-	        printf("Delegated credentials from %s are already loaded\n", user);
-		return SUCCESS;
-	    }
-	}
-        
-        strcpy(dusers[old_dusers_count],user); 
-	dusers_count++;
-    }
-
-    dc = (delegated_credential_t *)realloc(dc, dusers_count * (sizeof(delegated_credential_t)));
-
-    for(i = old_dusers_count; i<dusers_count; i++)
-    {
-	printf("\nLoading Delegated Credentials for %s\n", dusers[i]);
-	memset(&dc[i], 0, sizeof(dc[i]));
-        sprintf(str, "%s/%s/%s.txt", USER_DIR, username,dusers[i]);
-        printf("Reading parameters from %s\n", str);
-
-        fp = fopen(str, "r");
-        if (fp == NULL)
-        {
-            printf("Error opening file %s\n", strerror(errno));
-            return FAILURE;
-        }
-
-        fscanf(fp,"delegator = %s\n", dc[i].delegator);
-        fscanf(fp,"levels = %d\n", &levels);
-        fscanf(fp,"attributes = %s\n", attributes);
-
-        printf("duser = %s, levels = %d, attributes = %s\n",
-                        dc[i].delegator, levels, attributes);
-	
-        char* token = strtok(attributes, ",");
-
-        while (token != NULL)
-        {
-            int attrindx = atoi(token + 1);
-            dc[i].dattrs[dc[i].num_dattrs] = attrindx;
-            token = strtok(NULL, ",");
-        }
-
-	dc[i].dic.levels = levels;
-        setup_credentials_from_file(fp,&dc[i].dic); 
-    }
-    printf("Finished loading Delegated credentials for all users\n");
-
-}
-
 int main(int argc, char *argv[])
 {
     initialize_system_params();
     read_user_params(argv[1]);
-
-    load_delegated_credentials(NULL);
 
     //./user user1  DELEGATE user2 all|A1,A2
     if (argc > 2 && !strcmp(argv[2],"DELEGATE"))

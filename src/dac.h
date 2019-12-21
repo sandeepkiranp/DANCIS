@@ -52,6 +52,12 @@ typedef struct token
     element_t rescsk;
 }token_t;
 
+typedef enum messagetype
+{
+    SERVICE_REQUEST = 1,
+    SERVICE_RESPONSE
+}messagetype;
+
 extern element_t g1, g2;
 extern element_t system_attributes_g1[MAX_NUM_ATTRIBUTES];
 extern element_t system_attributes_g2[MAX_NUM_ATTRIBUTES];
@@ -73,6 +79,8 @@ extern unsigned char *base64_decode(const char *data,
 extern void dac_generate_parameters();
 
 extern int initialize_system_params();
+
+extern void setup_credentials_from_file(FILE *fp, int attrcount, credential_t *c);
 
 extern credential_attributes *set_credential_attributes(int level, element_t pub, int num_attr, int *attr);
 

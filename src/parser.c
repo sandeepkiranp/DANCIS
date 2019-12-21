@@ -1,6 +1,3 @@
-// CPP program to evaluate a given 
-// expression where tokens are 
-// separated by space. 
 #include <stdio.h> 
 #include <string.h>
 #include <ctype.h>
@@ -11,8 +8,6 @@ typedef struct stack
     int n;
     int top;
 }stack;
-
-int attributes[50] = {0};
 
 void init_stack(stack *s)
 {
@@ -68,8 +63,7 @@ int empty(stack *s)
 	return 0;
 }
 
-// Function to find precedence of 
-// operators. 
+// Function to find precedence of operators. 
 int precedence(char op){ 
     if(op == '|') 
         return 1; 
@@ -108,9 +102,8 @@ void perform_operation(stack *values, stack *ops)
     push(values, applyOp(val1, val2, op));
 }
 
-// Function that returns value of 
-// expression after evaluation. 
-int evaluate(char * tokens){ 
+// Function that returns value of expression after evaluation. 
+int evaluate(int *attributes, char * tokens){ 
     int i; 
     
     // stack to store integer values. 
@@ -192,7 +185,7 @@ int evaluate(char * tokens){
     // Top of 'values' contains result, return it. 
     return top(&values); 
 } 
-
+/*
 int main() { 
     attributes[0] = 1;
     attributes[1] = 0;
@@ -205,15 +198,14 @@ int main() {
     //cout << evaluate("10 + (3 - 2 ) + (100 * ( 2 + 12 ) / 14 )"); 
     //cout << evaluate("10 + (3 - 2 ) + 100"); 
     //cout << evaluate("10 + ( 3 * 4 )"); 
-    /*
     printf("result = %d\n", evaluate("A2 | A2"));
     printf("result = %d\n", evaluate("A1 | A2"));
     printf("result = %d\n", evaluate("A1 & A3"));
     printf("result = %d\n", evaluate("A1 | A2 & A1"));
     printf("result = %d\n", evaluate("( A1 | A2 ) & A2"));
     printf("result = %d\n", evaluate("( A1 | A1 & ( A3 | A4 ) ) & A0 & ! ( A0 & A1 )"));
-    */
     printf("result = %d\n", evaluate("( A2 | ! A3 ) & ( A0 | A1 & A2 | ! A4 ) & ! ( A0 & A0 | A2 )"));
     printf("result = %d\n", evaluate("( A2 | ! A3 ) & ( A0 | A1 & A2 | ! A4 ) & ( A0 & A0 | A2 )"));
     return 0; 
 } 
+*/

@@ -93,6 +93,12 @@ int load_policy(char *svc)
     return SUCCESS;
 }
 
+void process_service_request(int sock)
+{
+
+}
+
+//./service <service_name> <port>
 int main(int argc, char *argv[])
 {
     if(initialize_system_params() != SUCCESS)
@@ -123,7 +129,7 @@ int main(int argc, char *argv[])
     } 
     address.sin_family = AF_INET; 
     address.sin_addr.s_addr = INADDR_ANY; 
-    address.sin_port = htons( PORT ); 
+    address.sin_port = htons( atoi(argv[2]) ); 
        
     // Forcefully attaching socket to the port 8080 
     if (bind(server_fd, (struct sockaddr *)&address,  
@@ -137,14 +143,27 @@ int main(int argc, char *argv[])
         perror("listen"); 
         exit(EXIT_FAILURE); 
     } 
+    
     if ((new_socket = accept(server_fd, (struct sockaddr *)&address,  
                        (socklen_t*)&addrlen))<0) 
     { 
         perror("accept"); 
         exit(EXIT_FAILURE); 
     } 
-    valread = read( new_socket , buffer, 1024); 
-    printf("%s\n",buffer ); 
+
+    messagetype mtype;
+    valread = read( new_socket , &mtype, 1); 
+
+    switch(mtype)
+    {
+        case SERVICE_REQUEST:
+	    printf("Received Service Request\n");
+	    process_service_request(new_socket);
+	    break;
+	default:
+	    printf("Unknown %d request\n", mtype);
+    }
+
     send(new_socket , hello , strlen(hello) , 0 ); 
     printf("Hello message sent\n"); 
 
