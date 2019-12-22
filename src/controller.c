@@ -22,18 +22,84 @@ typedef struct delegted_credential
     int  dattrs[50];
     credential_t dic;
 }delegated_credential_t;
+
 delegated_credential_t *dc;
+
+int num_events;
+
+typedef struct events
+{
+    event_t evt;
+    char *services[10];
+}evt_svc_map;
+
+evt_svc_map *esmap;
+
+event_t get_event_from_string(char *evt)
+{
+    if(!strcmp(evt, "EVENT1"))
+        return EVENT1;
+
+    if(!strcmp(evt, "EVENT2"))
+        return EVENT2;
+
+    if(!strcmp(evt, "EVENT3"))
+        return EVENT3;
+
+    if(!strcmp(evt, "EVENT4"))
+        return EVENT4;
+}
+
+int read_event_file()
+{
+    char str[50] = {0};
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    int i = 0, j=0;
+
+    sprintf(str, "%s/controller/event.txt", USER_DIR);
+    printf("\nReading events from %s\n", str);
+
+    FILE *fp = fopen(str, "r");
+    if (fp == NULL)
+    {
+        printf("Error opening file %s\n", strerror(errno));
+        return FAILURE;
+    }
+
+    fscanf(fp, "%d\n",&num_events);
+    esmap = (evt_svc_map *) malloc(num_events * sizeof(evt_svc_map));
+
+    while ((read = getline(&line, &len, fp)) != -1) 
+    {
+        j = 0;
+
+        //first token is the event
+        char* token = strtok(line, " ");
+        esmap[i].evt = get_event_from_string(token);
+
+        token = strtok(NULL, " ");
+        while (token != NULL)
+        {
+            esmap[i].services[j] = (char *)calloc(1, strlen(token));
+            memcpy(esmap[i].services[j], token, strlen(token));
+	    token = strtok(NULL, " ");
+            j++;
+        }
+	i++;
+    }
+    fclose(fp);
+
+   free(line);
+}
 
 int read_params()
 {
-    char c[200] = {0};
     char str[50] = {0};
     char luser[30] = {0};
     int levels;
     char attributes[100] = {0};
-    credential_attributes ca;
-    int i = 0, j = 0;
-    credential_element_t *ce;
 
     sprintf(str, "%s/controller/params.txt", USER_DIR);
     printf("Reading parameters from %s\n", str);
@@ -86,7 +152,7 @@ int load_delegated_credentials(char *user)
 
     if (user == NULL)
     {
-        sprintf(cmd, "ls %s/%s | grep -v params | sed -e 's/\\.txt$//'", USER_DIR, username);
+        sprintf(cmd, "ls %s/%s | grep -v -e params -e event | sed -e 's/\\.txt$//'", USER_DIR, username);
 	fp = popen(cmd, "r");
         while (fgets(name, sizeof(name), fp) != NULL)
 	{
@@ -155,6 +221,7 @@ int main(int argc, char *argv[])
 {
     initialize_system_params();
     read_params();
+    read_event_file();
 
     load_delegated_credentials(NULL);
 }

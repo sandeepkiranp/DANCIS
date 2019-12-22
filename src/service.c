@@ -20,6 +20,7 @@ typedef struct policy
     char *services[10];
 }policy_t;
 
+int num_policies;
 policy_t *policies;
 
 int load_policy(char *svc)
@@ -56,7 +57,7 @@ int load_policy(char *svc)
     }
 
     fgets(c, sizeof(c), fp);
-    int num_policies = atoi(c);
+    num_policies = atoi(c);
 
     char * line = NULL;
     size_t len = 0;

@@ -58,6 +58,14 @@ typedef enum messagetype
     SERVICE_RESPONSE
 }messagetype;
 
+typedef enum eventtype
+{
+    EVENT1 = 1,
+    EVENT2,
+    EVENT3,
+    EVENT4
+}event_t;
+
 extern element_t g1, g2;
 extern element_t system_attributes_g1[MAX_NUM_ATTRIBUTES];
 extern element_t system_attributes_g2[MAX_NUM_ATTRIBUTES];
