@@ -205,3 +205,18 @@ void setup_credentials_from_file(FILE *fp, int attcount, credential_t *c)
         }
     }
 }
+
+event_t get_event_from_string(char *evt)
+{
+    if(!strcmp(evt, "EVENT1"))
+        return EVENT1;
+
+    if(!strcmp(evt, "EVENT2"))
+        return EVENT2;
+
+    if(!strcmp(evt, "EVENT3"))
+        return EVENT3;
+
+    if(!strcmp(evt, "EVENT4"))
+        return EVENT4;
+}

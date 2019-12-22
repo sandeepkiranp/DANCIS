@@ -3,11 +3,14 @@
 
 #define SUCCESS 0
 #define FAILURE 1
-#define n 3
+#define N 3
 
 #define HOME_DIR "/home/sandeep/dac"
 #define MAX_NUM_ATTRIBUTES 50
 #define TOTAL_ATTRIBUTES (MAX_NUM_ATTRIBUTES + 2) //cpk(i-1) + credential hash + MAX_NUM_ATTRIBUTES attributes
+
+#define CONTROLLER_SVC "controller"
+#define CONTROLLER_PORT 7777
 
 typedef struct attributes
 {
@@ -37,9 +40,9 @@ typedef struct token_element
     element_t ress;
     element_t rescpk;
     element_t rescsk;
-    element_t rest[n+2];
+    element_t rest[N+2];
     element_t credhash;
-    int revealed[n];
+    int revealed[N];
     element_t *attributes;
     element_t *resa;
 }token_element_t;
@@ -55,7 +58,9 @@ typedef struct token
 typedef enum messagetype
 {
     SERVICE_REQUEST = 1,
-    SERVICE_RESPONSE
+    SERVICE_RESPONSE,
+    EVENT_REQUEST,
+    EVENT_RESPONSE
 }messagetype;
 
 typedef enum eventtype
@@ -83,6 +88,8 @@ extern char *base64_encode(const unsigned char *data,
 extern unsigned char *base64_decode(const char *data,
                              size_t input_length,
                              size_t *output_length) ;
+
+extern event_t get_event_from_string(char *evt);
 
 extern void dac_generate_parameters();
 

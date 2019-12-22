@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #include "dac.h"
 
 #define USER_DIR HOME_DIR "/users"
@@ -34,21 +38,6 @@ typedef struct events
 }evt_svc_map;
 
 evt_svc_map *esmap;
-
-event_t get_event_from_string(char *evt)
-{
-    if(!strcmp(evt, "EVENT1"))
-        return EVENT1;
-
-    if(!strcmp(evt, "EVENT2"))
-        return EVENT2;
-
-    if(!strcmp(evt, "EVENT3"))
-        return EVENT3;
-
-    if(!strcmp(evt, "EVENT4"))
-        return EVENT4;
-}
 
 int read_event_file()
 {
@@ -217,6 +206,29 @@ int load_delegated_credentials(char *user)
 
 }
 
+int process_event(int sock)
+{
+    int len, n;
+    struct sockaddr_in address, cliaddr;
+    event_t evt;
+    len = sizeof(cliaddr);
+    messagetype mtype;
+    char user[20];
+
+    n = recvfrom(sock, user, sizeof(user),
+                0, ( struct sockaddr *) &cliaddr,
+                &len);    
+
+    n = recvfrom(sock, (char *)&evt, sizeof(event_t),
+                0, ( struct sockaddr *) &cliaddr,
+                &len);
+    printf("Received %d event from %s\n", evt, user);
+
+    //load the delegated credentials for this user
+    load_delegated_credentials(user);
+}
+
+
 int main(int argc, char *argv[])
 {
     initialize_system_params();
@@ -224,4 +236,59 @@ int main(int argc, char *argv[])
     read_event_file();
 
     load_delegated_credentials(NULL);
+
+    int server_fd, new_socket, valread;
+    struct sockaddr_in address, cliaddr;
+    int opt = 1;
+    int addrlen = sizeof(address);
+    char buffer[1024] = {0};
+    char *hello = "Hello from server";
+
+    // Creating socket file descriptor
+    if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) == 0)
+    {
+        perror("socket failed");
+        exit(EXIT_FAILURE);
+    }
+/*
+    // Forcefully attaching socket to the port 8080
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
+                                                  &opt, sizeof(opt)))
+    {
+        perror("setsockopt");
+        exit(EXIT_FAILURE);
+    }
+*/
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons( CONTROLLER_PORT );
+
+    if (bind(server_fd, (struct sockaddr *)&address,
+                                 sizeof(address))<0)
+    {
+        perror("bind failed");
+        exit(EXIT_FAILURE);
+    }
+
+    int len, n; 
+    len = sizeof(cliaddr); 
+    messagetype mtype;
+    n = recvfrom(server_fd, (char *)&mtype, sizeof(messagetype),
+                0, ( struct sockaddr *) &cliaddr,
+                &len);
+    if (n == -1)
+    {
+        printf("recvfrom returned %d, %s\n", errno, strerror(errno));
+	return 0;
+    }
+
+    switch(mtype)
+    {
+        case EVENT_REQUEST:
+            printf("Received Event Request\n");
+            process_event(server_fd);
+            break;
+        default:
+            printf("Unknown %d request\n", mtype);
+    }
 }
