@@ -264,6 +264,7 @@ void generate_credential_token(char *user, char *service)
 	    } 
 	    token_t tok;
             generate_attribute_token(&tok, c, revealed);    
+	    verify_attribute_token(&tok);
 	}
     }
 }

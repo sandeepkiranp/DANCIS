@@ -281,6 +281,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
         ic = ci->cred[l];
 	num_attrs = ic->ca->num_of_attributes;
         te = &tok->te[l];
+	te->num_attrs = num_attrs;
 
 	//set r'
 	element_init_same_as(te->r1,r1[l]);
@@ -334,6 +335,8 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
         element_init_same_as(te->credhash, ic->ca->attributes[1]);
         element_set(te->credhash, ic->ca->attributes[1]);
 
+	te->rest = (element_t *)malloc(num_attrs * sizeof(element_t));
+
         for(i=0; i<num_attrs; i++)
         {
             if((l+1) % 2)
@@ -361,11 +364,13 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 
     	te->attributes = (element_t *) malloc( num_revealed * sizeof(element_t));
         te->resa = (element_t *) malloc((num_attrs - num_revealed - 2) * sizeof(element_t)); 
-	                                 //2 attributes have already been accounted for
+	                                 //2 attributes have (cpk,credhash) already been accounted for
+
+	te->revealed = (char *)calloc(num_attrs-2,1);
 
         for(i=0,j=0,k=0; i<num_attrs - 2; i++) //attributes[0] represents CPK, attr[1] represents cred hash
         {
-            if (!revealed[l][i]) //not revealed
+            if (!revealed[l][i+2]) //not revealed
             {
                 if ((l+1) % 2)
                 {
@@ -395,7 +400,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 
     printf("Done!\n");
 }
-/*
+
 void verify_attribute_token(token_t *tk)
 {
     printf("\t5. Testing if everything is fine...");
@@ -409,6 +414,7 @@ void verify_attribute_token(token_t *tk)
     element_t one;
     token_element_t *tok;
     element_t prevrescpk;
+    int num_attrs;
 
     element_init_Zr(temp1, pairing);
     element_init_GT(temp2, pairing);
@@ -426,6 +432,7 @@ void verify_attribute_token(token_t *tk)
     for(l=0; l<tk->levels; l++) 
     {
         tok = &tk->te[l];
+	num_attrs = tok->num_attrs;
 
 	if (l != 0)
 	{
@@ -433,8 +440,8 @@ void verify_attribute_token(token_t *tk)
             element_set(prevrescpk, tk->te[l-1].rescpk);
 	}
 
-        comt[l]  = (element_t *)malloc((N+3) * sizeof(element_t));
-        for(i=0; i<N+3; i++) //for s, cpk, credential hash and n attributes
+        comt[l]  = (element_t *)malloc((num_attrs+1) * sizeof(element_t));
+        for(i=0; i<num_attrs+1; i++) //for s, cpk, credential hash and all attributes
         {
             element_init_GT(comt[l][i], pairing);
         }
@@ -520,7 +527,7 @@ void verify_attribute_token(token_t *tk)
             element_mul(comt[l][2], comt[l][2], temp3);
             element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
    
-            for(i=0,j=0,k=0; i<N; i++)
+            for(i=0,j=0,k=0; i<num_attrs - 2; i++)
             {
                 pairing_apply(comt[l][i+3], tok->rest[i+2], tok->r1, pairing);
                 if(tok->revealed[i])
@@ -628,7 +635,7 @@ void verify_attribute_token(token_t *tk)
             element_mul(comt[l][2], comt[l][2], temp2);
             element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
    
-            for(i=0,j=0,k=0; i<N; i++)
+            for(i=0,j=0,k=0; i<num_attrs - 2; i++)
             {
                 pairing_apply(comt[l][i+3], tok->r1, tok->rest[i+2], pairing);
                 pairing_apply(temp3, prevrescpk, Y2[i+2], pairing);
@@ -669,7 +676,7 @@ void verify_attribute_token(token_t *tk)
 
     for (l=0; l< tk->levels; l++)
     {
-        for(i=0; i<N+3; i++)
+        for(i=0; i<tk->te[l].num_attrs + 1; i++)
         {
             element_snprintf(buffer,size,"%B",comt[l][i]);
             strcat(buffer, hash);
@@ -688,4 +695,3 @@ void verify_attribute_token(token_t *tk)
 
     printf("Hurray!\n");
 }
-*/

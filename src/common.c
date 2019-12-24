@@ -8,6 +8,7 @@
 
 element_t g1, g2;
 pairing_t pairing;
+element_t root_public_key;
 element_t system_attributes_g1[MAX_NUM_ATTRIBUTES];
 element_t system_attributes_g2[MAX_NUM_ATTRIBUTES];
 element_t Y1[TOTAL_ATTRIBUTES];
@@ -83,6 +84,8 @@ int initialize_system_params()
     element_init_G1(g1, pairing);
     element_init_G2(g2, pairing);
 
+    element_init_G2(root_public_key, pairing);
+
     for(i=0; i<TOTAL_ATTRIBUTES; i++)
     {
         element_init_G1(Y1[i], pairing);
@@ -115,7 +118,7 @@ int initialize_system_params()
         read_element_from_file(fp, "g1", g1, 0);
         read_element_from_file(fp, "g2", g2, 0);
         read_element_from_file(fp, "dummy", dummy, 1);
-        read_element_from_file(fp, "dummy", dummy, 1);
+        read_element_from_file(fp, "public_key", root_public_key, 0);
 
         for(i=0; i<MAX_NUM_ATTRIBUTES; i++)
         {

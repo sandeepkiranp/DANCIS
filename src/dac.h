@@ -40,9 +40,10 @@ typedef struct token_element
     element_t ress;
     element_t rescpk;
     element_t rescsk;
-    element_t rest[N+2];
+    element_t *rest;
     element_t credhash;
-    int revealed[N];
+    int num_attrs; //cpk + cred_hash + all attributes
+    char *revealed;
     element_t *attributes;
     element_t *resa;
 }token_element_t;
