@@ -215,6 +215,7 @@ int load_delegated_credentials(char *user)
         }
 
 	dc[i].dic.levels = levels;
+	credential_set_private_key(user_private_key, &dc[i].dic);
         setup_credentials_from_file(fp,dc[i].num_dattrs,&dc[i].dic);
     }
     printf("Finished loading Delegated credentials for all users\n");
