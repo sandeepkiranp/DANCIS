@@ -220,3 +220,14 @@ event_t get_event_from_string(char *evt)
     if(!strcmp(evt, "EVENT4"))
         return EVENT4;
 }
+
+int attribute_element_to_index(element_t e)
+{
+    int i = 0;
+    for(i = 0; i < MAX_NUM_ATTRIBUTES; i++)
+    {
+        if(!(element_cmp(e, system_attributes_g1[i])) ||
+           !(element_cmp(e, system_attributes_g2[i])))
+        return i;
+    }
+}

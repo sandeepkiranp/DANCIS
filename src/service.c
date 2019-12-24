@@ -11,7 +11,7 @@
 #define PORT 8080
 
 char service[30];
-char attributes[50] = {0};
+int attributes[MAX_NUM_ATTRIBUTES] = {0};
 int attr_count = 0;
 
 typedef struct policy
@@ -26,12 +26,12 @@ policy_t *policies;
 int load_policy(char *svc)
 {
     char str[100];
-    char attributes[400];
+    char attrs[400];
     char c[200] = {0};
     int i, j;
 
     sprintf(str, "%s/services/%s/policy.txt", HOME_DIR, svc);
-    printf("Reading ipolicy from %s\n", str);
+    printf("Reading policy from %s\n", str);
 
     FILE *fp = fopen(str, "r");
     if (fp == NULL)
@@ -39,11 +39,11 @@ int load_policy(char *svc)
         printf("Error opening file %s\n", strerror(errno));
         return FAILURE;
     }
-    fgets(attributes, sizeof(attributes), fp);
+    fgets(attrs, sizeof(attrs), fp);
 
-    printf("Attributes = %s\n", attributes);
+    printf("Attributes = %s\n", attrs);
 
-    char* token = strtok(attributes, "['A");
+    char* token = strtok(attrs, "['A");
 
     while (token != NULL)
     {

@@ -17,7 +17,7 @@ element_t user_public_key;
 char username[50];
 char user_attributes[100];
 int attcount = 0;
-int attribute_indx_array[50];
+int attribute_indx_array[MAX_NUM_ATTRIBUTES];
 int user_level;
 
 credential_t ic;

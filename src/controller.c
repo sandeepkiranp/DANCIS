@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <ctype.h>
+#include <dirent.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -8,6 +10,7 @@
 #include "dac.h"
 
 #define USER_DIR HOME_DIR "/users"
+#define SERVICES_DIR HOME_DIR "/services"
 #define PARAM_FILE HOME_DIR "/root/params.txt"
 
 element_t user_private_key;
@@ -23,7 +26,7 @@ typedef struct delegted_credential
 {
     char delegator[30];
     int num_dattrs;
-    int  dattrs[50];
+    int  dattrs[MAX_NUM_ATTRIBUTES];
     credential_t dic;
 }delegated_credential_t;
 
@@ -38,6 +41,17 @@ typedef struct events
 }evt_svc_map;
 
 evt_svc_map *esmap;
+
+int num_services = 0;
+
+typedef struct service_attributes
+{
+    char service[30];
+    int num_attrs;
+    int attributes[MAX_NUM_ATTRIBUTES];
+}service_attributes;
+
+service_attributes *svc_attrs;
 
 int read_event_file()
 {
@@ -58,10 +72,11 @@ int read_event_file()
     }
 
     fscanf(fp, "%d\n",&num_events);
-    esmap = (evt_svc_map *) malloc(num_events * sizeof(evt_svc_map));
+    esmap = (evt_svc_map *) calloc(num_events , sizeof(evt_svc_map));
 
     while ((read = getline(&line, &len, fp)) != -1) 
     {
+	line[read - 1] = 0; //trim the new line character
         j = 0;
 
         //first token is the event
@@ -206,6 +221,52 @@ int load_delegated_credentials(char *user)
 
 }
 
+void generate_credential_token(char *user, char *service)
+{
+    int i = 0,j = 0;
+    credential_t *c = NULL;
+
+    for(i = 0; i < dusers_count; i++)
+    {
+	if(!strcmp(dc[i].delegator, user))
+	{
+            c = &dc[i].dic;
+	}
+    }
+    if (NULL == c)
+    {
+	printf("Delegated Credentials not found for %s\n", user);
+	return;
+    }
+
+    for(i = 0; i < num_services; i++)
+    {
+	if(!strcmp(svc_attrs[i].service, service))
+	{
+	    printf("Generating Token for %s for %s\n", user, service);
+	    char *revealed[2]; //two levels.
+	    revealed[0] = (char *)calloc(c->cred[0]->ca->num_of_attributes, 1);
+	    revealed[1] = (char *)calloc(c->cred[1]->ca->num_of_attributes, 1);
+
+	    //do not reveal any attributes at level 0
+
+
+            // attribute 0 is pub key1. Dont reveal
+            // attribute 1 is cred hash. reveal it
+	    revealed[1][0] = 0;
+            revealed[1][1] = 1;
+	    for (j = 2; j < c->cred[0]->ca->num_of_attributes; j++)
+	    {
+                int attr_indx = attribute_element_to_index(c->cred[1]->ca->attributes[i]); 
+		if(svc_attrs[i].attributes[attr_indx])
+		    revealed[1][j] = 1;
+	    } 
+	    token_t tok;
+            generate_attribute_token(&tok, c, revealed);    
+	}
+    }
+}
+
 int process_event(int sock)
 {
     int len, n;
@@ -214,6 +275,7 @@ int process_event(int sock)
     len = sizeof(cliaddr);
     messagetype mtype;
     char user[20];
+    int i,j;
 
     n = recvfrom(sock, user, sizeof(user),
                 0, ( struct sockaddr *) &cliaddr,
@@ -226,14 +288,92 @@ int process_event(int sock)
 
     //load the delegated credentials for this user
     load_delegated_credentials(user);
+
+    for(i = 0; i < num_events; i++)
+    {
+        if(esmap[i].evt == evt)
+	{
+	    for(j = 0; esmap[i].services[j] != NULL; j++)
+	    {
+                generate_credential_token(user, esmap[i].services[j]);
+	    }
+	}
+    }	
 }
 
+int read_policy_attributes_from_services()
+{
+    //for each of the services, read what all attributes
+    //it needs
+    struct dirent *de;
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    char str[100];
+
+    DIR *dr = opendir(SERVICES_DIR);
+
+    if (dr == NULL)  // opendir returns NULL if couldn't open directory
+    {
+        printf("Could not open current directory" );
+        return 0;
+    }
+
+    //allocate for 20 services initially
+    svc_attrs = (service_attributes *)malloc(20 * sizeof(service_attributes));
+
+    while ((de = readdir(dr)) != NULL)
+    {
+	char name[20];
+
+        if(de->d_name[0] == '.')
+	    continue;
+
+	if (num_services > 19)
+            svc_attrs = (service_attributes *)realloc(svc_attrs, (num_services + 10) * sizeof(service_attributes));
+
+	strcpy(name, de->d_name);
+        sprintf(str, "%s/services/%s/policy.txt", HOME_DIR, name);
+        printf("Reading policy from %s\n", str);
+
+	memcpy(svc_attrs[num_services].service, name, strlen(name));
+
+        FILE *fp = fopen(str, "r");
+        if (fp == NULL)
+        {
+            printf("Error opening file %s\n", strerror(errno));
+            return FAILURE;
+        }
+
+	read = getline(&line, &len, fp);
+
+        printf("Attributes = %s\n", line);
+
+        char* token = strtok(line, "['A");
+
+        while (token != NULL)
+        {
+            if (isdigit(token[0]))
+            {
+                svc_attrs[num_services].attributes[atoi(token)] = 1;
+                svc_attrs[num_services].num_attrs++;
+            }
+
+            token = strtok(NULL, "', 'A");
+        }
+	num_services++;
+	fclose(fp);
+    }
+
+    closedir(dr);
+}
 
 int main(int argc, char *argv[])
 {
     initialize_system_params();
     read_params();
     read_event_file();
+    read_policy_attributes_from_services();
 
     load_delegated_credentials(NULL);
 

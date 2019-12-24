@@ -178,7 +178,7 @@ static int issue_user_credential(char *user, char *attributes)
     {
 	credential_attributes *ca;
 	credential_t ic;
-	int a[50] = {0};
+	int a[MAX_NUM_ATTRIBUTES] = {0};
 	int i = 0, j=0;
 	int ret;
         printf("Issuing credentials to %s with attributes %s\n", user, attributes);

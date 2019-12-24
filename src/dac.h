@@ -89,6 +89,8 @@ extern unsigned char *base64_decode(const char *data,
                              size_t input_length,
                              size_t *output_length) ;
 
+extern int attribute_element_to_index(element_t e);
+
 extern event_t get_event_from_string(char *evt);
 
 extern void dac_generate_parameters();
@@ -109,7 +111,7 @@ extern void get_root_public_key(element_t x);
 
 extern void credential_set_private_key(element_t secret_key, credential_t *ic);
 
-extern void generate_attribute_token(token_t *tok, credential_t *ic);
+extern void generate_attribute_token(token_t *tok, credential_t *ic, char **revealed);
 
 extern void verify_attribute_token(token_t *tok);
 
