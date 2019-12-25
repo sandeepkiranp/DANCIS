@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
@@ -10,6 +11,7 @@
 #include "dac.h"
 
 #define USER_DIR HOME_DIR "/users"
+#define CONTROLLER_DIR HOME_DIR "/controller"
 #define SERVICES_DIR HOME_DIR "/services"
 #define PARAM_FILE HOME_DIR "/root/params.txt"
 
@@ -61,7 +63,7 @@ int read_event_file()
     ssize_t read;
     int i = 0, j=0;
 
-    sprintf(str, "%s/controller/event.txt", USER_DIR);
+    sprintf(str, "%s/event.txt", CONTROLLER_DIR);
     printf("\nReading events from %s\n", str);
 
     FILE *fp = fopen(str, "r");
@@ -104,9 +106,30 @@ int read_params()
     char luser[30] = {0};
     int levels;
     char attributes[100] = {0};
+    
+    element_init_Zr(user_private_key, pairing);
+    element_init_G2(user_public_key, pairing);
 
-    sprintf(str, "%s/controller/params.txt", USER_DIR);
+    sprintf(str, "%s/params.txt", CONTROLLER_DIR);
     printf("Reading parameters from %s\n", str);
+
+    if( access( str, F_OK ) != 0 )
+    {
+        element_random(user_private_key);
+	element_pow_zn(user_public_key, g2, user_private_key);
+
+        FILE *fp = fopen(str, "w");
+        if (fp == NULL)
+        {
+            printf("Error opening file %s\n", strerror(errno));
+            return FAILURE;
+        }
+
+        write_element_to_file(fp, "private_key", user_private_key);
+        write_element_to_file(fp, "public_key", user_public_key);
+        fclose(fp);
+        return SUCCESS;	
+    }
 
     FILE *fp = fopen(str, "r");
     if (fp == NULL)
@@ -115,20 +138,11 @@ int read_params()
         return FAILURE;
     }
 
-    fscanf(fp,"user = %s\n", username);
-    fscanf(fp,"levels = %d\n", &levels);
-    fscanf(fp,"attributes = %s\n", attributes);
-
-    memcpy(user_attributes, attributes, strlen(attributes));
-    printf("user = %s, levels = %d, attributes = %s ",
-                    username, levels, attributes);
-
-    element_init_Zr(user_private_key, pairing);
-
-    element_init_G1(user_public_key, pairing);
 
     read_element_from_file(fp, "private_key", user_private_key, 0);
     read_element_from_file(fp, "public_key", user_public_key, 0);
+
+    element_printf("Priv Key = %B, Pub Key = %B\n", user_private_key, user_public_key);
 
     fclose(fp);
     return SUCCESS;
@@ -156,7 +170,7 @@ int load_delegated_credentials(char *user)
 
     if (user == NULL)
     {
-        sprintf(cmd, "ls %s/%s | grep -v -e params -e event | sed -e 's/\\.txt$//'", USER_DIR, username);
+        sprintf(cmd, "ls %s | grep -v -e params -e event | sed -e 's/\\.txt$//'", CONTROLLER_DIR);
 	fp = popen(cmd, "r");
         while (fgets(name, sizeof(name), fp) != NULL)
 	{
@@ -188,7 +202,7 @@ int load_delegated_credentials(char *user)
     {
 	printf("\nLoading Delegated Credentials for %s\n", dusers[i]);
 	memset(&dc[i], 0, sizeof(dc[i]));
-        sprintf(str, "%s/%s/%s.txt", USER_DIR, username,dusers[i]);
+        sprintf(str, "%s/%s.txt", CONTROLLER_DIR, dusers[i]);
         printf("Reading parameters from %s\n", str);
 
         fp = fopen(str, "r");
@@ -338,6 +352,7 @@ int read_policy_attributes_from_services()
         sprintf(str, "%s/services/%s/policy.txt", HOME_DIR, name);
         printf("Reading policy from %s\n", str);
 
+	memset(svc_attrs[num_services].service, 0, sizeof(svc_attrs[num_services].service));
 	memcpy(svc_attrs[num_services].service, name, strlen(name));
 
         FILE *fp = fopen(str, "r");

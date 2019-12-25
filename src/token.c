@@ -218,7 +218,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
             //com[i+3] = e(g1,r) ^ (rhosig * rhot[i+1])
             element_mul(temp1, rhosig[l], rhot[l][i+2]);
 	    element_pow_zn(com[l][i+3], eg1R, temp1);
-            if (revealed[l][i]) //attribute revealed
+            if (revealed[l][i+2]) //attribute revealed
 	    {
 
 	    }
@@ -239,7 +239,6 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 		element_neg(negrhocpk, rhocpk[l-1]);
 		element_pow_zn(temp2, ey1g2, negrhocpk);
 		element_mul(com[l][i+3], com[l][i+3], temp2);
-
 	    }
 	    element_printf("com[%d][%d] = %B\n", l, i+3, com[l][i+3]);
         }

@@ -10,6 +10,7 @@
 #include "dac.h"
 
 #define USER_DIR HOME_DIR "/users"
+#define CONTROLLER_DIR HOME_DIR "/controller"
 #define PARAM_FILE HOME_DIR "/root/params.txt"
 
 element_t user_private_key;
@@ -184,22 +185,21 @@ int delegate_credential(char *duser, char *attributes)
     int ret;
 
     //check if credentials are already delegated
-    sprintf(str, "%s/%s/%s.txt", USER_DIR, duser,username);
+    sprintf(str, "%s/%s.txt", CONTROLLER_DIR,username);
     if( access( str, F_OK ) == 0 )
     {
         printf("Credentials already delegated to %s\n", duser);
     }
     else 
     {
-        sprintf(str, "%s/%s", USER_DIR, duser);
-        strcat(str, "/params.txt");
+        sprintf(str, "%s/params.txt", CONTROLLER_DIR);
+        printf("Reading parameters from %s\n", str);
         FILE *fp = fopen(str, "r");
 
-        //skip first 4 lines
-        for (i=0; i<4; i++)
-            read_element_from_file(fp, "dummy", dummy, 1);
+        //skip first line
+        read_element_from_file(fp, "dummy", dummy, 1);
     
-        element_init_G1(duser_public_key, pairing);
+        element_init_G2(duser_public_key, pairing);
         read_element_from_file(fp, "public_key", duser_public_key, 0);
 
         fclose(fp);
@@ -234,7 +234,7 @@ int delegate_credential(char *duser, char *attributes)
         }
 
         // Write everything to the file
-        sprintf(str, "%s/%s/%s.txt", USER_DIR, duser,username);
+        sprintf(str, "%s/%s.txt", CONTROLLER_DIR, username);
         fp = fopen(str, "w");
         fprintf(fp, "delegator = %s\n", username);
         fprintf(fp, "levels = %d\n",ic.levels + 1);
