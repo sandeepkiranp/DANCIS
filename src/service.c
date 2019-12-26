@@ -96,7 +96,11 @@ int load_policy(char *svc)
 
 void process_service_request(int sock)
 {
+    token_t tok;
 
+    token_receive(&tok, sock);
+
+    verify_attribute_token(&tok);
 }
 
 //./service <service_name> <port>
@@ -108,14 +112,14 @@ int main(int argc, char *argv[])
     load_policy(argv[1]);
 
     int server_fd, new_socket, valread; 
-    struct sockaddr_in address; 
+    struct sockaddr_in address, cliaddr; 
     int opt = 1; 
     int addrlen = sizeof(address); 
     char buffer[1024] = {0}; 
     char *hello = "Hello from server"; 
        
     // Creating socket file descriptor 
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) 
+    if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) == 0) 
     { 
         perror("socket failed"); 
         exit(EXIT_FAILURE); 
@@ -139,34 +143,28 @@ int main(int argc, char *argv[])
         perror("bind failed"); 
         exit(EXIT_FAILURE); 
     } 
-    if (listen(server_fd, 3) < 0) 
-    { 
-        perror("listen"); 
-        exit(EXIT_FAILURE); 
-    } 
-    
-    if ((new_socket = accept(server_fd, (struct sockaddr *)&address,  
-                       (socklen_t*)&addrlen))<0) 
-    { 
-        perror("accept"); 
-        exit(EXIT_FAILURE); 
-    } 
 
+    int len, n;
+    len = sizeof(cliaddr);
     messagetype mtype;
-    valread = read( new_socket , &mtype, 1); 
+    n = recvfrom(server_fd, (char *)&mtype, sizeof(messagetype),
+                0, ( struct sockaddr *) &cliaddr,
+                &len);
+    if (n == -1)
+    {
+        printf("recvfrom returned %d, %s\n", errno, strerror(errno));
+        return 0;
+    }
 
     switch(mtype)
     {
         case SERVICE_REQUEST:
 	    printf("Received Service Request\n");
-	    process_service_request(new_socket);
+	    process_service_request(server_fd);
 	    break;
 	default:
 	    printf("Unknown %d request\n", mtype);
     }
-
-    send(new_socket , hello , strlen(hello) , 0 ); 
-    printf("Hello message sent\n"); 
 
     return 0;
 }

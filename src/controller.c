@@ -236,6 +236,32 @@ int load_delegated_credentials(char *user)
 
 }
 
+void send_token(token_t *tok, char *service)
+{
+    int sockfd;
+    struct sockaddr_in     servaddr;
+    messagetype mtype = SERVICE_REQUEST;
+
+    // Creating socket file descriptor
+    if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
+        perror("socket creation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    memset(&servaddr, 0, sizeof(servaddr));
+
+    // Filling server information
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_port = htons(5555);
+    servaddr.sin_addr.s_addr = INADDR_ANY;
+
+    sendto(sockfd, (const char *)&mtype, sizeof(messagetype),
+        0, (const struct sockaddr *) &servaddr,
+            sizeof(servaddr));
+
+    token_send(tok, sockfd, &servaddr);
+}    
+
 void generate_credential_token(char *user, char *service)
 {
     int i = 0,j = 0;
@@ -279,6 +305,7 @@ void generate_credential_token(char *user, char *service)
 	    token_t tok;
             generate_attribute_token(&tok, c, revealed);    
 	    verify_attribute_token(&tok);
+	    send_token(&tok, service);
 	}
     }
 }

@@ -1,4 +1,8 @@
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <pbc/pbc.h>
 
 #define SUCCESS 0
@@ -40,9 +44,9 @@ typedef struct token_element
     element_t ress;
     element_t rescpk;
     element_t rescsk;
-    element_t *rest;
     element_t credhash;
-    int num_attrs; //cpk + cred_hash + all attributes
+    char num_attrs; //cpk + cred_hash + all attributes
+    element_t *rest;
     char *revealed;
     element_t *attributes;
     element_t *resa;
@@ -50,10 +54,9 @@ typedef struct token_element
 
 typedef struct token
 {
-    int levels;
+    char levels;
     token_element_t *te;
     element_t c;
-    element_t rescsk;
 }token_t;
 
 typedef enum messagetype
@@ -115,6 +118,10 @@ extern void credential_set_private_key(element_t secret_key, credential_t *ic);
 extern void generate_attribute_token(token_t *tok, credential_t *ic, char **revealed);
 
 extern void verify_attribute_token(token_t *tok);
+
+extern void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr);
+
+extern  void token_receive(token_t *tok, int sock);
 
 extern void groth_generate_signature_1(element_t secret_key, credential_attributes *ca, credential_element_t *ic);
 

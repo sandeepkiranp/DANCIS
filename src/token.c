@@ -1,5 +1,242 @@
 #include <string.h>
+#include <sys/types.h>       
+#include <netdb.h>
+#include <sys/socket.h>
+#include <errno.h>
+#include <string.h>
 #include "dac.h"
+
+void send_data(int length, char *data, int sock, struct sockaddr_in *servaddr)
+{
+    sendto(sock, data, length,
+        0, (const struct sockaddr *) servaddr,
+            sizeof(*servaddr));
+}
+void send_element(element_t e, int sock, struct sockaddr_in *servaddr)
+{
+    unsigned char len;
+    unsigned char *buffer;
+
+    len = element_length_in_bytes(e);
+    buffer =  (unsigned char *)malloc(len);
+
+    element_to_bytes(buffer, e);
+
+    //first send length
+    send_data(sizeof(len), (char *)&len, sock, servaddr);
+    //send the data
+    send_data(len, buffer, sock, servaddr); 
+
+    free(buffer);
+}
+
+void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr)
+{
+    int i, j, k, l;
+    token_element_t *te;
+
+    //send number of levels
+    send_data(1, &tok->levels, sock, servaddr);
+
+    // send c
+    send_element(tok->c, sock, servaddr);
+
+    for(l=0; l<tok->levels; l++)
+    {
+        te = &tok->te[l];
+
+	//send r1
+	send_element(te->r1, sock, servaddr);
+
+	//send ress
+	send_element(te->ress, sock, servaddr);
+
+	if(l == tok->levels - 1)
+	{
+            //send rescsk
+            send_element(te->rescsk, sock, servaddr); 
+	}
+	else
+	{
+            //send rescpk
+            send_element(te->rescpk, sock, servaddr); 
+	}
+
+        //send credhash
+        send_element(te->credhash, sock, servaddr);
+
+	//send num_attrs
+	send_data(1, &te->num_attrs, sock, servaddr);
+
+	for(i=0; i < te->num_attrs; i++)
+	{
+            //send rest
+            send_element(te->rest[i], sock, servaddr);            
+	}
+
+	//send revealed
+	send_data(te->num_attrs - 2, te->revealed, sock, servaddr);
+	for(i = 0; i < te->num_attrs - 2; i++)
+		printf("revealed[%d] %d\n", i, te->revealed[i]);
+
+        for(i=0,j=0,k=0; i < te->num_attrs - 2; i++)
+        {
+	    if(te->revealed[i])
+	    {
+                //send attributes
+                send_element(te->attributes[j++], sock, servaddr);
+	    }
+	    else
+            {
+                //send resa
+                send_element(te->resa[k++], sock, servaddr);
+	    }
+
+        }
+    }
+}
+
+void receive_data(int length, char *data, int sock)
+{
+    int len, n;
+    struct sockaddr_in address, cliaddr;
+
+    len = sizeof(cliaddr);
+    n = recvfrom(sock, data, length,
+                0, ( struct sockaddr *) &cliaddr,
+                &len);
+    if (n == -1)
+    {
+        printf("Error receiving data %s\n", strerror(errno));
+	return;
+    }
+    printf("Received data len %d\n", n);
+}
+
+void receive_element(element_t e, int sock)
+{
+    unsigned char len;
+    unsigned char *buffer;
+
+    //first receive length
+    receive_data(1, &len, sock);
+    //receive the data
+    buffer =  (unsigned char *)malloc(len);
+    receive_data(len, buffer, sock);
+
+    element_from_bytes(e, buffer);
+    free(buffer);
+}
+
+void token_receive(token_t *tok, int sock)
+{
+    int i, j, k, l;
+    token_element_t *te;
+
+    //reveive number of levels
+    receive_data(1, &tok->levels, sock);
+    printf("Levels = %d\n", tok->levels);
+
+    // receive c
+    element_init_Zr(tok->c, pairing);
+    receive_element(tok->c, sock);
+    element_printf("tok->c = %B\n", tok->c);
+
+    tok->te = (token_element_t *)malloc(tok->levels * sizeof(token_element_t));
+
+    for(l=0; l<tok->levels; l++)
+    {
+        te = &tok->te[l];
+        if((l+1) % 2)
+        {
+            element_init_G2(te->r1, pairing);
+            element_init_G1(te->ress, pairing);
+            element_init_G1(te->rescpk, pairing);            
+            element_init_G1(te->credhash, pairing);            
+	}
+	else
+        {
+            element_init_G1(te->r1, pairing);
+            element_init_G2(te->ress, pairing);
+            element_init_G2(te->rescpk, pairing);
+            element_init_G2(te->credhash, pairing);            
+	}
+
+	//receive r1
+	receive_element(te->r1, sock);
+	//receive ress
+	receive_element(te->ress, sock);
+
+	if(l == tok->levels - 1)
+	{
+            //receive rescsk
+	    element_init_Zr(te->rescsk, pairing);
+            receive_element(te->rescsk, sock);
+	}
+	else
+	{
+            //receive rescpk
+            receive_element(te->rescpk, sock);
+	}
+
+        //receive credhash
+        receive_element(te->credhash, sock);
+
+	//receive num_attrs
+	receive_data(1, &te->num_attrs, sock);
+
+	te->rest = (element_t *)malloc(te->num_attrs * sizeof(element_t));
+	for(i=0; i < te->num_attrs; i++)
+	{
+            if ((l+1) % 2)
+                element_init_G1(te->rest[i], pairing);
+            else
+                element_init_G2(te->rest[i], pairing);
+            //receive rest
+            receive_element(te->rest[i], sock);
+	}
+
+	//receive revealed
+	te->revealed = (char *) malloc(te->num_attrs - 2);
+	receive_data(te->num_attrs - 2, te->revealed, sock);
+	for(i = 0; i < te->num_attrs - 2; i++)
+		printf("revealed[%d] %d\n", i, te->revealed[i]);
+
+        int num_revealed = 0;
+        for(i=2; i<te->num_attrs; i++) //attributes[0] represents CPK
+        {
+            if(te->revealed[i])
+                num_revealed++;
+        }
+
+        te->attributes = (element_t *) malloc( num_revealed * sizeof(element_t));
+        te->resa = (element_t *) malloc((te->num_attrs - num_revealed - 2) * sizeof(element_t));
+                                         //2 attributes have (cpk,credhash) already been accounted for
+        for(i=0,j=0,k=0; i < te->num_attrs - 2; i++)
+        {
+	    if(te->revealed[i])
+	    {
+                if ((l+1) % 2)
+                    element_init_G1(te->attributes[j], pairing);
+		else
+                    element_init_G2(te->attributes[j], pairing);
+                //receive attributes
+                receive_element(te->attributes[j++], sock);
+	    }
+	    else
+            {
+                if ((l+1) % 2)
+                    element_init_G1(te->resa[k], pairing);
+		else
+                    element_init_G2(te->resa[k], pairing);
+
+    		    //receive resa
+                receive_element(te->resa[k++], sock);
+	    }
+
+        }
+    }
+}
 
 void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 {
