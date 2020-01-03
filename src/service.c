@@ -99,7 +99,6 @@ void process_service_request(int sock)
     token_t tok;
 
     token_receive(&tok, sock);
-
     verify_attribute_token(&tok);
 }
 

@@ -296,9 +296,9 @@ void generate_credential_token(char *user, char *service)
             // attribute 1 is cred hash. reveal it
 	    revealed[1][0] = 0;
             revealed[1][1] = 1;
-	    for (j = 2; j < c->cred[0]->ca->num_of_attributes; j++)
+	    for (j = 2; j < c->cred[1]->ca->num_of_attributes; j++)
 	    {
-                int attr_indx = attribute_element_to_index(c->cred[1]->ca->attributes[i]); 
+                int attr_indx = attribute_element_to_index(c->cred[1]->ca->attributes[j]); 
 		if(svc_attrs[i].attributes[attr_indx])
 		    revealed[1][j] = 1;
 	    } 
@@ -363,7 +363,7 @@ int read_policy_attributes_from_services()
     }
 
     //allocate for 20 services initially
-    svc_attrs = (service_attributes *)malloc(20 * sizeof(service_attributes));
+    svc_attrs = (service_attributes *)calloc(20 * sizeof(service_attributes), 1);
 
     while ((de = readdir(dr)) != NULL)
     {

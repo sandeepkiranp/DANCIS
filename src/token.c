@@ -76,8 +76,6 @@ void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr)
 
 	//send revealed
 	send_data(te->num_attrs - 2, te->revealed, sock, servaddr);
-	for(i = 0; i < te->num_attrs - 2; i++)
-		printf("revealed[%d] %d\n", i, te->revealed[i]);
 
         for(i=0,j=0,k=0; i < te->num_attrs - 2; i++)
         {
@@ -110,7 +108,6 @@ void receive_data(int length, char *data, int sock)
         printf("Error receiving data %s\n", strerror(errno));
 	return;
     }
-    printf("Received data len %d\n", n);
 }
 
 void receive_element(element_t e, int sock)
@@ -199,15 +196,15 @@ void token_receive(token_t *tok, int sock)
 	//receive revealed
 	te->revealed = (char *) malloc(te->num_attrs - 2);
 	receive_data(te->num_attrs - 2, te->revealed, sock);
-	for(i = 0; i < te->num_attrs - 2; i++)
-		printf("revealed[%d] %d\n", i, te->revealed[i]);
 
         int num_revealed = 0;
-        for(i=2; i<te->num_attrs; i++) //attributes[0] represents CPK
+        for(i=0; i<te->num_attrs-2; i++) //attributes[0] represents CPK
         {
             if(te->revealed[i])
                 num_revealed++;
         }
+
+	printf("Num revealed %d, Num hidden %d\n", num_revealed, (te->num_attrs - num_revealed - 2));
 
         te->attributes = (element_t *) malloc( num_revealed * sizeof(element_t));
         te->resa = (element_t *) malloc((te->num_attrs - num_revealed - 2) * sizeof(element_t));
@@ -233,7 +230,6 @@ void token_receive(token_t *tok, int sock)
     		    //receive resa
                 receive_element(te->resa[k++], sock);
 	    }
-
         }
     }
 }
