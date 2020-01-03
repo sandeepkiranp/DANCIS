@@ -633,7 +633,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
     printf("Done!\n");
 }
 
-void verify_attribute_token(token_t *tk)
+int verify_attribute_token(token_t *tk)
 {
     printf("\t5. Testing if everything is fine...");
 
@@ -922,8 +922,9 @@ void verify_attribute_token(token_t *tk)
     {
         printf("c values comparison Failed!\n\n");
 	element_printf("c = %B\nct = %B\n", tk->c, ct); 
-	return;
+	return FAILURE;
     }
 
     printf("Hurray!\n");
+    return SUCCESS;
 }

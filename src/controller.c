@@ -8,6 +8,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <time.h>
+#include <sys/time.h>
 #include "dac.h"
 
 #define USER_DIR HOME_DIR "/users"
@@ -54,6 +56,16 @@ typedef struct service_attributes
 }service_attributes;
 
 service_attributes *svc_attrs;
+
+typedef struct session
+{
+    char user[30];
+    char sid[20];
+}session_t;
+
+int num_sessions = 0;
+int MAX_SESSIONS = 0;
+session_t *sessions;
 
 int read_event_file()
 {
@@ -250,7 +262,7 @@ void send_token(token_t *tok, char *service)
 
     memset(&servaddr, 0, sizeof(servaddr));
 
-    // Filling server information
+    // Filling service information
     servaddr.sin_family = AF_INET;
     servaddr.sin_port = htons(5555);
     servaddr.sin_addr.s_addr = INADDR_ANY;
@@ -260,20 +272,68 @@ void send_token(token_t *tok, char *service)
             sizeof(servaddr));
 
     token_send(tok, sockfd, &servaddr);
-}    
+}
 
-void generate_credential_token(char *user, char *service)
+unsigned long get_time()
+{
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        unsigned long ret = tv.tv_usec;
+        ret /= 1000;
+        ret += (tv.tv_sec * 1000);
+        return ret;
+}
+
+static char *rand_string(char *str, size_t size)
+{
+    const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890+-*%$#@!";
+    srand(get_time());
+    if (size) {
+        --size;
+        for (size_t n = 0; n < size; n++) {
+            int key = rand() % (int) (sizeof charset - 1);
+            str[n] = charset[key];
+        }
+        str[size] = '\0';
+    }
+}
+
+void generate_credential_token(char *session_id, char *user, char *service)
 {
     int i = 0,j = 0;
     credential_t *c = NULL;
+    char sid[20];
+
+    if (session_id == NULL)
+    {
+	if (num_sessions == MAX_SESSIONS)
+	{
+	    MAX_SESSIONS += 100;
+	    sessions = (session_t *) realloc(sessions, MAX_SESSIONS * sizeof(session_t));
+        }
+	// Generate random session_id
+	rand_string(sessions[num_sessions].sid, sizeof(sessions[num_sessions].sid)); 
+        strcpy(sessions[num_sessions].user, user);
+        num_sessions++;
+    }
+    else
+    {
+        //Get user from session cache for this session_id
+	for(i = 0; i < num_sessions; i++)
+	{
+	    if(!strcmp(sessions[num_sessions].sid, session_id))
+	        user = sessions[num_sessions].user;
+	}
+    }
 
     for(i = 0; i < dusers_count; i++)
     {
-	if(!strcmp(dc[i].delegator, user))
-	{
+        if(!strcmp(dc[i].delegator, user))
+        {
             c = &dc[i].dic;
-	}
+        }
     }
+
     if (NULL == c)
     {
 	printf("Delegated Credentials not found for %s\n", user);
@@ -289,7 +349,8 @@ void generate_credential_token(char *user, char *service)
 	    revealed[0] = (char *)calloc(c->cred[0]->ca->num_of_attributes, 1);
 	    revealed[1] = (char *)calloc(c->cred[1]->ca->num_of_attributes, 1);
 
-	    //do not reveal any attributes at level 0
+	    //Reveal credhash at level 0. do not reveal any other attributes at level 0
+	    revealed[0][1] = 1;
 
 
             // attribute 0 is pub key1. Dont reveal
@@ -301,16 +362,17 @@ void generate_credential_token(char *user, char *service)
                 int attr_indx = attribute_element_to_index(c->cred[1]->ca->attributes[j]); 
 		if(svc_attrs[i].attributes[attr_indx])
 		    revealed[1][j] = 1;
-	    } 
+	    }
+
 	    token_t tok;
             generate_attribute_token(&tok, c, revealed);    
-	    verify_attribute_token(&tok);
+	    //verify_attribute_token(&tok);
 	    send_token(&tok, service);
 	}
     }
 }
 
-int process_event(int sock)
+int process_event_request(int sock)
 {
     int len, n;
     struct sockaddr_in address, cliaddr;
@@ -338,7 +400,7 @@ int process_event(int sock)
 	{
 	    for(j = 0; esmap[i].services[j] != NULL; j++)
 	    {
-                generate_credential_token(user, esmap[i].services[j]);
+                generate_credential_token(NULL, user, esmap[i].services[j]);
 	    }
 	}
     }	
@@ -454,25 +516,29 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    int len, n; 
-    len = sizeof(cliaddr); 
-    messagetype mtype;
-    n = recvfrom(server_fd, (char *)&mtype, sizeof(messagetype),
-                0, ( struct sockaddr *) &cliaddr,
-                &len);
-    if (n == -1)
+    while(1)
     {
-        printf("recvfrom returned %d, %s\n", errno, strerror(errno));
-	return 0;
-    }
 
-    switch(mtype)
-    {
-        case EVENT_REQUEST:
-            printf("Received Event Request\n");
-            process_event(server_fd);
-            break;
-        default:
-            printf("Unknown %d request\n", mtype);
+        int len, n; 
+        len = sizeof(cliaddr); 
+        messagetype mtype;
+        n = recvfrom(server_fd, (char *)&mtype, sizeof(messagetype),
+                    0, ( struct sockaddr *) &cliaddr,
+                    &len);
+        if (n == -1)
+        {
+            printf("recvfrom returned %d, %s\n", errno, strerror(errno));
+            return 0;
+        }
+
+        switch(mtype)
+        {
+            case EVENT_REQUEST:
+                printf("Received Event Request\n");
+                process_event_request(server_fd);
+                break;
+            default:
+                printf("Unknown %d request\n", mtype);
+        }
     }
 }

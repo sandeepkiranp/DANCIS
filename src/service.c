@@ -17,6 +17,7 @@ int attr_count = 0;
 typedef struct policy
 {
     char *rule;
+    int num_services;
     char *services[10];
 }policy_t;
 
@@ -63,14 +64,14 @@ int load_policy(char *svc)
     size_t len = 0;
     ssize_t read;
 
-    policies = (policy_t *)malloc(num_policies * sizeof (policy_t));
+    policies = (policy_t *)calloc(num_policies * sizeof (policy_t), 1);
 
     for (i = 0; i < num_policies; i++)
     {
 	//read the rule
         read = getline(&line, &len, fp);
         policies[i].rule = (char *)calloc(1, read);
-        memcpy(policies[i].rule, line, read);
+        memcpy(policies[i].rule, line, read -1);
 
 	//read the services to be invoked
         read = getline(&line, &len, fp);
@@ -85,6 +86,7 @@ int load_policy(char *svc)
             token = strtok(NULL, " ");
 	    j++;
         }
+	policies[i].num_services = j;
         //skip empty line
 	getline(&line, &len, fp);
     }
@@ -93,13 +95,56 @@ int load_policy(char *svc)
   
     return SUCCESS;
 }
+void invoke_service(char *service)
+{
 
-void process_service_request(int sock)
+}
+void evaluate_policy(token_t *tok)
+{
+    int i, j = 0;
+    int num_revealed = 0;
+    int attributes[MAX_NUM_ATTRIBUTES] = {0};
+
+    for(i=0; i<tok->te[1].num_attrs-2; i++) //attributes[0] represents CPK
+    {
+        if(tok->te[1].revealed[i])
+            num_revealed++;
+    }
+
+    for (j = 0; j < num_revealed; j++)
+    {
+        int attr_indx = attribute_element_to_index(tok->te[1].attributes[j]);
+	attributes[attr_indx] = 1;
+    }
+
+    for (i = 0; i < num_policies; i++)
+    {
+        if(evaluate(attributes, policies[i].rule))
+	{
+            for(j = 0; j < policies[i].num_services; j++)
+            {
+                printf("Invoking service %s\n", policies[i].services[j]);
+                invoke_service(policies[i].services[j]);
+	    }
+        }
+    }
+}
+
+
+int process_service_request(int sock)
 {
     token_t tok;
 
     token_receive(&tok, sock);
-    verify_attribute_token(&tok);
+    if(verify_attribute_token(&tok) == FAILURE)
+    {
+        printf("Attribute token verification failed!\n");
+	return FAILURE;
+    }
+    // check for blacklist credential hash
+    
+    // Evaluate policy
+    evaluate_policy(&tok);
 }
 
 //./service <service_name> <port>

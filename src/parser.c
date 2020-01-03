@@ -111,7 +111,7 @@ int evaluate(int *attributes, char * tokens){
     
     // stack to store operators. 
     stack ops; 
-    
+
     init_stack(&values);
     init_stack(&ops);
 
@@ -187,11 +187,8 @@ int evaluate(int *attributes, char * tokens){
 } 
 /*
 int main() { 
-    attributes[0] = 1;
-    attributes[1] = 0;
-    attributes[2] = 1;
-    attributes[3] = 1;
-    attributes[4] = 0;
+    int attributes[50] = {0};
+    attributes[1] = 1;
     //cout << evaluate("10 + 2 * 6") << "\n"; 
     //cout << evaluate("100 * 2 + 12") << "\n"; 
     //cout << evaluate("100 * ( 2 + 12 )") << "\n"; 
@@ -206,6 +203,7 @@ int main() {
     printf("result = %d\n", evaluate("( A1 | A1 & ( A3 | A4 ) ) & A0 & ! ( A0 & A1 )"));
     printf("result = %d\n", evaluate("( A2 | ! A3 ) & ( A0 | A1 & A2 | ! A4 ) & ! ( A0 & A0 | A2 )"));
     printf("result = %d\n", evaluate("( A2 | ! A3 ) & ( A0 | A1 & A2 | ! A4 ) & ( A0 & A0 | A2 )"));
+    printf("result = %d\n", evaluate(attributes, "( A1 & ( A4 | A6 ) )"));
     return 0; 
 } 
 */
