@@ -150,7 +150,7 @@ int send_event_request(char *user, char *event)
       
     // Filling server information 
     servaddr.sin_family = AF_INET; 
-    servaddr.sin_port = htons(CONTROLLER_PORT); 
+    servaddr.sin_port = htons(get_service_port(CONTROLLER_SVC)); 
     servaddr.sin_addr.s_addr = INADDR_ANY; 
       
     int n, len; 
@@ -268,6 +268,7 @@ int main(int argc, char *argv[])
 {
     initialize_system_params();
     read_user_params(argv[1]);
+    read_services_location();
 
     //./user user1 DELEGATE user2 all|A1,A2
     if (argc > 2 && !strcmp(argv[2],"DELEGATE"))

@@ -14,7 +14,6 @@
 #define TOTAL_ATTRIBUTES (MAX_NUM_ATTRIBUTES + 2) //cpk(i-1) + credential hash + MAX_NUM_ATTRIBUTES attributes
 
 #define CONTROLLER_SVC "controller"
-#define CONTROLLER_PORT 7777
 
 #define SID_LENGTH 20
 

@@ -325,8 +325,8 @@ void generate_credential_token(char *session_id, char *user, char *service)
         //Get user from session cache for this session_id
 	for(i = 0; i < num_sessions; i++)
 	{
-	    if(!strcmp(sessions[num_sessions].sid, session_id))
-	        user = sessions[num_sessions].user;
+	    if(!strcmp(sessions[i].sid, session_id))
+	        user = sessions[i].user;
 	}
     }
 
@@ -478,6 +478,38 @@ int read_policy_attributes_from_services()
     closedir(dr);
 }
 
+int process_service_chain_request(int sock)
+{
+    char sid[SID_LENGTH];
+    int len, n;
+    struct sockaddr_in cliaddr;
+    char service[20] = {0};
+
+    len = sizeof(cliaddr);
+
+    n = recvfrom(sock, service, sizeof(service),
+                0, ( struct sockaddr *) &cliaddr,
+                &len);
+    if (n == -1)
+    {
+        printf("recvfrom returned %d, %s\n", errno, strerror(errno));
+        return 0;
+    }
+    printf("Received service name %s\n", service);
+
+    n = recvfrom(sock, sid, sizeof(sid),
+                0, ( struct sockaddr *) &cliaddr,
+                &len);
+    if (n == -1)
+    {
+        printf("recvfrom returned %d, %s\n", errno, strerror(errno));
+        return 0;
+    }
+    printf("Received session ID %s\n", sid);
+
+    generate_credential_token(sid, NULL, service);
+}    
+
 int main(int argc, char *argv[])
 {
     initialize_system_params();
@@ -512,7 +544,7 @@ int main(int argc, char *argv[])
 */
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons( CONTROLLER_PORT );
+    address.sin_port = htons(get_service_port(CONTROLLER_SVC));
 
     if (bind(server_fd, (struct sockaddr *)&address,
                                  sizeof(address))<0)
@@ -540,6 +572,10 @@ int main(int argc, char *argv[])
             case EVENT_REQUEST:
                 printf("Received Event Request\n");
                 process_event_request(server_fd);
+                break;
+            case SERVICE_CHAIN_REQUEST:
+                printf("Received Service Chain Request\n");
+                process_service_chain_request(server_fd);
                 break;
             default:
                 printf("Unknown %d request\n", mtype);

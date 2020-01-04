@@ -120,6 +120,7 @@ char *get_service_ip(char *service)
             return svc_loc[i].ip;
 	}
     }
+    return NULL;
 }
 
 short int get_service_port(char *service)

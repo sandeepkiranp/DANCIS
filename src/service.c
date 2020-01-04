@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #define PORT 8080
 
-char service[30];
+char service_name[20];
 int attributes[MAX_NUM_ATTRIBUTES] = {0};
 int attr_count = 0;
 
@@ -97,7 +97,7 @@ int load_policy(char *svc)
     return SUCCESS;
 }
 
-void invoke_service(char *sid, char *service)
+int invoke_service(char *sid, char *service)
 {
     int sockfd;
     struct sockaddr_in     servaddr;
@@ -114,7 +114,13 @@ void invoke_service(char *sid, char *service)
     // Filling service information
     servaddr.sin_family = AF_INET;
     servaddr.sin_port = htons(get_service_port(service));
-    inet_aton(get_service_ip(service), &servaddr.sin_addr);
+    char *ip = get_service_ip(service);
+    if (ip == NULL)
+    {
+	printf("Invalid service %s\n", service);
+        return FAILURE;
+    }
+    inet_aton(ip, &servaddr.sin_addr);
 
     sendto(sockfd, (const char *)&mtype, sizeof(messagetype),
         0, (const struct sockaddr *) &servaddr,
@@ -151,6 +157,7 @@ void evaluate_policy(char *sid, token_t *tok)
                 printf("Invoking service %s\n", policies[i].services[j]);
                 invoke_service(sid, policies[i].services[j]);
 	    }
+	    break;
         }
     }
 }
@@ -201,6 +208,36 @@ int process_service_chain_request(int sock)
         return 0;
     }
     printf("Received session ID %s\n", sid);
+
+    //make a request to controller for attribute token for this sid and service
+    int sockfd;
+    struct sockaddr_in     servaddr;
+    messagetype mtype = SERVICE_CHAIN_REQUEST;
+
+    // Creating socket file descriptor
+    if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
+        perror("socket creation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    memset(&servaddr, 0, sizeof(servaddr));
+
+    // Filling service information
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_port = htons(get_service_port(CONTROLLER_SVC));
+    inet_aton(get_service_ip(CONTROLLER_SVC), &servaddr.sin_addr);
+
+    sendto(sockfd, (const char *)&mtype, sizeof(messagetype),
+        0, (const struct sockaddr *) &servaddr,
+            sizeof(servaddr));
+
+    sendto(sockfd, (const char *)service_name, strlen(service_name),
+        0, (const struct sockaddr *) &servaddr,
+            sizeof(servaddr));
+
+    sendto(sockfd, (const char *)sid, SID_LENGTH,
+        0, (const struct sockaddr *) &servaddr,
+            sizeof(servaddr));
 }
 
 //./service <service_name> <port>
@@ -208,6 +245,8 @@ int main(int argc, char *argv[])
 {
     if(initialize_system_params() != SUCCESS)
 	return -1;
+
+    strcpy(service_name, argv[1]);
 
     load_policy(argv[1]);
 
@@ -218,7 +257,6 @@ int main(int argc, char *argv[])
     int opt = 1; 
     int addrlen = sizeof(address); 
     char buffer[1024] = {0}; 
-    char *hello = "Hello from server"; 
        
     // Creating socket file descriptor 
     if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) == 0) 
@@ -236,7 +274,7 @@ int main(int argc, char *argv[])
     } 
     address.sin_family = AF_INET; 
     address.sin_addr.s_addr = INADDR_ANY; 
-    address.sin_port = htons( atoi(argv[2]) ); 
+    address.sin_port = htons( get_service_port(argv[1]) ); 
        
     // Forcefully attaching socket to the port 8080 
     if (bind(server_fd, (struct sockaddr *)&address,  
