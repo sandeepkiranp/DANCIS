@@ -5,6 +5,7 @@
 #include <errno.h>
 
 #define PARAM_FILE HOME_DIR "/root/params.txt"
+#define SERVICES_FILE HOME_DIR "/root/services.txt"
 
 element_t g1, g2;
 pairing_t pairing;
@@ -13,6 +14,16 @@ element_t system_attributes_g1[MAX_NUM_ATTRIBUTES];
 element_t system_attributes_g2[MAX_NUM_ATTRIBUTES];
 element_t Y1[TOTAL_ATTRIBUTES];
 element_t Y2[TOTAL_ATTRIBUTES];
+
+typedef struct service_location
+{
+    char service[30];
+    char ip[20];
+    short int port;
+}service_location;
+
+static int num_services = 0;
+service_location *svc_loc = NULL;
 
 void write_element_to_file(FILE *fp, char *param, element_t e)
 {
@@ -66,6 +77,63 @@ void read_element_from_file(FILE *fp, char *param, element_t e, int skipline)
     //printf("Done\n");
 }
 
+int read_services_location()
+{
+    char port[10];
+    FILE *fp = fopen(SERVICES_FILE, "r");
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    int i = 0, j=0;
+
+    if (fp == NULL)
+    {
+        printf("errno %d, str %s\n", errno, strerror(errno));
+        return FAILURE;
+    }
+
+    fscanf(fp, "%d\n",&num_services);
+    svc_loc = (service_location *) calloc(num_services , sizeof(service_location));
+
+    while ((read = getline(&line, &len, fp)) != -1)
+    {
+        line[read - 1] = 0; //trim the new line character
+
+        sscanf(line, "%s %s %s", svc_loc[i].service, svc_loc[i].ip, port);
+	svc_loc[i].port = atoi(port);
+
+        i++;
+    }
+    fclose(fp);
+
+    return SUCCESS;
+}
+
+char *get_service_ip(char *service)
+{
+    int i;
+
+    for(i = 0; i < num_services; i++)
+    {
+	if(!strcmp(svc_loc[i].service, service))
+	{
+            return svc_loc[i].ip;
+	}
+    }
+}
+
+short int get_service_port(char *service)
+{
+    int i;
+
+    for(i = 0; i < num_services; i++)
+    {
+        if(!strcmp(svc_loc[i].service, service))
+        {
+	    return svc_loc[i].port;
+        }
+    }
+}
 
 int initialize_system_params()
 {

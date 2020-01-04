@@ -16,6 +16,8 @@
 #define CONTROLLER_SVC "controller"
 #define CONTROLLER_PORT 7777
 
+#define SID_LENGTH 20
+
 typedef struct attributes
 {
     element_t *attributes;     //attributes[0] represents the public key
@@ -64,7 +66,9 @@ typedef enum messagetype
     SERVICE_REQUEST = 1,
     SERVICE_RESPONSE,
     EVENT_REQUEST,
-    EVENT_RESPONSE
+    EVENT_RESPONSE,
+    SERVICE_CHAIN_REQUEST,
+    SERVICE_CHAIN_RESPONSE
 }messagetype;
 
 typedef enum eventtype
@@ -98,6 +102,12 @@ extern int evaluate(int *attributes, char * tokens);
 extern int attribute_element_to_index(element_t e);
 
 extern event_t get_event_from_string(char *evt);
+
+extern int read_services_location();
+
+extern char *get_service_ip(char *service);
+
+extern short int get_service_port(char *service);
 
 extern void dac_generate_parameters();
 

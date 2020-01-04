@@ -60,7 +60,7 @@ service_attributes *svc_attrs;
 typedef struct session
 {
     char user[30];
-    char sid[20];
+    char sid[SID_LENGTH];
 }session_t;
 
 int num_sessions = 0;
@@ -248,7 +248,7 @@ int load_delegated_credentials(char *user)
 
 }
 
-void send_token(token_t *tok, char *service)
+void send_token(token_t *tok, char *service, char *session_id)
 {
     int sockfd;
     struct sockaddr_in     servaddr;
@@ -264,10 +264,14 @@ void send_token(token_t *tok, char *service)
 
     // Filling service information
     servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(5555);
-    servaddr.sin_addr.s_addr = INADDR_ANY;
+    servaddr.sin_port = htons(get_service_port(service));
+    inet_aton(get_service_ip(service), &servaddr.sin_addr);
 
     sendto(sockfd, (const char *)&mtype, sizeof(messagetype),
+        0, (const struct sockaddr *) &servaddr,
+            sizeof(servaddr));
+
+    sendto(sockfd, (const char *)session_id, SID_LENGTH,
         0, (const struct sockaddr *) &servaddr,
             sizeof(servaddr));
 
@@ -302,7 +306,6 @@ void generate_credential_token(char *session_id, char *user, char *service)
 {
     int i = 0,j = 0;
     credential_t *c = NULL;
-    char sid[20];
 
     if (session_id == NULL)
     {
@@ -314,6 +317,7 @@ void generate_credential_token(char *session_id, char *user, char *service)
 	// Generate random session_id
 	rand_string(sessions[num_sessions].sid, sizeof(sessions[num_sessions].sid)); 
         strcpy(sessions[num_sessions].user, user);
+	session_id = sessions[num_sessions].sid;
         num_sessions++;
     }
     else
@@ -367,7 +371,7 @@ void generate_credential_token(char *session_id, char *user, char *service)
 	    token_t tok;
             generate_attribute_token(&tok, c, revealed);    
 	    //verify_attribute_token(&tok);
-	    send_token(&tok, service);
+	    send_token(&tok, service, session_id);
 	}
     }
 }
@@ -479,6 +483,7 @@ int main(int argc, char *argv[])
     initialize_system_params();
     read_params();
     read_event_file();
+    read_services_location();
     read_policy_attributes_from_services();
 
     load_delegated_credentials(NULL);
@@ -518,7 +523,6 @@ int main(int argc, char *argv[])
 
     while(1)
     {
-
         int len, n; 
         len = sizeof(cliaddr); 
         messagetype mtype;

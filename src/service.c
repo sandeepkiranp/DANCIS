@@ -75,6 +75,7 @@ int load_policy(char *svc)
 
 	//read the services to be invoked
         read = getline(&line, &len, fp);
+	line[read - 1] = 0; //trim the new line character
 	j = 0;
 
         char* token = strtok(line, " ");
@@ -95,11 +96,35 @@ int load_policy(char *svc)
   
     return SUCCESS;
 }
-void invoke_service(char *service)
-{
 
+void invoke_service(char *sid, char *service)
+{
+    int sockfd;
+    struct sockaddr_in     servaddr;
+    messagetype mtype = SERVICE_CHAIN_REQUEST;
+
+    // Creating socket file descriptor
+    if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
+        perror("socket creation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    memset(&servaddr, 0, sizeof(servaddr));
+
+    // Filling service information
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_port = htons(get_service_port(service));
+    inet_aton(get_service_ip(service), &servaddr.sin_addr);
+
+    sendto(sockfd, (const char *)&mtype, sizeof(messagetype),
+        0, (const struct sockaddr *) &servaddr,
+            sizeof(servaddr));
+
+    sendto(sockfd, (const char *)sid, SID_LENGTH,
+        0, (const struct sockaddr *) &servaddr,
+            sizeof(servaddr));
 }
-void evaluate_policy(token_t *tok)
+void evaluate_policy(char *sid, token_t *tok)
 {
     int i, j = 0;
     int num_revealed = 0;
@@ -124,7 +149,7 @@ void evaluate_policy(token_t *tok)
             for(j = 0; j < policies[i].num_services; j++)
             {
                 printf("Invoking service %s\n", policies[i].services[j]);
-                invoke_service(policies[i].services[j]);
+                invoke_service(sid, policies[i].services[j]);
 	    }
         }
     }
@@ -134,6 +159,19 @@ void evaluate_policy(token_t *tok)
 int process_service_request(int sock)
 {
     token_t tok;
+    char sid[SID_LENGTH];
+    int len, n;
+    struct sockaddr_in cliaddr;
+
+    len = sizeof(cliaddr);
+    n = recvfrom(sock, sid, sizeof(sid),
+                0, ( struct sockaddr *) &cliaddr,
+                &len);
+    if (n == -1)
+    {
+        printf("recvfrom returned %d, %s\n", errno, strerror(errno));
+        return 0;
+    }
 
     token_receive(&tok, sock);
     if(verify_attribute_token(&tok) == FAILURE)
@@ -144,7 +182,25 @@ int process_service_request(int sock)
     // check for blacklist credential hash
     
     // Evaluate policy
-    evaluate_policy(&tok);
+    evaluate_policy(sid, &tok);
+}
+
+int process_service_chain_request(int sock)
+{
+    char sid[SID_LENGTH];
+    int len, n;
+    struct sockaddr_in cliaddr;
+
+    len = sizeof(cliaddr);
+    n = recvfrom(sock, sid, sizeof(sid),
+                0, ( struct sockaddr *) &cliaddr,
+                &len);
+    if (n == -1)
+    {
+        printf("recvfrom returned %d, %s\n", errno, strerror(errno));
+        return 0;
+    }
+    printf("Received session ID %s\n", sid);
 }
 
 //./service <service_name> <port>
@@ -154,6 +210,8 @@ int main(int argc, char *argv[])
 	return -1;
 
     load_policy(argv[1]);
+
+    read_services_location();
 
     int server_fd, new_socket, valread; 
     struct sockaddr_in address, cliaddr; 
@@ -188,26 +246,33 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE); 
     } 
 
-    int len, n;
-    len = sizeof(cliaddr);
-    messagetype mtype;
-    n = recvfrom(server_fd, (char *)&mtype, sizeof(messagetype),
-                0, ( struct sockaddr *) &cliaddr,
-                &len);
-    if (n == -1)
+    while(1)
     {
-        printf("recvfrom returned %d, %s\n", errno, strerror(errno));
-        return 0;
-    }
-
-    switch(mtype)
-    {
-        case SERVICE_REQUEST:
-	    printf("Received Service Request\n");
-	    process_service_request(server_fd);
-	    break;
-	default:
-	    printf("Unknown %d request\n", mtype);
+        int len, n;
+        len = sizeof(cliaddr);
+        messagetype mtype;
+        n = recvfrom(server_fd, (char *)&mtype, sizeof(messagetype),
+                    0, ( struct sockaddr *) &cliaddr,
+                    &len);
+        if (n == -1)
+        {
+            printf("recvfrom returned %d, %s\n", errno, strerror(errno));
+            return 0;
+        }
+    
+        switch(mtype)
+        {
+            case SERVICE_REQUEST:
+	        printf("Received Service Request\n");
+                process_service_request(server_fd);
+	        break;
+            case SERVICE_CHAIN_REQUEST:
+                printf("Received Service Chain Request\n");
+                process_service_chain_request(server_fd);
+                break;
+            default:
+	        printf("Unknown %d request\n", mtype);
+        }
     }
 
     return 0;
