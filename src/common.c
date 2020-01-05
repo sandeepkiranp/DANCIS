@@ -6,6 +6,7 @@
 
 #define PARAM_FILE HOME_DIR "/root/params.txt"
 #define SERVICES_FILE HOME_DIR "/root/services.txt"
+#define REVOKED_FILE HOME_DIR "/root/revoked.txt"
 
 element_t g1, g2;
 pairing_t pairing;
@@ -75,6 +76,45 @@ void read_element_from_file(FILE *fp, char *param, element_t e, int skipline)
     free(buffer);
 
     //printf("Done\n");
+}
+
+int is_credential_valid(element_t credhash)
+{
+    size_t len;
+    size_t outlen;
+    char *base64e;
+    unsigned char *buffer;
+    char *line = NULL;
+    ssize_t read;
+    FILE *revfp = NULL;
+
+    len = element_length_in_bytes(credhash);
+    buffer =  (unsigned char *)malloc(len);
+
+    element_to_bytes(buffer, credhash);
+    base64e = base64_encode(buffer, len, &outlen);
+
+    revfp = fopen(REVOKED_FILE, "r");
+    if (revfp == NULL)
+    {
+        printf("Error opening %s\n", REVOKED_FILE);
+        return FAILURE;
+    }
+
+    while ((read = getline(&line, &len, revfp)) != -1)
+    {
+        line[read - 1] = 0; //trim the new line character
+
+        if (!strcmp(line, base64e))
+        {
+	    printf("Credential revoked!\n");
+	    return FAILURE;
+	}
+    }
+
+    free(base64e);
+    free(buffer);
+    return SUCCESS;
 }
 
 int read_services_location()

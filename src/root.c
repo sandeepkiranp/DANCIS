@@ -11,6 +11,9 @@
 
 #define PARAM_FILE HOME_DIR "/root/params.txt"
 
+
+#define REVOKED_FILE HOME_DIR "/root/revoked.txt"
+
 element_t g1, g2;
 element_t root_secret_key;
 element_t root_public_key;
@@ -148,18 +151,42 @@ void dac_generate_parameters()
     printf("Done!\n\n");
 }
 
-void get_root_public_key(element_t x)
+int revoke_user_credential(char *user)
 {
-    element_init_same_as(x,root_public_key);
-    element_set(x,root_public_key);
-}
+    //read attribute[1] from user's param.txt and publish it in revoked.txt
+    FILE *fp, *revfp;
+    char str[100];
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
 
-void get_root_secret_key(element_t x)
-{
-    element_init_same_as(x,root_secret_key);
-    element_set(x,root_secret_key);
-}
+    sprintf(str, "%s/%s/params.txt", USER_DIR, user);
+    fp = fopen(str, "r");
+    if (fp == NULL)
+    {
+        printf("Error opening params.txt for %s\n", user);
+	return FAILURE;
+    }
 
+    while ((read = getline(&line, &len, fp)) != -1)
+    {
+	char *credhashattr = "attr[1] = ";
+        line[read - 1] = 0; //trim the new line character
+
+	if (!strncmp(line, credhashattr, strlen(credhashattr)))
+	{
+	    revfp = fopen(REVOKED_FILE, "a");
+	    if (revfp == NULL)
+	    {
+		printf("Error opening %s\n", REVOKED_FILE);
+		return FAILURE;
+	    }
+	    fprintf(revfp, "%s\n", line + strlen(credhashattr));
+	    fclose(revfp);
+	}
+    }
+    fclose(fp);
+}
 
 static int issue_user_credential(char *user, char *attributes)
 {
@@ -252,20 +279,10 @@ static int issue_user_credential(char *user, char *attributes)
 
 int main(int argc, char *argv[])
 {
-    credential_attributes ca;
-    credential_t ic;
-    element_t x,y;
-    element_t priv, pub;
-    token_t tok;
     int i;
     int ret = FAILURE;
 
-    memset(&ic, 0, sizeof(ic));
-
     dac_generate_parameters();
-
-    get_root_secret_key(x);
-    get_root_public_key(y);
 
     if(argc < 2)
     {
@@ -278,34 +295,12 @@ int main(int argc, char *argv[])
     {
         ret = issue_user_credential(argv[2], argv[3]);
     }
-    
-/*
-    for(i=1; i<=5; i++)
+
+    // ./root REVOKE user1
+    if (!strcasecmp(argv[1], "REVOKE"))
     {
-        generate_user_keys(i, priv, pub);
-
-        set_credential_attributes(i, pub, &ca);
-
-        ret = issue_credential(x, y, &ca, &ic); //called by issuer with its private key
-	if (ret != SUCCESS)
-	{
-	    printf("issue_credential Failed\n");
-            exit(FAILURE);
-        }
-
-        credential_set_private_key(priv, &ic); //called by issuee with its private key
-
-        generate_attribute_token(&tok, &ic);
-        verify_attribute_token(&tok);
-
-        element_init_same_as(x, priv);
-        element_set(x, priv);
-
-        element_init_same_as(y, pub);
-        element_set(y, pub);
-    }
-*/
-
+        ret = revoke_user_credential(argv[2]);
+    }    
     printf("Exit from main\n");
     return 0;
 }

@@ -130,6 +130,7 @@ int invoke_service(char *sid, char *service)
         0, (const struct sockaddr *) &servaddr,
             sizeof(servaddr));
 }
+
 void evaluate_policy(char *sid, token_t *tok)
 {
     int i, j = 0;
@@ -177,7 +178,7 @@ int process_service_request(int sock)
     if (n == -1)
     {
         printf("recvfrom returned %d, %s\n", errno, strerror(errno));
-        return 0;
+        return FAILURE;
     }
 
     token_receive(&tok, sock);
@@ -186,8 +187,14 @@ int process_service_request(int sock)
         printf("Attribute token verification failed!\n");
 	return FAILURE;
     }
+
     // check for blacklist credential hash
-    
+    if(is_credential_valid(tok.te[0].credhash) == FAILURE)
+    {
+	printf("process_service_request failed as credential is blacklisted\n");
+	return FAILURE;
+    }
+
     // Evaluate policy
     evaluate_policy(sid, &tok);
 }

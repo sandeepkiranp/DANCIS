@@ -130,6 +130,8 @@ extern void generate_attribute_token(token_t *tok, credential_t *ic, char **reve
 
 extern int verify_attribute_token(token_t *tok);
 
+extern int is_credential_valid(element_t credhash);
+
 extern void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr);
 
 extern  void token_receive(token_t *tok, int sock);
