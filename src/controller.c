@@ -61,6 +61,8 @@ typedef struct session
 {
     char user[30];
     char sid[SID_LENGTH];
+    int num_services;
+    char *services[100];
 }session_t;
 
 int num_sessions = 0;
@@ -302,6 +304,33 @@ static char *rand_string(char *str, size_t size)
     }
 }
 
+void add_service_to_session(char *sid, char *service)
+{
+    int i, j;
+    for(i = 0; i < num_sessions; i++)
+    {
+        if(!strcmp(sessions[i].sid, sid))
+	{
+	    sessions[i].services[sessions[i].num_services] = calloc(20, sizeof(char));
+	    strcpy(sessions[i].services[sessions[i].num_services], service);
+	    sessions[i].num_services++;
+	}
+    }    
+}
+
+int is_service_in_session_cache(int index, char *service)
+{
+    int i;
+
+    for(i = 0; i < sessions[index].num_services; i++)
+    {
+	if(!strcmp(sessions[index].services[i], service))
+	    return SUCCESS;
+    }
+
+    return FAILURE;
+}
+
 void generate_credential_token(char *session_id, char *user, char *service)
 {
     int i = 0,j = 0;
@@ -314,6 +343,8 @@ void generate_credential_token(char *session_id, char *user, char *service)
 	    MAX_SESSIONS += 100;
 	    sessions = (session_t *) realloc(sessions, MAX_SESSIONS * sizeof(session_t));
         }
+
+	memset(&sessions[num_sessions], 0, sizeof(session_t));
 	// Generate random session_id
 	rand_string(sessions[num_sessions].sid, sizeof(sessions[num_sessions].sid)); 
         strcpy(sessions[num_sessions].user, user);
@@ -326,7 +357,12 @@ void generate_credential_token(char *session_id, char *user, char *service)
 	for(i = 0; i < num_sessions; i++)
 	{
 	    if(!strcmp(sessions[i].sid, session_id))
+	    {
+                // Check if we already processed this SID for this service. If yes, simply return back.
+                if(is_service_in_session_cache(i, service) == SUCCESS)
+		    return;	
 	        user = sessions[i].user;
+	    }
 	}
     }
 
@@ -372,6 +408,9 @@ void generate_credential_token(char *session_id, char *user, char *service)
             generate_attribute_token(&tok, c, revealed);    
 	    //verify_attribute_token(&tok);
 	    send_token(&tok, service, session_id);
+	    // Add service to session map
+	    add_service_to_session(session_id, service);
+	    break;
 	}
     }
 }

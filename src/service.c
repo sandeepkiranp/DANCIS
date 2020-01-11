@@ -212,7 +212,7 @@ int process_service_chain_request(int sock)
     if (n == -1)
     {
         printf("recvfrom returned %d, %s\n", errno, strerror(errno));
-        return 0;
+        return FAILURE;
     }
     printf("Received session ID %s\n", sid);
 
