@@ -136,6 +136,8 @@ extern void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr);
 
 extern  void token_receive(token_t *tok, int sock);
 
+extern void token_free(token_t *tok);
+
 extern void groth_generate_signature_1(element_t secret_key, credential_attributes *ca, credential_element_t *ic);
 
 extern int groth_verify_signature_1(element_t public_key, credential_attributes *ca, credential_element_t *ic);

@@ -234,6 +234,55 @@ void token_receive(token_t *tok, int sock)
     }
 }
 
+void token_free(token_t *tok)
+{
+    int l, i, j, k;
+    token_element_t *te;
+
+    element_clear(tok->c);
+
+    for(l=0; l<tok->levels; l++)
+    {
+        te = &tok->te[l];
+	element_clear(te->r1);
+	element_clear(te->ress);
+	element_clear(te->credhash);
+
+        if(l == tok->levels - 1)
+	{
+	    element_clear(te->rescsk);
+	}
+	else
+	{
+	    element_clear(te->rescpk);
+	}
+
+	for(i=0; i < te->num_attrs; i++)
+	{
+	    element_clear(te->rest[i]);
+	}
+
+	free(te->rest);
+
+	for(i=0,j=0,k=0; i < te->num_attrs - 2; i++)
+        {
+	    if(te->revealed[i])
+	    {
+		element_clear(te->attributes[j++]);
+	    }
+	    else
+	    {
+		element_clear(te->resa[k++]);
+	    }
+	}
+	free(te->revealed);
+	free(te->attributes);
+	free(te->resa);
+    }
+    free(tok->te);
+}
+
+
 void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 {
     int i, j, k, l;
@@ -630,6 +679,74 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
         }
     }
 
+    //clear of everything used in this function
+    element_clear(one_by_r);
+    element_clear(one);
+
+    for (l=0; l< ci->levels; l++)
+    {
+        ic = ci->cred[l];
+	num_attrs = ic->ca->num_of_attributes;
+
+	element_clear(rhosig[l]);
+
+	element_clear(r1[l]);
+	element_clear(s1[l]);
+        for(i=0; i<num_attrs; i++)
+        {
+            element_init_G1(t1[l][i], pairing);
+        }
+    }
+
+    element_clear(temp1);
+    element_clear(eg1R);
+    element_clear(temp2);
+    element_clear(eg1g2);
+    element_clear(ey1g2);
+    element_clear(negrhocsk);
+    element_clear(negrhocpk);
+    element_clear(negrhoa);
+    element_clear(rhocsk);
+
+    for (l=0; l< ci->levels; l++)
+    {
+        ic = ci->cred[l];
+	num_attrs = ic->ca->num_of_attributes;
+
+	element_clear(rhos[l]);
+	element_clear(rhocpk[l]);
+        for(i=0; i<num_attrs; i++)
+        {
+	    element_clear(rhot[l][i]);
+	}
+        for(i=0; i<num_attrs - 2; i++)
+        {
+            element_clear(rhoa[l][i]);
+	}
+	for(i=0; i<num_attrs + 1; i++)
+	{
+	    element_clear(com[l][i]);
+	}
+    }
+
+    for(i=0; i<ci->levels; i++)
+    { 
+	free(t1[i]);
+	free(rhot[i]);
+	free(rhoa[i]);
+	free(com[i]);
+    }
+
+    free(rhosig);
+    free(r1);
+    free(s1);
+    free(t1);
+    free(com);
+    free(rhos);
+    free(rhocpk);
+    free(rhot);
+    free(rhoa);
+
     printf("Done!\n");
 }
 
@@ -924,6 +1041,34 @@ int verify_attribute_token(token_t *tk)
 	element_printf("c = %B\nct = %B\n", tk->c, ct); 
 	return FAILURE;
     }
+
+    //clear everything used in this function
+    element_clear(temp1);
+    element_clear(temp2);
+    element_clear(temp3);
+    element_clear(temp4);
+    element_clear(temp5);
+    element_clear(one);
+    element_clear(eg1g2);
+
+    for(l=0; l<tk->levels; l++) 
+    {
+        tok = &tk->te[l];
+	num_attrs = tok->num_attrs;
+
+	if (l != 0)
+	{
+            element_clear(prevrescpk);
+	}
+
+        for(i=0; i<num_attrs+1; i++) //for s, cpk, credential hash and all attributes
+        {
+            element_clear(comt[l][i]);
+	}
+	free(comt[l]);
+    }
+    free(comt);
+    element_clear(ct);
 
     printf("Hurray!\n");
     return SUCCESS;

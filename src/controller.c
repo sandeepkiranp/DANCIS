@@ -410,6 +410,7 @@ void generate_credential_token(char *session_id, char *user, char *service)
 	    send_token(&tok, service, session_id);
 	    // Add service to session map
 	    add_service_to_session(session_id, service);
+	    token_free(&tok);
 	    break;
 	}
     }

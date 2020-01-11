@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <netinet/in.h>
 #include <string.h>
 #include <unistd.h>
@@ -163,6 +164,14 @@ void evaluate_policy(char *sid, token_t *tok)
     }
 }
 
+void calculate_time_diff(char *prefix, struct timeval *start, struct timeval *end)
+{
+    double time_taken;
+    time_taken = (end->tv_sec - start->tv_sec) * 1e6;
+    time_taken = (time_taken + (end->tv_usec -
+                              start->tv_usec)) * 1e-3;
+    printf("time taken for %s = %fms\n", prefix, time_taken);
+}
 
 int process_service_request(int sock)
 {
@@ -170,6 +179,7 @@ int process_service_request(int sock)
     char sid[SID_LENGTH];
     int len, n;
     struct sockaddr_in cliaddr;
+    struct timeval start, end;
 
     len = sizeof(cliaddr);
     n = recvfrom(sock, sid, sizeof(sid),
@@ -181,12 +191,23 @@ int process_service_request(int sock)
         return FAILURE;
     }
 
+    gettimeofday(&start, NULL);
+    //receive the token
     token_receive(&tok, sock);
+    gettimeofday(&end, NULL);
+    calculate_time_diff("receive attribute token", &start, &end);
+
+    gettimeofday(&start, NULL);
+    //verify the token
     if(verify_attribute_token(&tok) == FAILURE)
     {
         printf("Attribute token verification failed!\n");
 	return FAILURE;
     }
+    gettimeofday(&end, NULL);
+    calculate_time_diff("verify attribute token", &start, &end);
+
+    gettimeofday(&start, NULL);
 
     // check for blacklist credential hash
     if(is_credential_valid(tok.te[0].credhash) == FAILURE)
@@ -194,9 +215,16 @@ int process_service_request(int sock)
 	printf("process_service_request failed as credential is blacklisted\n");
 	return FAILURE;
     }
+    gettimeofday(&end, NULL);
+    calculate_time_diff("credential blacklist checking", &start, &end);
 
     // Evaluate policy
+    gettimeofday(&start, NULL);
     evaluate_policy(sid, &tok);
+    gettimeofday(&end, NULL);
+    calculate_time_diff("policy evaluation", &start, &end);
+
+    token_free(&tok);
 }
 
 int process_service_chain_request(int sock)
