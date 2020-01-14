@@ -1,7 +1,7 @@
 import random
 import os
 
-services_dir = "/home/sandeep/dac/services"
+services_dir = "/home/sandeep/dac/services/"
 
 ops = ["&","|","& !", "| !"]
 
@@ -45,10 +45,8 @@ def generate_policy_component(s):
             component += " " + ops[random.randint(0,len(ops) - 1)] + " "
     return "( " + component + " )"
 
-dir_list = [x[0] for x in os.walk(services_dir)]
-for service in dir_list:
-    if (service == services_dir):
-        continue
+for indx in range(50):
+    service = "service" + str(indx + 1);
     num_policies = random.randint(5,10)
     attribute_set = set()
     output = ''
@@ -60,8 +58,15 @@ for service in dir_list:
             service_id = random.randint(0,49)
             services += "service" + str(service_id) + " "
         output  += policy + "\n" + services + "\n\n"
-     
-    f = open(service + "/policy.txt", "w");
+
+    try:
+        os.mkdir(services_dir + service)
+    except OSError:
+        print ("Creation of the directory %s failed" % services_dir + service)
+    else:
+        print ("Successfully created the directory %s " % services_dir + service)     
+
+    f = open(services_dir + service + "/policy.txt", "w");
     output = str(list(attribute_set)) + "\n" + str(num_policies) + "\n" + output
     f.write(output)
     f.close()

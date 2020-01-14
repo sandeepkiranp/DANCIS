@@ -264,9 +264,11 @@ int delegate_credential(char *duser, char *attributes)
     }
 }
 
+FILE *logfp;
+
 int main(int argc, char *argv[])
 {
-    initialize_system_params();
+    initialize_system_params(stdout);
     read_user_params(argv[1]);
     read_services_location();
 

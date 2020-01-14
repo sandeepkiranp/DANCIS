@@ -176,18 +176,18 @@ short int get_service_port(char *service)
     }
 }
 
-int initialize_system_params()
+int initialize_system_params(FILE *logfp)
 {
     char param[1024];
     int i;
     element_t dummy;
 
-    printf("Generating System Parameters...");
+    fprintf(logfp, "Initializing System Parameters...\n");
 
     int count = fread(param, 1, 1024, stdin);
     if (!count) pbc_die("input error");
 
-    printf("Reading (%d) parameters \n%s \n",count, param);
+    fprintf(logfp, "Reading (%d) parameters \n%s \n",count, param);
     pairing_init_set_buf(pairing, param, count);
 
     element_init_G1(g1, pairing);
@@ -218,7 +218,7 @@ int initialize_system_params()
         char str[10];
         FILE *fp = fopen(PARAM_FILE, "r");
 
-        printf("param file %s\n", PARAM_FILE);
+        fprintf(logfp, "root param file %s\n", PARAM_FILE);
         if (fp == NULL)
         {
             printf("errno %d, str %s\n", errno, strerror(errno));
@@ -252,10 +252,10 @@ int initialize_system_params()
     }
     else
     {
-        printf("error reading %s, %s\n", PARAM_FILE, strerror(errno));
+        fprintf(logfp, "error reading %s, %s\n", PARAM_FILE, strerror(errno));
 	return FAILURE;
     }
-    printf("Done!\n");
+    fprintf(logfp, "Done!\n");
     return SUCCESS;
 }
 

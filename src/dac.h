@@ -110,7 +110,7 @@ extern short int get_service_port(char *service);
 
 extern void dac_generate_parameters();
 
-extern int initialize_system_params();
+extern int initialize_system_params(FILE *fp);
 
 extern void setup_credentials_from_file(FILE *fp, int attrcount, credential_t *c);
 

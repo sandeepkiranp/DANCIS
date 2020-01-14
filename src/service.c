@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #define PORT 8080
 
+FILE *logfp;
 char service_name[20];
 int attributes[MAX_NUM_ATTRIBUTES] = {0};
 int attr_count = 0;
@@ -33,17 +34,17 @@ int load_policy(char *svc)
     int i, j;
 
     sprintf(str, "%s/services/%s/policy.txt", HOME_DIR, svc);
-    printf("Reading policy from %s\n", str);
+    fprintf(logfp, "Reading policy from %s\n", str);
 
     FILE *fp = fopen(str, "r");
     if (fp == NULL)
     {
-        printf("Error opening file %s\n", strerror(errno));
+        fprintf(logfp, "Error opening file %s\n", strerror(errno));
         return FAILURE;
     }
     fgets(attrs, sizeof(attrs), fp);
 
-    printf("Attributes = %s\n", attrs);
+    fprintf(logfp, "Attributes = %s\n", attrs);
 
     char* token = strtok(attrs, "['A");
 
@@ -118,7 +119,7 @@ int invoke_service(char *sid, char *service)
     char *ip = get_service_ip(service);
     if (ip == NULL)
     {
-	printf("Invalid service %s\n", service);
+	fprintf(logfp,"Invalid service %s\n", service);
         return FAILURE;
     }
     inet_aton(ip, &servaddr.sin_addr);
@@ -156,7 +157,7 @@ void evaluate_policy(char *sid, token_t *tok)
 	{
             for(j = 0; j < policies[i].num_services; j++)
             {
-                printf("Invoking service %s\n", policies[i].services[j]);
+                fprintf(logfp, "Invoking service %s\n", policies[i].services[j]);
                 invoke_service(sid, policies[i].services[j]);
 	    }
 	    break;
@@ -170,7 +171,7 @@ void calculate_time_diff(char *prefix, struct timeval *start, struct timeval *en
     time_taken = (end->tv_sec - start->tv_sec) * 1e6;
     time_taken = (time_taken + (end->tv_usec -
                               start->tv_usec)) * 1e-3;
-    printf("time taken for %s = %fms\n", prefix, time_taken);
+    fprintf(logfp, "time taken for %s = %fms\n", prefix, time_taken);
 }
 
 int process_service_request(int sock)
@@ -187,9 +188,11 @@ int process_service_request(int sock)
                 &len);
     if (n == -1)
     {
-        printf("recvfrom returned %d, %s\n", errno, strerror(errno));
+        fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
         return FAILURE;
     }
+
+    fprintf(logfp, "Received Service Request for Session %s\n", sid);
 
     gettimeofday(&start, NULL);
     //receive the token
@@ -201,7 +204,7 @@ int process_service_request(int sock)
     //verify the token
     if(verify_attribute_token(&tok) == FAILURE)
     {
-        printf("Attribute token verification failed!\n");
+        fprintf(logfp, "Attribute token verification failed!\n");
 	return FAILURE;
     }
     gettimeofday(&end, NULL);
@@ -212,7 +215,7 @@ int process_service_request(int sock)
     // check for blacklist credential hash
     if(is_credential_valid(tok.te[0].credhash) == FAILURE)
     {
-	printf("process_service_request failed as credential is blacklisted\n");
+	fprintf(logfp, "process_service_request failed as credential is blacklisted\n");
 	return FAILURE;
     }
     gettimeofday(&end, NULL);
@@ -239,10 +242,10 @@ int process_service_chain_request(int sock)
                 &len);
     if (n == -1)
     {
-        printf("recvfrom returned %d, %s\n", errno, strerror(errno));
+        fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
         return FAILURE;
     }
-    printf("Received session ID %s\n", sid);
+    fprintf(logfp, "Received service chain request for session ID %s\n", sid);
 
     //make a request to controller for attribute token for this sid and service
     int sockfd;
@@ -278,7 +281,12 @@ int process_service_chain_request(int sock)
 //./service <service_name> <port>
 int main(int argc, char *argv[])
 {
-    if(initialize_system_params() != SUCCESS)
+    char str[100];
+    sprintf(str, "%s/services/%s/log.txt", HOME_DIR, argv[1]);
+
+    logfp = fopen(str, "a");
+
+    if(initialize_system_params(logfp) != SUCCESS)
 	return -1;
 
     strcpy(service_name, argv[1]);
@@ -286,6 +294,8 @@ int main(int argc, char *argv[])
     load_policy(argv[1]);
 
     read_services_location();
+
+    fflush(logfp);
 
     int server_fd, new_socket, valread; 
     struct sockaddr_in address, cliaddr; 
@@ -329,23 +339,22 @@ int main(int argc, char *argv[])
                     &len);
         if (n == -1)
         {
-            printf("recvfrom returned %d, %s\n", errno, strerror(errno));
+            fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
             return 0;
         }
     
         switch(mtype)
         {
             case SERVICE_REQUEST:
-	        printf("Received Service Request\n");
                 process_service_request(server_fd);
 	        break;
             case SERVICE_CHAIN_REQUEST:
-                printf("Received Service Chain Request\n");
                 process_service_chain_request(server_fd);
                 break;
             default:
-	        printf("Unknown %d request\n", mtype);
+	        fprintf(logfp, "Unknown %d request\n", mtype);
         }
+	fflush(logfp);
     }
 
     return 0;

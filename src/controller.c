@@ -26,6 +26,8 @@ int attribute_indx_array[50];
 int user_level;
 int dusers_count = 0;
 
+FILE *logfp = NULL;
+
 typedef struct delegted_credential
 {
     char delegator[30];
@@ -69,6 +71,16 @@ int num_sessions = 0;
 int MAX_SESSIONS = 0;
 session_t *sessions;
 
+void calculate_time_diff(char *prefix, struct timeval *start, struct timeval *end)
+{
+    double time_taken;
+    time_taken = (end->tv_sec - start->tv_sec) * 1e6;
+    time_taken = (time_taken + (end->tv_usec -
+                              start->tv_usec)) * 1e-3;
+    fprintf(logfp, "time taken for %s = %fms\n", prefix, time_taken);
+}
+
+#define EVENTS_FILE HOME_DIR "/root/event.txt"
 int read_event_file()
 {
     char str[50] = {0};
@@ -77,13 +89,13 @@ int read_event_file()
     ssize_t read;
     int i = 0, j=0;
 
-    sprintf(str, "%s/event.txt", CONTROLLER_DIR);
-    printf("\nReading events from %s\n", str);
+    sprintf(str, "%s", EVENTS_FILE);
+    fprintf(logfp, "\nReading Events from %s\n", str);
 
     FILE *fp = fopen(str, "r");
     if (fp == NULL)
     {
-        printf("Error opening file %s\n", strerror(errno));
+        fprintf(logfp, "Error opening file %s\n", strerror(errno));
         return FAILURE;
     }
 
@@ -111,7 +123,7 @@ int read_event_file()
     }
     fclose(fp);
 
-   free(line);
+    free(line);
 }
 
 int read_params()
@@ -125,7 +137,7 @@ int read_params()
     element_init_G2(user_public_key, pairing);
 
     sprintf(str, "%s/params.txt", CONTROLLER_DIR);
-    printf("Reading parameters from %s\n", str);
+    fprintf(logfp, "Reading controller parameters from %s\n", str);
 
     if( access( str, F_OK ) != 0 )
     {
@@ -135,7 +147,7 @@ int read_params()
         FILE *fp = fopen(str, "w");
         if (fp == NULL)
         {
-            printf("Error opening file %s\n", strerror(errno));
+            fprintf(logfp, "Error opening file %s\n", strerror(errno));
             return FAILURE;
         }
 
@@ -148,15 +160,12 @@ int read_params()
     FILE *fp = fopen(str, "r");
     if (fp == NULL)
     {
-        printf("Error opening file %s\n", strerror(errno));
+        fprintf(logfp,"Error opening file %s\n", strerror(errno));
         return FAILURE;
     }
 
-
     read_element_from_file(fp, "private_key", user_private_key, 0);
     read_element_from_file(fp, "public_key", user_public_key, 0);
-
-    element_printf("Priv Key = %B, Pub Key = %B\n", user_private_key, user_public_key);
 
     fclose(fp);
     return SUCCESS;
@@ -184,7 +193,7 @@ int load_delegated_credentials(char *user)
 
     if (user == NULL)
     {
-        sprintf(cmd, "ls %s | grep -v -e params -e event | sed -e 's/\\.txt$//'", CONTROLLER_DIR);
+        sprintf(cmd, "ls %s | grep -v -e params -e log | sed -e 's/\\.txt$//'", CONTROLLER_DIR);
 	fp = popen(cmd, "r");
         while (fgets(name, sizeof(name), fp) != NULL)
 	{
@@ -201,7 +210,7 @@ int load_delegated_credentials(char *user)
 	{
             if(!strcmp(dc[i].delegator, user))
 	    {
-	        printf("Delegated credentials from %s are already loaded\n", user);
+	        fprintf(logfp, "Delegated credentials from %s are already loaded\n", user);
 		return SUCCESS;
 	    }
 	}
@@ -214,15 +223,15 @@ int load_delegated_credentials(char *user)
 
     for(i = old_dusers_count; i<dusers_count; i++)
     {
-	printf("\nLoading Delegated Credentials for %s\n", dusers[i]);
+	fprintf(logfp, "\nLoading Delegated Credentials for %s\n", dusers[i]);
 	memset(&dc[i], 0, sizeof(dc[i]));
         sprintf(str, "%s/%s.txt", CONTROLLER_DIR, dusers[i]);
-        printf("Reading parameters from %s\n", str);
+        fprintf(logfp, "Reading parameters from %s\n", str);
 
         fp = fopen(str, "r");
         if (fp == NULL)
         {
-            printf("Error opening file %s\n", strerror(errno));
+            fprintf(logfp,"Error opening file %s\n", strerror(errno));
             return FAILURE;
         }
 
@@ -230,7 +239,7 @@ int load_delegated_credentials(char *user)
         fscanf(fp,"levels = %d\n", &levels);
         fscanf(fp,"attributes = %s\n", attributes);
 
-        printf("duser = %s, levels = %d, attributes = %s\n",
+        fprintf(logfp, "duser = %s, levels = %d, attributes = %s\n",
                         dc[i].delegator, levels, attributes);
 
         char* token = strtok(attributes, ",");
@@ -246,7 +255,7 @@ int load_delegated_credentials(char *user)
 	credential_set_private_key(user_private_key, &dc[i].dic);
         setup_credentials_from_file(fp,dc[i].num_dattrs,&dc[i].dic);
     }
-    printf("Finished loading Delegated credentials for all users\n");
+    fprintf(logfp, "Finished loading Delegated credentials for all users\n");
 
 }
 
@@ -335,6 +344,7 @@ void generate_credential_token(char *session_id, char *user, char *service)
 {
     int i = 0,j = 0;
     credential_t *c = NULL;
+    struct timeval start, end;
 
     if (session_id == NULL)
     {
@@ -376,7 +386,7 @@ void generate_credential_token(char *session_id, char *user, char *service)
 
     if (NULL == c)
     {
-	printf("Delegated Credentials not found for %s\n", user);
+	fprintf(logfp, "Delegated Credentials not found for %s\n", user);
 	return;
     }
 
@@ -384,7 +394,7 @@ void generate_credential_token(char *session_id, char *user, char *service)
     {
 	if(!strcmp(svc_attrs[i].service, service))
 	{
-	    printf("Generating Token for %s for %s\n", user, service);
+	    fprintf(logfp, "Generating Token for %s for %s\n", user, service);
 	    char *revealed[2]; //two levels.
 	    revealed[0] = (char *)calloc(c->cred[0]->ca->num_of_attributes, 1);
 	    revealed[1] = (char *)calloc(c->cred[1]->ca->num_of_attributes, 1);
@@ -405,9 +415,17 @@ void generate_credential_token(char *session_id, char *user, char *service)
 	    }
 
 	    token_t tok;
+	    gettimeofday(&start, NULL);
             generate_attribute_token(&tok, c, revealed);    
+	    gettimeofday(&end, NULL);
+	    calculate_time_diff("generate attribute token", &start, &end);
+
 	    //verify_attribute_token(&tok);
+	    gettimeofday(&start, NULL);
 	    send_token(&tok, service, session_id);
+	    gettimeofday(&end, NULL);
+	    calculate_time_diff("send attribute token", &start, &end);
+
 	    // Add service to session map
 	    add_service_to_session(session_id, service);
 	    token_free(&tok);
@@ -423,8 +441,14 @@ int process_event_request(int sock)
     event_t evt;
     len = sizeof(cliaddr);
     messagetype mtype;
-    char user[20];
+    char user[20] = {0};
     int i,j;
+    struct timeval start;
+
+    gettimeofday(&start, NULL);
+
+    double time_in_mill = (start.tv_sec) * 1000 + (start.tv_usec) / 1000 ;
+    fprintf(logfp, "Received event request at %f ms\n", time_in_mill);
 
     n = recvfrom(sock, user, sizeof(user),
                 0, ( struct sockaddr *) &cliaddr,
@@ -433,7 +457,7 @@ int process_event_request(int sock)
     n = recvfrom(sock, (char *)&evt, sizeof(event_t),
                 0, ( struct sockaddr *) &cliaddr,
                 &len);
-    printf("Received %d event from %s\n", evt, user);
+    fprintf(logfp, "Received %d event from %s\n", evt, user);
 
     //load the delegated credentials for this user
     load_delegated_credentials(user);
@@ -464,7 +488,7 @@ int read_policy_attributes_from_services()
 
     if (dr == NULL)  // opendir returns NULL if couldn't open directory
     {
-        printf("Could not open current directory" );
+        fprintf(logfp, "Could not open current directory" );
         return 0;
     }
 
@@ -483,7 +507,7 @@ int read_policy_attributes_from_services()
 
 	strcpy(name, de->d_name);
         sprintf(str, "%s/services/%s/policy.txt", HOME_DIR, name);
-        printf("Reading policy from %s\n", str);
+        fprintf(logfp, "Reading policy from %s\n", str);
 
 	memset(svc_attrs[num_services].service, 0, sizeof(svc_attrs[num_services].service));
 	memcpy(svc_attrs[num_services].service, name, strlen(name));
@@ -491,13 +515,13 @@ int read_policy_attributes_from_services()
         FILE *fp = fopen(str, "r");
         if (fp == NULL)
         {
-            printf("Error opening file %s\n", strerror(errno));
+            fprintf(logfp,"Error opening file %s\n", strerror(errno));
             return FAILURE;
         }
 
 	read = getline(&line, &len, fp);
 
-        printf("Attributes = %s\n", line);
+        fprintf(logfp, "Attributes = %s\n", line);
 
         char* token = strtok(line, "['A");
 
@@ -524,6 +548,14 @@ int process_service_chain_request(int sock)
     int len, n;
     struct sockaddr_in cliaddr;
     char service[20] = {0};
+    struct timeval start;
+
+    gettimeofday(&start, NULL);
+
+    double time_in_mill =
+           (start.tv_sec) * 1000 + (start.tv_usec) / 1000 ;
+    fprintf(logfp, "Received service chain request at %f ms\n", time_in_mill);
+
 
     len = sizeof(cliaddr);
 
@@ -532,40 +564,44 @@ int process_service_chain_request(int sock)
                 &len);
     if (n == -1)
     {
-        printf("recvfrom returned %d, %s\n", errno, strerror(errno));
+        fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
         return 0;
     }
-    printf("Received service name %s\n", service);
+    fprintf(logfp,"Received service name %s\n", service);
 
     n = recvfrom(sock, sid, sizeof(sid),
                 0, ( struct sockaddr *) &cliaddr,
                 &len);
     if (n == -1)
     {
-        printf("recvfrom returned %d, %s\n", errno, strerror(errno));
+        fprintf(logfp,"recvfrom returned %d, %s\n", errno, strerror(errno));
         return 0;
     }
-    printf("Received session ID %s\n", sid);
+    fprintf(logfp,"Received session ID %s\n", sid);
 
     generate_credential_token(sid, NULL, service);
 }    
 
 int main(int argc, char *argv[])
 {
-    initialize_system_params();
+    char str[100];
+    sprintf(str, "%s/log.txt", CONTROLLER_DIR);
+
+    logfp = fopen(str, "a");
+
+    initialize_system_params(logfp);
     read_params();
     read_event_file();
     read_services_location();
     read_policy_attributes_from_services();
 
     load_delegated_credentials(NULL);
+    fflush(logfp);
 
     int server_fd, new_socket, valread;
     struct sockaddr_in address, cliaddr;
     int opt = 1;
     int addrlen = sizeof(address);
-    char buffer[1024] = {0};
-    char *hello = "Hello from server";
 
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) == 0)
@@ -573,7 +609,7 @@ int main(int argc, char *argv[])
         perror("socket failed");
         exit(EXIT_FAILURE);
     }
-/*
+
     // Forcefully attaching socket to the port 8080
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
                                                   &opt, sizeof(opt)))
@@ -581,7 +617,6 @@ int main(int argc, char *argv[])
         perror("setsockopt");
         exit(EXIT_FAILURE);
     }
-*/
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(get_service_port(CONTROLLER_SVC));
@@ -603,22 +638,23 @@ int main(int argc, char *argv[])
                     &len);
         if (n == -1)
         {
-            printf("recvfrom returned %d, %s\n", errno, strerror(errno));
+            fprintf(logfp,"recvfrom returned %d, %s\n", errno, strerror(errno));
             return 0;
         }
 
         switch(mtype)
         {
             case EVENT_REQUEST:
-                printf("Received Event Request\n");
+                fprintf(logfp, "Received Event Request\n");
                 process_event_request(server_fd);
                 break;
             case SERVICE_CHAIN_REQUEST:
-                printf("Received Service Chain Request\n");
+                fprintf(logfp, "Received Service Chain Request\n");
                 process_service_chain_request(server_fd);
                 break;
             default:
-                printf("Unknown %d request\n", mtype);
+                fprintf(logfp, "Unknown %d request\n", mtype);
         }
+	fflush(logfp);
     }
 }
