@@ -372,6 +372,7 @@ void generate_credential_token(char *session_id, char *user, char *service)
                 if(is_service_in_session_cache(i, service) == SUCCESS)
 		    return;	
 	        user = sessions[i].user;
+		break;
 	    }
 	}
     }
