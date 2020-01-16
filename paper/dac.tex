@@ -44,7 +44,7 @@ The abstract goes here.
 
 % Note that keywords are not normally used for peerreview papers.
 \begin{IEEEkeywords}
-IEEE, IEEEtran, journal, \LaTeX, paper, template.
+
 \end{IEEEkeywords}
 
 
@@ -53,7 +53,7 @@ IEEE, IEEEtran, journal, \LaTeX, paper, template.
 
 
 
-\section{Introduction}
+\section{Introduction} \label{introduction}
 
 Internet of Things (IoT) enables physical objects also called \textit{Things}  to communicate with each other and to their human operators. This opens up a myriad of use cases such as smart homes, smart factories, smart cities, smart healthcare, smart grids etc \cite{IoT}. It is also expected that such connected devices could reach upto 50 billion by 2020 \cite{Evans}. The IoT devices (for example, a smart bulb or a temperature sensor) are very constrained in terms of memory, processing power, storage and most often are battery powered. Unlike the traditional computers these devices cannot perform computationally intensive tasks and are intended for minor operations of sensing and actuation. Also most of these devices are out in the open without any physical supervision making them easily susceptible to physical attacks.
 
@@ -68,15 +68,26 @@ They then categorize privacy threats and challenges of IoT into a) Identificatio
 
 IoT services do not act in silos. They interact with each other and with external entities to provide a complete package of services to the user. For example, in Home Automation, based on the user who is entering the house (say Owner vs Guest), a completely different set of services may get invoked. The service interactions and invocations depend on the roles and capabilities of the user invoking them. We call the sequence of services that get invoked as \textit{IoT Service Chain}. In this paper we look at providing security and privacy to users and IoT devices that invoke IoT service chains. The rest of the paper is organized as follows. Section 2...... Section 3... Section 4..
 
+\section{Motivation and related work}
 
+\subsubsection{IoT Service Chains}
+We introduced \textit{IoT Service Chains} in section \ref{introduction} to refer to the chain of services invoked when an event occurs. Individual services in the chain interact with each other on-behalf of the initiator towards a common goal. Initiator could either be a human or an IoT device. Each service in the chain would in-turn validate the user/IoT device credentials for the desired service functionality. 
+\subsubsection{Anonymous Credentials}
+Subsubsection text here.
+\subsubsection{Delegatable Anonymous Credentials}
+Subsubsection text here.
+\subsubsection{Our Contribution}
+Subsubsection text here.
+\subsubsection{Related Work}
+Subsubsection text here.
 
+\section{Prelimnaries}
 
-\subsection{Subsection Heading Here}
-Subsection text here. Hi there
+\section{DAC By Camn}
 
+\section{Our Proposal}
 
-\subsubsection{Subsubsection Heading Here}
-Subsubsection text here. \cite{Evans}
+\section{Implementation and Results}
 
 
 \section{Conclusion}
