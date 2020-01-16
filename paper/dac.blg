@@ -4,45 +4,46 @@ The top-level auxiliary file: dac.aux
 The style file: unsrt.bst
 Database file #1: mybib.bib
 Warning--empty journal in Evans
-You've used 1 entry,
+Warning--empty booktitle in iot-sec
+You've used 4 entries,
             1791 wiz_defined-function locations,
-            451 strings with 3718 characters,
-and the built_in function-call counts, 159 in all, are:
-= -- 12
-> -- 4
-< -- 0
-+ -- 2
-- -- 1
-* -- 7
-:= -- 34
-add.period$ -- 4
-call.type$ -- 1
-change.case$ -- 1
+            472 strings with 4332 characters,
+and the built_in function-call counts, 1052 in all, are:
+= -- 90
+> -- 43
+< -- 1
++ -- 16
+- -- 12
+* -- 71
+:= -- 166
+add.period$ -- 13
+call.type$ -- 4
+change.case$ -- 4
 chr.to.int$ -- 0
-cite$ -- 2
-duplicate$ -- 8
-empty$ -- 15
-format.name$ -- 1
-if$ -- 30
+cite$ -- 6
+duplicate$ -- 46
+empty$ -- 101
+format.name$ -- 12
+if$ -- 237
 int.to.chr$ -- 0
-int.to.str$ -- 1
-missing$ -- 1
-newline$ -- 9
-num.names$ -- 1
-pop$ -- 4
+int.to.str$ -- 4
+missing$ -- 4
+newline$ -- 24
+num.names$ -- 4
+pop$ -- 13
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 3
+skip$ -- 25
 stack$ -- 0
-substring$ -- 0
-swap$ -- 0
-text.length$ -- 0
+substring$ -- 82
+swap$ -- 12
+text.length$ -- 1
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
-warning$ -- 1
-while$ -- 1
-width$ -- 2
-write$ -- 13
-(There was 1 warning)
+warning$ -- 2
+while$ -- 8
+width$ -- 5
+write$ -- 45
+(There were 2 warnings)

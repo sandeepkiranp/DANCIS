@@ -1,7 +1,6 @@
 \documentclass[journal]{IEEEtran}
 \IEEEoverridecommandlockouts
 % The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
-\usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{graphicx}
 \usepackage{textcomp}
@@ -9,6 +8,7 @@
 \usepackage{listings}
 \usepackage{natbib}
 \usepackage{hyperref}
+\usepackage{enumitem}
 \colorlet{punct}{red!60!black}
 \definecolor{background}{HTML}{EEEEEE}
 \definecolor{delim}{RGB}{20,105,176}
@@ -55,7 +55,20 @@ IEEE, IEEEtran, journal, \LaTeX, paper, template.
 
 \section{Introduction}
 
-Internet of Things (IoT) enables physical objects also called \textit{Things}  to communicate with each other and to their human operators. This opens up a myriad of use cases such as smart homes, smart factories, smart cities, smart healthcare etc. It is also expected that such connected devices could reach upto 50 billion by 2020 \cite{Evans}.
+Internet of Things (IoT) enables physical objects also called \textit{Things}  to communicate with each other and to their human operators. This opens up a myriad of use cases such as smart homes, smart factories, smart cities, smart healthcare, smart grids etc \cite{IoT}. It is also expected that such connected devices could reach upto 50 billion by 2020 \cite{Evans}. The IoT devices (for example, a smart bulb or a temperature sensor) are very constrained in terms of memory, processing power, storage and most often are battery powered. Unlike the traditional computers these devices cannot perform computationally intensive tasks and are intended for minor operations of sensing and actuation. Also most of these devices are out in the open without any physical supervision making them easily susceptible to physical attacks.
+
+Owing to the resource constraints and physical openness, IoT devices have been targets of various attacks \cite{iot-sec} at physical, network and application layer. IoT devices also collect lot of personal information like user's location, eating habits, medical history etc because of which there has been a growing concern among consumers of such services. Unlike normal computers, these devices cannot provide an interface where the user can look up what personal information is being shared and with whom. In \cite{Ziegeldorf2014PrivacyIT} the authors define privacy in IoT as a gurantee for the subject	
+
+\begin{enumerate}[label=\alph*)]
+	\item To be aware of the privacy risks imposed by smart things.
+	\item Control over collection and processing of personal informatin
+	\item Control over subject's personal information being dissimenated outside of his control sphere.
+\end{enumerate}
+They then categorize privacy threats and challenges of IoT into a) Identification b) Localization and tracking c) Profiling d) Privacy-violating interaction and presentation e) Inventory and life cycle tracking and f) linkage.
+
+IoT services do not act in silos. They interact with each other and with external entities to provide a complete package of services to the user. For example, in Home Automation, based on the user who is entering the house (say Owner vs Guest), a completely different set of services may get invoked. The service interactions and invocations depend on the roles and capabilities of the user invoking them. We call the sequence of services that get invoked as \textit{IoT Service Chain}. In this paper we look at providing security and privacy to users and IoT devices that invoke IoT service chains. The rest of the paper is organized as follows. Section 2...... Section 3... Section 4..
+
+
 
 
 \subsection{Subsection Heading Here}

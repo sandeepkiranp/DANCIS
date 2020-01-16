@@ -1,5 +1,12 @@
 \begin{thebibliography}{1}
 
+\bibitem{IoT}
+Ala~I. Al-Fuqaha, Mohsen Guizani, Mahdi Mohammadi, Mohammed Aledhari, and
+  Moussa Ayyash.
+\newblock Internet of things: A survey on enabling technologies, protocols, and
+  applications.
+\newblock {\em IEEE Communications Surveys and Tutorials}, 17:2347--2376, 2015.
+
 \bibitem{Evans}
 D.~Evans.
 \newblock The internet of things-how the next evolution of the internet is
@@ -8,5 +15,15 @@ D.~Evans.
 \newblock
   \url{http://www.cisco.com/web/about/ac79/docs/innov/IoT_IBSG_0411FINAL.pdf3},
   last accessed on 01/01/20.
+
+\bibitem{iot-sec}
+Ioannis Andrea, Chrysostomos Chrysostomou, and George Hadjichristofi.
+\newblock Internet of things: Security vulnerabilities and challenges.
+\newblock pages 180--187, 07 2015.
+
+\bibitem{Ziegeldorf2014PrivacyIT}
+Jan~Henrik Ziegeldorf, {\'O}scar Garc{\'i}a-Morch{\'o}n, and Klaus Wehrle.
+\newblock Privacy in the internet of things: threats and challenges.
+\newblock {\em Security and Communication Networks}, 7:2728--2742, 2014.
 
 \end{thebibliography}
