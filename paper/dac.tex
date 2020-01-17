@@ -71,7 +71,18 @@ IoT services do not act in silos. They interact with each other and with externa
 \section{Motivation and related work}
 
 \subsubsection{IoT Service Chains}
-We introduced \textit{IoT Service Chains} in section \ref{introduction} to refer to the chain of services invoked when an event occurs. Individual services in the chain interact with each other on-behalf of the initiator towards a common goal. Initiator could either be a human or an IoT device. Each service in the chain would in-turn validate the user/IoT device credentials for the desired service functionality. 
+We introduced \textit{IoT Service Chains} in section \ref{introduction} to refer to the chain of services invoked when an event occurs. Individual services in the chain interact with each other, on-behalf of the initiator towards a common goal. Initiator could either be a human or an IoT device. Each service in the chain would in-turn validate the user/IoT device's credentials for the desired service functionality. IoT devices can either act on behalf of their operator or can be independent of it. For example, if a smart Heart Monitoring System (HMS) detects a low pulse rate for a patient, it immediately needs to initiate the Advanced Cardiac Life Support (ACLS) by injecting an IV of an antidote, reading and interpreting the ECG, starting CPR, inform the doctor etc. The HMS in this case acts as an independent device and does not impersonate the patient. But in case of a smart fridge, which keeps track of the stock of milk, it automatically places an order for replenishment by using the owners credit card details. In this case, the smart fridge acts on behalf of the owner.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=3in]{dac.png}}
+\caption{IoT Service Chain}
+\label{fig:iotsvc}
+\end{figure}
+
+As can be seen in Fig.~\ref{fig:iotsvc} there are 5 services in the IoT service chain. xxxx explanation of HMS, ACLS etc interactions among services, authentication etc
+
+One thing to notice from the above figure is that while the service chain is being invoked, the user/IoT device has to be online so that it supplies the necessary credentials for authentication and authorization.  This isn't a huge problem if the initiating entity is a user (having a smart phone or a tablet). But for a constrained IoT device generating authentication and authorization information for each service in the chain would result in draining of its resources very quickly. Also, most of the IoT devices are duty cycled and may not remain active till the chain completes. This again results in loss of packets or in retransmission. It will be even more challenging if the user/device's privacy needs to be protected through out the chain. In this paper we focus on some of the options on how device privacy can be ensured when invoking the service chain without pushing the device to its resource limits.
+
 \subsubsection{Anonymous Credentials}
 Subsubsection text here.
 \subsubsection{Delegatable Anonymous Credentials}
