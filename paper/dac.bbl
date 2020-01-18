@@ -26,4 +26,39 @@ Jan~Henrik Ziegeldorf, {\'O}scar Garc{\'i}a-Morch{\'o}n, and Klaus Wehrle.
 \newblock Privacy in the internet of things: threats and challenges.
 \newblock {\em Security and Communication Networks}, 7:2728--2742, 2014.
 
+\bibitem{chaum83blindsign}
+David Chaum.
+\newblock Blind signatures for untraceable payments.
+\newblock In D.~Chaum, R.L. Rivest, and A.T. Sherman, editors, {\em Advances in
+  Cryptology Proceedings of Crypto 82}, pages 199--203, 1983.
+
+\bibitem{CamenischH02}
+Jan Camenisch and Els~Van Herreweghen.
+\newblock Design and implementation of the idemix anonymous credential system.
+\newblock In Vijayalakshmi Atluri, editor, {\em ACM Conference on Computer and
+  Communications Security}, pages 21--30. ACM, 2002.
+
+\bibitem{uprove}
+Greg~Zaverucha Christian~Paquin.
+\newblock U-prove cryptographic specification v1.1, revision 3.
+\newblock December 2013.
+\newblock
+  \url{https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/U-Prove20Cryptographic20Specification20V1.1.pdf},
+  last accessed on 01/01/20.
+
+\bibitem{delegatabledac}
+Mira Belenkiy, Jan Camenisch, Melissa Chase, Markulf Kohlweiss, Anna
+  Lysyanskaya, and Hovav Shacham.
+\newblock Randomizable proofs and delegatable anonymous credentials.
+\newblock In Shai Halevi, editor, {\em Advances in Cryptology - CRYPTO 2009},
+  pages 108--125, Berlin, Heidelberg, 2009. Springer Berlin Heidelberg.
+
+\bibitem{CamenischDD17}
+Jan Camenisch, Manu Drijvers, and Maria Dubovitskaya.
+\newblock Practical uc-secure delegatable credentials with attributes and their
+  application to blockchain.
+\newblock In {\em Proceedings of the 2017 {ACM} {SIGSAC} Conference on Computer
+  and Communications Security, {CCS} 2017, Dallas, TX, USA, October 30 -
+  November 03, 2017}, pages 683--699, 2017.
+
 \end{thebibliography}
