@@ -19,7 +19,7 @@
 
 \begin{document}
 
-\title{Delegated Anonymous Credentials for IoT Service Chains}
+\title{Delegated Anonymous Credentials with Revocation Capability for IoT Service Chains}
 \author{\IEEEauthorblockN{\textsf{Sandeep Kiran Pinjala}$^{1,2}$ and
     \textsf{Krishna     M. Sivalingam}$^1$}
 
@@ -35,8 +35,6 @@ skrishnam@iitm.ac.in, krishna.sivalingam@gmail.com}}
     \copyright2019 IEEE} \hspace{\columnsep}\makebox[\columnwidth]{ }}
 
 \maketitle
-
-
 
 \begin{abstract}
 The abstract goes here.
@@ -57,12 +55,12 @@ The abstract goes here.
 
 Internet of Things (IoT) enables physical objects also called \textit{Things}  to communicate with each other and to their human operators. This opens up a myriad of use cases such as smart homes, smart factories, smart cities, smart healthcare, smart grids etc \cite{IoT}. It is also expected that such connected devices could reach upto 50 billion by 2020 \cite{Evans}. The IoT devices (for example, a smart bulb or a temperature sensor) are very constrained in terms of memory, processing power, storage and most often are battery powered. Unlike the traditional computers these devices cannot perform computationally intensive tasks and are intended for minor operations of sensing and actuation. Also most of these devices are out in the open without any physical supervision making them easily susceptible to physical attacks.
 
-Owing to the resource constraints and physical openness, IoT devices have been targets of various attacks \cite{iot-sec} at physical, network and application layer. IoT devices also collect lot of personal information like user's location, eating habits, medical history etc because of which there has been a growing concern among consumers of such services. Unlike normal computers, these devices cannot provide an interface where the user can look up what personal information is being shared and with whom. In \cite{Ziegeldorf2014PrivacyIT} the authors define privacy in IoT as a gurantee for the subject	
+Owing to the resource constraints and physical openness, IoT devices have been targets of various attacks \cite{iot-sec} at physical, network and application layer. IoT devices also collect lot of personal information like user's location, eating habits, medical history etc because of which there has been a growing concern among consumers of such services. Unlike normal computers, these devices cannot provide an interface where the user can look up what personal information is being shared and with whom. In \cite{Ziegeldorf2014PrivacyIT} the authors define privacy in IoT as a guarantee for the subject	
 
 \begin{enumerate}[label=\alph*)]
 	\item To be aware of the privacy risks imposed by smart things.
-	\item Control over collection and processing of personal informatin
-	\item Control over subject's personal information being dissimenated outside of his control sphere.
+	\item Control over collection and processing of personal information
+	\item Control over subject's personal information being disseminated outside of his control sphere.
 \end{enumerate}
 They then categorize privacy threats and challenges of IoT into a) Identification b) Localization and tracking c) Profiling d) Privacy-violating interaction and presentation e) Inventory and life cycle tracking and f) linkage.
 
@@ -84,19 +82,58 @@ As can be seen in Fig.~\ref{fig:iotsvc} there are 5 services in the IoT service 
 One thing to notice from the above figure is that while the service chain is being invoked, the user/IoT device has to be online so that it supplies the necessary credentials for authentication and authorization.  This isn't a huge problem if the initiating entity is a user (having a smart phone or a tablet). But for a constrained IoT device generating authentication and authorization information for each service in the chain would result in draining of its resources very quickly. Also, most of the IoT devices are duty cycled and may not remain active till the chain completes. This again results in loss of packets or in retransmission. It will be even more challenging if the user/device's privacy needs to be protected through out the chain. In this paper we focus on some of the options on how device privacy can be ensured when invoking the service chain without pushing the device to its resource limits.
 
 \subsubsection{Attribute Based Anonymous Credentials}
-In traditional credential based system, a central authority grants credentials to users and systems. These credentials can be password or token (certificate) based. When the user wants to access a resource he presents the credential to it which inturn validates the credential. The resource (also called service) trusts the central authority and thereby the credentials issued by it. Once the credential verification is done, the service checks whether the user has got the right access level to access the resource. One of the primary concern with such a system is that the service gets to know the complete details of the user presenting the credential. for example, in public key certifcates issued to users, the service will know how long the credential (certificate in this case) is valid, the country, state, organization, email address etc of the user, who are all the intermediate chain of issuers etc. The only information that matters to the service is whether the certificate is valid and is issued by the central authority and whether the user possesses the required access right. But in this case lot more user details are available to it. With so much personal information available to the service, there is always a chance of misuse of data if it falls in wrong hands. According to European Union General Data Protection Regulation (GDPR) Data Minimization principle, entities should only process adequate, relevent and limited personal data that is necessary in relation to the purposes for thish they are processed. As mentioned in \cite{Ziegeldorf2014PrivacyIT}, the privacy problem becomes manyfold in IoT world. One, because there are huge number of constrained IoT devices without proper security measures in place. And two, there is very little control over what personal information is disseminated from these devices to the outside world.
+In traditional credential based system, a central authority grants credentials to users and systems. These credentials can be password or token (certificate) based. When the user wants to access a resource he presents the credential to it which inturn validates the credential. The resource (also called service) trusts the central authority and thereby the credentials issued by it. Once the credential verification is done, the service checks whether the user has got the right access level to access the resource. One of the primary concern with such a system is that the service gets to know the complete details of the user presenting the credential. for example, in public key certifcates issued to users, the service will know how long the credential (certificate in this case) is valid, the country, state, organization, email address etc of the user, who are all the intermediate chain of issuers etc. The only information that matters to the service is whether the certificate is valid and is issued by the central authority and whether the user possesses the required access right. But in this case lot more user details are available to it. With so much personal information available to the service, there is always a chance of misuse of data if it falls in wrong hands. According to European Union General Data Protection Regulation (GDPR) Data Minimization principle, entities should only process adequate, relevent and limited personal data that is necessary in relation to the purposes for thish they are processed. As mentioned in \cite{Ziegeldorf2014PrivacyIT}, the privacy problem becomes manifold in IoT world. One, because there are huge number of constrained IoT devices without proper security measures in place. And two, there is very little control over what personal information is disseminated from these devices to the outside world.
 
 Anonymous Credentials introduced in \cite{chaum83blindsign} provide a way in which the user can prove that he holds a credential without revealing any information about the user. The verifier cannot also forge the user's credential. In Attribute  Based Anonymous Credentials, the user can selectively prove that he holds the set of attributes needed by the verifier and not reveal all of his attributes, thereby maintaining privacy. The prover creates a zero-knowledge proof of possession of the credential which the verifier verifies using the public key of the central authority. Some of the most popular Anonymous Credential Systems (ACS) are \cite{CamenischH02} and \citep{uprove}.
 
-A Delegatable Anonymus Credential (DAC) System, introduced in \cite{delegatabledac}  not only allows the users to generate anonymus crentials, but also allows them to anonymously delegate their credentials to other entities. For example, in a hierarchial setup, the root issuer may delegate its issuing authority to region wise issuers who inturn may delegte to division wise issuers and so on. Although there can be multiple levels of delegtion, the anonymus credential generated by the prover at any level can only be verified by the public key of the root issuer.  One of the primary advantages of DAC is that it alleviates the burden on the root issuer to issue credentials but still maintains anonymity of all the issuers in the chain.
+A Delegatable Anonymus Credential (DAC) System, introduced in \cite{delegatabledac}  not only allows the users to generate anonymous credentials, but also allows them to anonymously delegate their credentials to other entities. For example, in a hierarchical setup, the root issuer may delegate its issuing authority to region wise issuers who in turn may delegate to division wise issuers and so on. Although there can be multiple levels of delegation, the anonymous credential generated by the prover at any level can only be verified by the public key of the root issuer.  One of the primary advantages of DAC is that it alleviates the burden on the root issuer to issue credentials but still maintains anonymity of all the issuers in the chain.
 
 \subsubsection{Our Contribution}
-In section \ref{iotsvcch} we talked about IoT service chains and the difficulty of ensuring user/IoT device's privacy during the chain propagation. We address this problem with our proposal on \textbf{\textit{Delegated Anonymous Credentials in IoT Service Chains}}. We describe a mechanism in which the IoT device can delegate its credentials to a controller which inturn generates an anonymous credential based on the attributes needed by the service. Our scheme is based on the DAC system developed by \cite{CamenischDD17}.
+In section \ref{iotsvcch} we talked about IoT service chains and the difficulty of ensuring user/IoT device's privacy during the chain propagation. We address this problem with our proposal on \textbf{\textit{Delegated Anonymous Credentials in IoT Service Chains}}. We describe a mechanism in which the IoT device can delegate its credentials to a controller which in turn generates an anonymous credential based on the attributes needed by the service. Our scheme is based on the DAC system developed by \cite{CamenischDD17}. The authors developed a scheme where credentials are not delegated anonymously but the prover anonymously proves that the entire chain of delegation is valid. The verifier verifies the anonymous credential just with the root issuer's public key.
+
+The following are major contributions in this work.
+\begin{enumerate}[label=\alph*)]
+	\item Discuss in detail the problem of ensuring privacy to users and IoT devices in IoT service chains.
+	\item Implementation of the DAC scheme outlined in \cite{CamenischDD17}. We used the Pairing Based Cryptography Library from \cite{pbc} for the implementation. We implemented the full L-level credential Delegation, Presentation and Verification.
+	\item Credential revocation has been mentioned as "future work" in \cite{CamenischDD17}. We implemented revocation of credentials in our scheme.
+	\item Once the verifier verifies the anonymous credential token, the next logical step would be to communicate with the prover to exchange data. In order to do that securely, a common session key needs to be established between the two parties. We demonstrate how the session key can be established.
+	\item We then used the above DAC implementation to realize Delegated Anonymous Credentials in IoT service chains. We outline the framework consisting of Root issuer, Controller, User/IoT device and Service as the principal components. We describe the messages exchanged between these components and outline how privacy of users can be ensured.
+	\item We implemented the above scheme and discuss the various possibilities on how token verification and policy implementation can be placed across constrained IoT services. Various metrics like time taken, number and size of messages exchanged, memory, CPU etc are evaluated for the various models that we discuss. 
+\end{enumerate}
 
 \subsubsection{Related Work}
 Subsubsection text here.
 
-\section{Prelimnaries}
+\section{Preliminaries}
+In this section we introduce some of the concepts related to DAC building blocks. 
+
+\subsubsection{Bilinear map}
+A Bilinear map is a Pairing-Based Cryptography construct that allows us to build and analyze cryptographic systems. Let $G_1$, $G_2$  and $G_T$ be multiplicative groups of order $q$, then a bilinear map e $: G_1 X G_2\rightarrow G_T$ satisfies the following properties
+
+\textbf{Bilinearity}
+
+$$\forall P \in G_1, \forall Q \in G_2 : e(P^a, Q^b) = e(P,Q)^{ab}$$
+
+\textbf{Non-Degeneracy}
+$$ A \neq 0 \Rightarrow e(A,A) \neq 1$$
+
+\textbf{Computability}
+
+ e is efficiently computable
+
+
+\subsubsection{Zero Knowledge Proofs}
+Zero knowledge Proofs (ZKP), introduced in \cite{zkp} allow the prover to prove that he knows certain information without revealing the information (or anything related to it) to the verifier. A ZKP should be complete, sound and should not reveal any information from teh proof. A zero-knowledge proof of knowledge is a special case where the prover possesses a secret information and not just the knowledge of it. Interactive ZKP require interaction between the prover and the verifier to prove that the prover has the secret information. For example, the Schnorr ZKP is outlined in \cite{rfc8235}. The Non-Interactive ZKP (NIZKP) proofs do not require any kind of interaction for the proof to proceed. The Schnorr NIZKP proof is obtained through the Fiat-Shamir transformation \cite{Fiat1986HowTP}.
+
+\subsubsection{Signature Schemes}
+A signature scheme consists of the following algorithms.
+\begin{enumerate}[label=\alph*)]
+	\item Setup : Given the security parameter, the algorithm outputs public parameters.
+	\item Key Generation : This algorithm generates a public key and the corresponding private key based on the public parameters.
+	\item Signature Generation : This algorithm takes the private key and the message and outputs the signature. The generated signature should not be forge-able.
+	\item Signature Verification : This algorithm takes the signature, public key and the message and output whether the verification is successful or not.
+	
+\end{enumerate}
 
 \section{DAC By Camn}
 

@@ -1,4 +1,4 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 
 \bibitem{IoT}
 Ala~I. Al-Fuqaha, Mohsen Guizani, Mahdi Mohammadi, Mohammed Aledhari, and
@@ -60,5 +60,26 @@ Jan Camenisch, Manu Drijvers, and Maria Dubovitskaya.
 \newblock In {\em Proceedings of the 2017 {ACM} {SIGSAC} Conference on Computer
   and Communications Security, {CCS} 2017, Dallas, TX, USA, October 30 -
   November 03, 2017}, pages 683--699, 2017.
+
+\bibitem{pbc}
+{Ben Lynn}.
+\newblock The pairing-based cryptography library.
+\newblock \url{https://crypto.stanford.edu/pbc/}.
+
+\bibitem{zkp}
+Shafi Goldwasser, Silvio Micali, and Charles Rackoff.
+\newblock The knowledge complexity of interactive proof systems.
+\newblock {\em SIAM J. Comput.}, 18(1):186--208, 1989.
+
+\bibitem{rfc8235}
+Ed~F.~Hao.
+\newblock Schnorr non-interactive zero-knowledge proof.
+\newblock RFC 8235, RFC Editor, 09 2017.
+
+\bibitem{Fiat1986HowTP}
+Amos Fiat and Adi Shamir.
+\newblock How to prove yourself: Practical solutions to identification and
+  signature problems.
+\newblock In {\em CRYPTO}, 1986.
 
 \end{thebibliography}
