@@ -82,4 +82,9 @@ Amos Fiat and Adi Shamir.
   signature problems.
 \newblock In {\em CRYPTO}, 1986.
 
+\bibitem{groth}
+Jens Groth.
+\newblock Efficient fully structure-preserving signatures for large messages.
+\newblock {\em IACR Cryptology ePrint Archive}, 2015:824, 2015.
+
 \end{thebibliography}

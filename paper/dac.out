@@ -8,7 +8,9 @@
 \BOOKMARK [2][-]{subsubsection.3.0.1}{Bilinear map}{section.3}% 8
 \BOOKMARK [3][-]{subsubsection.3.0.2}{Zero Knowledge Proofs}{subsubsection.3.0.1}% 9
 \BOOKMARK [3][-]{subsubsection.3.0.3}{Signature Schemes}{subsubsection.3.0.1}% 10
-\BOOKMARK [1][-]{section.4}{DAC By Camn}{}% 11
-\BOOKMARK [1][-]{section.5}{Our Proposal}{}% 12
-\BOOKMARK [1][-]{section.6}{Implementation and Results}{}% 13
-\BOOKMARK [1][-]{section.7}{Conclusion}{}% 14
+\BOOKMARK [1][-]{section.4}{DAC By Camenisch et al. CamenischDD17 and our extensions}{}% 11
+\BOOKMARK [2][-]{subsubsection.4.0.1}{Credential Revocation}{section.4}% 12
+\BOOKMARK [3][-]{subsubsection.4.0.2}{Session Key Establishment}{subsubsection.4.0.1}% 13
+\BOOKMARK [1][-]{section.5}{Our Proposal}{}% 14
+\BOOKMARK [1][-]{section.6}{Implementation and Results}{}% 15
+\BOOKMARK [1][-]{section.7}{Conclusion}{}% 16

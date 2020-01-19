@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2020.1.15)  18 JAN 2020 22:29
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2020.1.15)  19 JAN 2020 10:50
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -560,7 +560,7 @@ File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 Package hyperref Warning: Difference (2) between bookmark levels is greater 
 (hyperref)                than one, level fixed on input line 72.
 
-<dac.png, id=65, 1371.1225pt x 770.88pt>
+<dac.png, id=73, 1371.1225pt x 770.88pt>
 File: dac.png Graphic file (type png)
 <use dac.png>
 Package pdftex.def Info: dac.png  used on input line 75.
@@ -576,7 +576,43 @@ File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 Package hyperref Warning: Difference (2) between bookmark levels is greater 
 (hyperref)                than one, level fixed on input line 111.
 
-(./dac.bbl
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\begingroup' on input line 140.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\<let>-command' on input line 140.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\NAT@ctype' on input line 140.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\z@' on input line 140.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\let' on input line 140.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\let' on input line 140.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
+(hyperref)                removing `\new@ifnextchar' on input line 140.
+
+File: dac.png Graphic file (type png)
+<use dac.png>
+Package pdftex.def Info: dac.png  used on input line 144.
+(pdftex.def)             Requested size: 216.81pt x 121.89651pt.
+
+Package hyperref Warning: Difference (2) between bookmark levels is greater 
+(hyperref)                than one, level fixed on input line 156.
+
+(./dac.bbl [3]
 Underfull \hbox (badness 5231) in paragraph at lines 20--23
 []\OT1/ptm/m/n/10 Ioannis An-drea, Chrysos-to-mos Chrysos-to-mou, and
  []
@@ -607,24 +643,26 @@ Underfull \hbox (badness 10000) in paragraph at lines 42--48
  []
 
 )
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 151.
- [3]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 151.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 169.
+ [4
+
+]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 169.
  (./dac.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 151.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 151.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 169.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 169.
 Package rerunfilecheck Info: File `dac.out' has not changed.
-(rerunfilecheck)             Checksum: 4D85B5CBB94AF45FFC5F3B4F36CD8A7E;922.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 151.
+(rerunfilecheck)             Checksum: B71717D91E905C991036BC65C06FF5AA;1133.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 169.
  ) 
 Here is how much of TeX's memory you used:
- 9595 strings out of 494880
- 141982 string characters out of 6179601
- 235037 words of memory out of 5000000
- 12762 multiletter control sequences out of 15000+600000
- 45675 words of font info for 95 fonts, out of 8000000 for 9000
+ 9609 strings out of 494880
+ 142171 string characters out of 6179601
+ 237135 words of memory out of 5000000
+ 12770 multiletter control sequences out of 15000+600000
+ 46811 words of font info for 96 fonts, out of 8000000 for 9000
  39 hyphenation exceptions out of 8191
- 30i,7n,37p,1898b,315s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 30i,14n,37p,1898b,409s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texliv
 e/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texm
 f-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/
@@ -638,10 +676,10 @@ exlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-di
 st/fonts/type1/urw/times/utmbi8a.pfb></usr/share/texlive/texmf-dist/fonts/type1
 /urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr
 i8a.pfb>
-Output written on dac.pdf (3 pages, 481445 bytes).
+Output written on dac.pdf (4 pages, 487739 bytes).
 PDF statistics:
- 199 PDF objects out of 1000 (max. 8388607)
- 177 compressed objects within 2 object streams
- 46 named destinations out of 1000 (max. 500000)
- 118 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 222 PDF objects out of 1000 (max. 8388607)
+ 199 compressed objects within 2 object streams
+ 51 named destinations out of 1000 (max. 500000)
+ 134 words of extra memory for PDF output out of 10000 (max. 10000000)
 
