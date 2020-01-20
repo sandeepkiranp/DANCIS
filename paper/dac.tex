@@ -146,14 +146,45 @@ The authors in \cite{CamenischDD17} built a practical attribute based DAC system
 \label{fig:genconst}
 \end{figure}
 
-The author's generic construction scheme is depicted in Fig. \ref{fig:genconst}.At Level-0 is the root issuer with public, private key pair as $(ipk,isk)$. The root issuer delegates certain attributes $\overrightarrow{a1}$ to say $user1$ at Level-1 with key pair as $(cpk_1, csk_1)$. It generates a signature ($\sigma_1$) on the combination of $(cpk_1,\overrightarrow{a1})$ using $isk$. It passes on the signature and attributes to  $user1$. Similarly, if $user1$ at Level-1 wants to delegate certain attributes $\overrightarrow{a2}$ to $user2$ with key pair $(cpk_2, csk_2)$, it generates a signature ($\sigma_2$) using $csk1$ over $(cpk_2,\overrightarrow{a2})$. $user2$ then forwards the ($\sigma_1$), $\overrightarrow{a1}$ and $cpk_1$ generated at Level-1 as well as ($\sigma_2$), $\overrightarrow{a2}$ generated at Level-2 to $user2$. This goes on till any Level$-l$ credential. So a Level-l credential is a combination of all signatures, attributes and public keys of all $l-1$ levels and Level-$l$ private key.
+The author's generic construction scheme is depicted in Fig. \ref{fig:genconst}.At Level-0 is the root issuer with public, private key pair as $(ipk,isk)$. The root issuer delegates certain attributes $\overrightarrow{a_1}$ to say $user1$ at Level-1 with key pair as $(cpk_1, csk_1)$. It generates a signature ($\sigma_1$) on the combination of $(cpk_1,\overrightarrow{a_1})$ using $isk$. It passes on the signature and attributes to  $user1$. Similarly, if $user1$ at Level-1 wants to delegate certain attributes $\overrightarrow{a_2}$ to $user2$ with key pair $(cpk_2, csk_2)$, it generates a signature ($\sigma_2$) using $csk1$ over $(cpk_2,\overrightarrow{a_2})$. $user2$ then forwards the ($\sigma_1$), $\overrightarrow{a_1}$ and $cpk_1$ generated at Level-1 as well as ($\sigma_2$), $\overrightarrow{a_2}$ generated at Level-2 to $user2$. This goes on till any Level$-l$ credential. So a Level-l credential is a combination of all signatures, attributes and public keys of all $l-1$ levels and Level-$l$ private key.
 
-In order to anonymously present a credential at any level, the prover generates a NIZKP proof proving that he holds the entire credential chain (signatures, attributes and public keys). He can selectively reveal attributes at each level. The public keys (and thereby the identity of users) at each level will remain hidden. The verifier verifies the token using just the root issuers public key.
+In order to anonymously present a credential at any level, the prover generates a NIZKP proof proving that he holds the entire credential chain (signatures, attributes and public keys at each level). He can selectively reveal attributes at each level. The public keys (and thereby the identity of users) at each level will remain hidden. The verifier verifies the token using just the root issuers public key. The authors provided an instantiation of their construction scheme using Bilinear Pairings and Groth-Schnorr sibling signatures. They used Groth1 to denote Groth signatures on messages in $G1$ with public key in $G2$ (called SibGS1) and Groth2 to denote Groth signatures on messages in $G2$ with public key in $G1$ (called SibGS2). The final attribute token would then look like
+
+$$
+at \leftarrow NIZK \lbrace(  )\rbrace
+$$
+
+In order to prove that the prover holds the private key corresponding to the public key at Level-L($cpk_L$), the NIZK proof also includes the proof for a message $m$ signed with the private key at Level-L ($csk_L$).
 
 \subsubsection{Credential Revocation}
+One of the important functionalities of any credential based system is to account for revoked credentials. Revocation allows the administrator to stop rouge elements from entering into the system. The authors in \citep{CamenischDD17} left out credential revocation as a future item. In this section we discuss how credential revocation can be achieved using the author's concrete instantiation.
+
+As mentioned in the previous section, if a user at level K-1 wants to delegate certain attributes ($\overrightarrow{a_K}$) to another user, he signs the message $(cpk_K,\overrightarrow{a_K})$ with $csk_{K-1}$. We propose to extend the signature message to include a Hash of $(cpk_K , \overrightarrow{a_K})$. We call this hash as the credential hash at level K. Therefore,
+
+$$
+h_K = Hash(cpk_K,\overrightarrow{a_K})
+$$
+$$
+\sigma_K = Sign_{csk_{K-1}}(cpk_K,h_K,\overrightarrow{a_K})
+$$
+
+Hash in this case can be one of the \textit{Secure Hash Algorithms} in the SHA-2 family. The credential hash is a unique representation of the public key and the delegated attributes at any level. Since the signature includes the credential hash, signature verification would fail if the hash is tampered. The delegator forwards $\sigma_K, h_K, \overrightarrow{a_K}$ to the delegatee. $h_K$ forms a part of credential at every level. The attribute token generated for presentation would now look like
+
+$$
+at \leftarrow NIZK \lbrace(  )\rbrace
+$$
+When generating the attribute token, unlike other attributes, the credential hash value is always revealed to the verifier. There is no danger of someone modifying the hash as that would result in signature verification failure. If the root issuer or any delegator in the chain needs to revoke a credential, he would publish the credential hash in a Black List (BL) of credential hashes. The verifier has to check the credential hash for each level against the BL and if there is a match,  verification should fail.
+
+The instantiation of the NIZK for the attribute token would now look like,
 
 
-\subsubsection{Session Key Establishment} 
+xxxxxx 
+
+
+xxxxxx
+
+\subsubsection{Session Key Establishment}
+In the IoT scenario, once the token generated by the IoT device/User is verified by the IoT service, the next logical step would be to exchange data. In order to securely perform data exchange, both the endpoints should establish a common secret key.
 
 \section{Our Proposal}
 
