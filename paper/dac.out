@@ -11,6 +11,7 @@
 \BOOKMARK [1][-]{section.4}{DAC By Camenisch et al. CamenischDD17 and our extensions}{}% 11
 \BOOKMARK [2][-]{subsubsection.4.0.1}{Credential Revocation}{section.4}% 12
 \BOOKMARK [3][-]{subsubsection.4.0.2}{Session Key Establishment}{subsubsection.4.0.1}% 13
-\BOOKMARK [1][-]{section.5}{Our Proposal}{}% 14
-\BOOKMARK [1][-]{section.6}{Implementation and Results}{}% 15
-\BOOKMARK [1][-]{section.7}{Conclusion}{}% 16
+\BOOKMARK [1][-]{section.5}{The Proposal}{}% 14
+\BOOKMARK [2][-]{subsubsection.5.0.1}{The Root Issuer}{section.5}% 15
+\BOOKMARK [1][-]{section.6}{Implementation and Results}{}% 16
+\BOOKMARK [1][-]{section.7}{Conclusion}{}% 17
