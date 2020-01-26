@@ -200,7 +200,14 @@ Fig. \ref{fig:sysarch} illustrates the system architecture with the following ma
 \subsubsection{The Root Issuer}
 As the name implies, the Root Issuer (RI) issues Level-1 credentials to users/IoT devices. The RI service maintains a public, private key pair $(ipk,isk)$ using which it signs the Level-1 credentials. The public key $ipk$ is distributed across the system so that services can validate credential tokens presented from any delegation level just by using $ipk$.
 
-All users/IoT devices are assumed to hold one long term public, private key pair. Any user/IoT device which wishes to obtain credentials from RI, submits the credential request containing their public key and the attributes that they wish to possess. RI then validates the entity's request and generates the credential. As mentioned in section \ref{revoke}, RI signs the combination of user/device's public key, the credential hash and the attributes, with its private key $isk$. The entities credential would then be a combination of the signature, the attributes and its public, private key pair.
+The RI generates the system public parameters $G1, G2, g1, g2$ and the bilinear map $e$ when it is initialized for the very first time.
+
+All users/IoT devices are assumed to hold one long term public, private key pair. Any user/IoT device which wishes to obtain credentials from RI, submits the credential request containing their public key and the attributes that they wish to possess. RI then validates the entity's request and generates the credential. As mentioned in section \ref{revoke}, RI signs the combination of user/device's public key, the credential hash and the attributes, with its private key $isk$. the credential hash is the hash of the user's publick key and all the attributes that the RI wishes to assign to the entity. The entity's credential would then be a combination of the signature, the credential hash, the attributes and its public, private key pair.
+
+If the root issuer wishes to revoke an entity's credential, it would publish the credential hash in a BlackList (BL) that is available for everyone in the system to view. Only the RI can add, delete or modify the entries in the BL. Since the credential hash is hashed over public key and attributes, no one can infer any useful information about the entity just by looking at the hash.
+
+\subsubsection{The Controller}
+The controller forms the core of the system. One of the primary reasons for choosing a centralized controller based approach is to allow the flexibility for both constrained devices and services as well as resourceful 
 
 \section{Implementation and Results}
 
