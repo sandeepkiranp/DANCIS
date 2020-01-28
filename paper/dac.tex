@@ -207,7 +207,15 @@ All users/IoT devices are assumed to hold one long term public, private key pair
 If the root issuer wishes to revoke an entity's credential, it would publish the credential hash in a BlackList (BL) that is available for everyone in the system to view. Only the RI can add, delete or modify the entries in the BL. Since the credential hash is hashed over public key and attributes, no one can infer any useful information about the entity just by looking at the hash.
 
 \subsubsection{The Controller}
-The controller forms the core of the system. One of the primary reasons for choosing a centralized controller based approach is to allow the flexibility for both constrained devices and services as well as resourceful 
+The Controller forms the core of the system. One of the primary reasons for choosing a centralized controller based approach is to allow the flexibility for both constrained devices as well as resourceful endpoints to anonymously authenticate against services. Even on the services end, constrained IoT services, for example a smart bulb do not have the resources to validate an anonymous credential. With our approach, we allow both less constrained and very constrained endpoints to participate in the system. Some of the core functionalities of the Controller are
+
+\begin{enumerate}[label=\alph*)]
+	\item Accepts Delegated Credentials from Users/IoT devices and generates Anonymous Credentials to be presented to services in the IoT service chain.
+	\item Maintains the list of system generated events and the corresponding services to be invoked.
+	\item Maintains session information like services that were invoked, what attributes are needed for each service and so on for the entire service chain.
+	\item Validates the User/Device credential against BlackListed credentials.
+
+On startup, the Controller loads the system parameters, generates public and private keys if this is the first time it is starting or loads the public and private keys. The Controller maintains a list of all the attributes required by each service in the system. This allows the Controller to generate anonymous credentials on behalf of the user/device by revealing only the attributes required by the service. IoT devices/Users generate events when there is a change in normal behaviour. For example, the HMS detecting a low pulse rate for the patient, an intruder trying to enter the house, component breakdown in a shop floor etc. All these activities generate system events which are processed by the Controller. The Controller maintains a broad list of the services that need to be invoked for each event. For example, if a Guest enters the home, access to only the Guest room needs to be allowed, the Guest preferred lighting and temperature needs to be set and so on. Once the event is detected, the Controller invokes the corresponding service one after the other. The invoked service may in turn invoke other services in a chained manner. Each service in the chain validates if the user/device has the required attributes to fulfil the service request. 
 
 \section{Implementation and Results}
 
