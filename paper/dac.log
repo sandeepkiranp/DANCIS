@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7250 64-bit) (preloaded format=pdflatex 2020.1.23)  1 FEB 2020 12:46
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7250 64-bit) (preloaded format=pdflatex 2020.1.23)  1 FEB 2020 12:51
 entering extended mode
 **./dac.tex
 (dac.tex
@@ -734,11 +734,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 203--204
 []\OT1/ptm/m/n/10 The RI gen-er-ates the sys-tem pub-lic pa-ram-e-ters
  []
 
-[4] [5]
-
-LaTeX Warning: Reference `controller' on page 6 undefined on input line 251.
-
-(dac.bbl
+[4] [5] (dac.bbl
 Underfull \hbox (badness 5231) in paragraph at lines 20--23
 []\OT1/ptm/m/n/10 Ioannis An-drea, Chrysos-to-mos Chrysos-to-mou, and
  []
@@ -779,19 +775,12 @@ Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 264.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 264.
 Package rerunfilecheck Info: File `dac.out' has not changed.
 (rerunfilecheck)             Checksum: 8990F548268FD4B1B7C861A0AAF9936F;1497.
-
-
-LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 264.
  ) 
 Here is how much of TeX's memory you used:
  10245 strings out of 492484
  150210 string characters out of 3131042
- 253227 words of memory out of 3000000
+ 253279 words of memory out of 3000000
  14358 multiletter control sequences out of 15000+200000
  46811 words of font info for 96 fonts, out of 3000000 for 9000
  1144 hyphenation exceptions out of 8191
@@ -812,9 +801,9 @@ vr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmb8a.pfb><C:/Prog
 ram Files/MiKTeX 2.9/fonts/type1/urw/times/utmbi8a.pfb><C:/Program Files/MiKTeX
  2.9/fonts/type1/urw/times/utmr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/
 urw/times/utmri8a.pfb>
-Output written on dac.pdf (7 pages, 567924 bytes).
+Output written on dac.pdf (7 pages, 567915 bytes).
 PDF statistics:
- 288 PDF objects out of 1000 (max. 8388607)
+ 289 PDF objects out of 1000 (max. 8388607)
  66 named destinations out of 1000 (max. 500000)
  174 words of extra memory for PDF output out of 10000 (max. 10000000)
 
