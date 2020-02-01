@@ -175,9 +175,15 @@ $$
 
 Hash in this case can be one of the \textit{Secure Hash Algorithms} in the SHA-2 family. The credential hash is a unique representation of the public key and the delegated attributes at any level. Since the signature includes the credential hash, signature verification would fail if the hash is tampered. The delegator forwards $\sigma_K, h_K, \overrightarrow{a_K}$ to the delegatee. $h_K$ forms a part of credential at every level. The attribute token generated for presentation would now look like
 
+\begin{multline}
 $$
-at \leftarrow NIZK \lbrace(  )\rbrace
+at \leftarrow NIZK \lbrace(\sigma_1,...,\sigma_L,cpk_1,...,cpk_L,<a_{i,j}>_{i \notin D},tag) : \\ 
+\bigwedge \limits _{i=1,3,..} 1 = SibGS1.Verify_1(cpk_{i-1}, \boldsymbol{h_i}, \sigma_i,cpk_i,a_{i,1},...a_{i,n_i})\\
+\bigwedge \limits _{1=2,4,..} 1 = SibGS1.Verify_1(cpk_{i-1}, \boldsymbol{h_i},\sigma_i,cpk_i,a_{i,1},...a_{i,n_i})\\
+\wedge 1 = SibGSb.Verify2(cpk_L,tag,m)\rbrace
 $$
+\end{multline}
+
 When generating the attribute token, unlike other attributes, the credential hash value is always revealed to the verifier. There is no danger of someone modifying the hash as that would result in signature verification failure. If the root issuer or any delegator in the chain needs to revoke a credential, he would publish the credential hash in a Black List (BL) of credential hashes. The verifier has to check the credential hash for each level against the BL and if there is a match,  verification should fail.
 
 The instantiation of the NIZK for the attribute token would now look like,
