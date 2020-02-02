@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7250 64-bit) (preloaded format=pdflatex 2020.1.23)  2 FEB 2020 11:42
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7250 64-bit) (preloaded format=pdflatex 2020.1.23)  2 FEB 2020 17:52
 entering extended mode
 **./dac.tex
 (dac.tex
@@ -702,32 +702,27 @@ LaTeX Info: Redefining \nameref on input line 22.
 \openout3 = `dac.out'.
 
 
-** ATTENTION: Overriding command lockouts (line 35).
-[1{C:/Users/sapinjal/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}
-
-
-]
-LaTeX Font Info:    Trying to load font information for OT1+phv on input line 4
-0.
-
+** ATTENTION: Overriding command lockouts (line 34).
+LaTeX Font Info:    Trying to load font information for OT1+phv on input line 3
+9.
 ("C:\Program Files\MiKTeX 2.9\tex/latex/psnfss\ot1phv.fd"
 File: ot1phv.fd 2001/06/04 scalable font definitions for OT1/phv.
 )
-LaTeX Font Info:    Calculating math sizes for size <11> on input line 40.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 40.
+LaTeX Font Info:    Calculating math sizes for size <11> on input line 39.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 39.
 
 
 ("C:\Program Files\MiKTeX 2.9\tex/latex/amsfonts\umsa.fd"
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 40.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 39.
 
 
 ("C:\Program Files\MiKTeX 2.9\tex/latex/amsfonts\umsb.fd"
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 4
-0.
+LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 3
+9.
 
 ("C:\Program Files\MiKTeX 2.9\tex/latex/psnfss\ot1pcr.fd"
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
@@ -736,57 +731,59 @@ File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 Package hyperref Warning: Difference (2) between bookmark levels is greater 
 (hyperref)                than one, level fixed on input line 70.
 
-<chain_1.png, id=104, 785.93625pt x 516.93124pt>
-File: chain_1.png Graphic file (type png)
-<use chain_1.png>
-Package pdftex.def Info: chain_1.png  used on input line 73.
-(pdftex.def)             Requested size: 216.81pt x 142.60219pt.
-LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 8
+LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 7
 1.
 ("C:\Program Files\MiKTeX 2.9\tex/latex/psnfss\ts1ptm.fd"
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
-) [2
+) [1{C:/Users/sapinjal/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}
 
-] [3 <./chain_1.png>]
+
+]
+<chain.png, id=118, 785.93625pt x 516.93124pt>
+File: chain.png Graphic file (type png)
+<use chain.png>
+Package pdftex.def Info: chain.png  used on input line 73.
+(pdftex.def)             Requested size: 216.81pt x 142.60219pt.
+ [2 <./chain.png>]
 
 Package hyperref Warning: Difference (2) between bookmark levels is greater 
 (hyperref)                than one, level fixed on input line 109.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `\begingroup' on input line 138.
+(hyperref)                removing `\begingroup' on input line 137.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `\<let>-command' on input line 138.
+(hyperref)                removing `\<let>-command' on input line 137.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `\NAT@ctype' on input line 138.
+(hyperref)                removing `\NAT@ctype' on input line 137.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `\z@' on input line 138.
+(hyperref)                removing `\z@' on input line 137.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `\let' on input line 138.
+(hyperref)                removing `\let' on input line 137.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `\let' on input line 138.
+(hyperref)                removing `\let' on input line 137.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
-(hyperref)                removing `\new@ifnextchar' on input line 138.
+(hyperref)                removing `\new@ifnextchar' on input line 137.
 
-<camen.png, id=160, 462.22687pt x 452.18938pt>
+<camen.png, id=153, 462.22687pt x 452.18938pt>
 File: camen.png Graphic file (type png)
 <use camen.png>
-Package pdftex.def Info: camen.png  used on input line 142.
+Package pdftex.def Info: camen.png  used on input line 141.
 (pdftex.def)             Requested size: 216.81pt x 212.10124pt.
-[4 <./camen.png>]
-Overfull \hbox (6.43355pt too wide) detected at line 158
+[3 <./camen.png>]
+Overfull \hbox (6.43355pt too wide) detected at line 157
  []$[]  $$\OML/cmm/m/it/10 at \OMS/cmsy/m/n/10   \OML/cmm/m/it/10 NIZK\OMS/cmsy
 /m/n/10 f\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 []; :::; []; cpk[]; :::; cpk[]; < 
 a[] >[]; tag\OT1/cmr/m/n/10 ) :$ 
@@ -794,69 +791,62 @@ a[] >[]; tag\OT1/cmr/m/n/10 ) :$
 
 
 Package hyperref Warning: Difference (2) between bookmark levels is greater 
-(hyperref)                than one, level fixed on input line 163.
+(hyperref)                than one, level fixed on input line 162.
 
 
-Overfull \hbox (6.43355pt too wide) detected at line 183
+Overfull \hbox (6.43355pt too wide) detected at line 182
  []$[]  $$\OML/cmm/m/it/10 at \OMS/cmsy/m/n/10   \OML/cmm/m/it/10 NIZK\OMS/cmsy
 /m/n/10 f\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 []; :::; []; cpk[]; :::; cpk[]; < 
 a[] >[]; tag\OT1/cmr/m/n/10 ) :$ 
  []
 
 
-Overfull \hbox (7.13686pt too wide) detected at line 183
+Overfull \hbox (7.13686pt too wide) detected at line 182
  []$[] [] \OT1/cmr/m/n/10 1 = \OML/cmm/m/it/10 SibGS\OT1/cmr/m/n/10 1\OML/cmm/m
 /it/10 :Verify[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 cpk[]; []; []; cpk[]; a[]; :
 ::a[]\OT1/cmr/m/n/10 )$ 
  []
 
 
-Overfull \hbox (8.2937pt too wide) detected at line 183
+Overfull \hbox (8.2937pt too wide) detected at line 182
  []$[] [] \OT1/cmr/m/n/10 1 = \OML/cmm/m/it/10 SibGS\OT1/cmr/m/n/10 1\OML/cmm/m
 /it/10 :Verify[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 cpk[]; []; []; cpk[]; a[]; :
 ::a[]\OT1/cmr/m/n/10 )$ 
  []
 
 
-Overfull \hbox (12.75728pt too wide) detected at line 204
+Overfull \hbox (12.75728pt too wide) detected at line 203
 []
  []
 
-Extra height:22.0pt when 399.4487pt
-Extra height:0.0pt when 400.4487pt
-(2)Left:400.4487pt Right:410.19867pt Output:400.4487pt
-(2)Left:410.19867pt Right:386.19867pt Output:410.19867pt
+Extra height:0.0pt when 501.4487pt
+(2)Left:501.4487pt Right:506.19867pt Output:501.4487pt
+(2)Left:506.19867pt Right:494.19867pt Output:506.19867pt
 - LAST -
-Left:410.19867pt
-Right:386.19867pt
-Output:410.19867pt
+Left:506.19867pt
+Right:494.19867pt
+Output:506.19867pt
 
-LaTeX Warning: Optional argument of \twocolumn too tall on page 5(2 stulpelis).
-
-
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
+Overfull \vbox (55.72058pt too high) has occurred while \output is active []
 
 
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [5]
-<dac.png, id=200, 1371.1225pt x 770.88pt>
-File: dac.png Graphic file (type png)
-<use dac.png>
-Package pdftex.def Info: dac.png  used on input line 214.
-(pdftex.def)             Requested size: 216.81pt x 121.89651pt.
+[4]
+<architecture.png, id=196, 741.26938pt x 415.5525pt>
+File: architecture.png Graphic file (type png)
+<use architecture.png>
+Package pdftex.def Info: architecture.png  used on input line 213.
+(pdftex.def)             Requested size: 216.81pt x 121.54068pt.
 
 
 Package hyperref Warning: Difference (2) between bookmark levels is greater 
-(hyperref)                than one, level fixed on input line 222.
+(hyperref)                than one, level fixed on input line 221.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 224--225
+Underfull \hbox (badness 10000) in paragraph at lines 223--224
 []\OT1/ptm/m/n/10 The RI gen-er-ates the sys-tem pub-lic pa-ram-e-ters
  []
 
-[6 <./dac.png>] [7] (dac.bbl
+[5 <./architecture.png>] [6] (dac.bbl
 Underfull \hbox (badness 5231) in paragraph at lines 20--23
 []\OT1/ptm/m/n/10 Ioannis An-drea, Chrysos-to-mos Chrysos-to-mou, and
  []
@@ -887,21 +877,21 @@ Underfull \hbox (badness 10000) in paragraph at lines 42--48
  []
 
 )
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 285.
- [8]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 285.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 284.
+ [7]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 284.
  (dac.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 285.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 285.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 284.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 284.
 Package rerunfilecheck Info: File `dac.out' has not changed.
 (rerunfilecheck)             Checksum: 8990F548268FD4B1B7C861A0AAF9936F;1497.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 285.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 284.
  ) 
 Here is how much of TeX's memory you used:
- 10438 strings out of 492484
- 153035 string characters out of 3131042
- 276702 words of memory out of 3000000
- 14529 multiletter control sequences out of 15000+200000
+ 10437 strings out of 492484
+ 153072 string characters out of 3131042
+ 284702 words of memory out of 3000000
+ 14528 multiletter control sequences out of 15000+200000
  49568 words of font info for 105 fonts, out of 3000000 for 9000
  1144 hyphenation exceptions out of 8191
  39i,16n,37p,1931b,438s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -927,9 +917,9 @@ MiKTeX 2.9/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Program Files/MiKTeX 2.9/fon
 ts/type1/urw/times/utmb8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/time
 s/utmbi8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmr8a.pfb><C:
 /Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmri8a.pfb>
-Output written on dac.pdf (8 pages, 1258681 bytes).
+Output written on dac.pdf (7 pages, 983810 bytes).
 PDF statistics:
- 333 PDF objects out of 1000 (max. 8388607)
- 69 named destinations out of 1000 (max. 500000)
+ 327 PDF objects out of 1000 (max. 8388607)
+ 68 named destinations out of 1000 (max. 500000)
  184 words of extra memory for PDF output out of 10000 (max. 10000000)
 

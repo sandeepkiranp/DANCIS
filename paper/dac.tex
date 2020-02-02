@@ -20,7 +20,6 @@
 \hyphenation{op-tical net-works semi-conduc-tor}
 
 \begin{document}
-\def\HS{\hspace{\fontdimen2\font}}\the\fontdimen2\font
 \title{Delegated Anonymous Credentials with Revocation Capability for IoT Service Chains}
 \author{\IEEEauthorblockN{\textsf{Sandeep Kiran Pinjala}$^{1,2}$ and
     \textsf{Krishna     M. Sivalingam}$^1$}
@@ -39,7 +38,8 @@ skrishnam@iitm.ac.in, krishna.sivalingam@gmail.com}}
 \maketitle
 
 \begin{abstract}
-The abstract goes here.
+With growing influence of Internet Of Things on our day-to-day lives, ensuring privacy of the users or devices who act on behalf of the users has been a challenging task. One because the these IoT devices are very constrained in resources that they cannot themselves implement highly secure logic and two because these devices are mostly placed in the open and are easily susceptible to physical attacks. IoT services normally do not act in silos. They interact with each other to provide a complete package of services. In this paper we discuss the problem of ensuring user and device privacy when a chain of IoT services are invoked on an event. We discuss the system architecture and components in detail and provide various options for implementing the solution on less constrained and very constrained services. Finally, we capture the results of our implementation and show how the scheme can easily scale-up in the IoT world.
+
 \end{abstract}
 
 % Note that keywords are not normally used for peerreview papers.
@@ -117,8 +117,7 @@ $$ A \neq 0 \Rightarrow e(A,A) \neq 1$$
 
 \textbf{Computability}
 
-\HS\HS\HS\HS \HS\HS e is efficiently computable
-
+e is efficiently computable
 
 \subsubsection{Zero Knowledge Proofs}
 Zero knowledge Proofs (ZKP), introduced in \cite{zkp} allow the prover to prove that he knows certain information without revealing the information (or anything related to it) to the verifier. A ZKP should be complete, sound and should not reveal any information from the proof. A zero-knowledge proof of knowledge is a special case where the prover possesses a secret information and not just the knowledge of it. Interactive ZKP require interaction between the prover and the verifier to prove that the prover has the secret information. For example, the Schnorr ZKP is outlined in \cite{rfc8235}. The Non-Interactive ZKP (NIZKP) proofs do not require any kind of interaction for the proof to proceed. The Schnorr NIZKP proof is obtained through the Fiat-Shamir transformation \cite{Fiat1986HowTP}.
@@ -136,7 +135,7 @@ A signature scheme consists of the following algorithms.
 \end{enumerate}
 
 \section{DAC By Camenisch \textit{et al.} \cite{CamenischDD17} and our extensions} \label{camen}
-The authors in \cite{CamenischDD17} built a practical attribute based DAC system of L-level hierarchy where the delegation is not anonymous. The delegator reveals its identity and the identity of the entire chain to the delegatee during the delegation process. It is only during the presentation of the anonymous credential, the prover hides the identity of all the intermediate delegators. The prover also selectively reveals attributes at each level of delegation. The verifier in turn uses the root issuer's public key to verify the anonymous credential token. The authors also describe the instantiation of their DAC system based on Groth \cite{groth} and Schnorr \cite{rfc8235} schemes. The authors introduce a new signature scheme called \textit{sibling signatures} which allows a users with a single key pair with two different signature schemes. This single key pair can be used both during delegation and token presentation.
+The authors in \cite{CamenischDD17} built a practical attribute based DAC system of L-level hierarchy where the delegation is not anonymous. The delegator reveals its identity and the identity of the entire chain to the delegatee during the delegation process. It is only during the presentation of the anonymous credential, the prover hides the identity of all the intermediate delegators and himself. The prover also selectively reveals attributes at each level of delegation. The verifier in turn uses the root issuer's public key to verify the anonymous credential token. The authors also describe the instantiation of their DAC system based on Groth \cite{groth} and Schnorr \cite{rfc8235} schemes. The authors introduce a new signature scheme called \textit{sibling signatures} which allows the users with a single key pair to use two different signature schemes. This single key pair can be used both during delegation and token presentation.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=3in]{camen.png}}
@@ -146,7 +145,7 @@ The authors in \cite{CamenischDD17} built a practical attribute based DAC system
 
 The author's generic construction scheme is depicted in Fig. \ref{fig:genconst}. At Level-0 is the root issuer with public, private key pair as $(ipk,isk)$. The root issuer delegates certain attributes $\overrightarrow{a_1}$ to $user1$ at Level-1 with key pair as $(cpk_1, csk_1)$. It generates a signature $\sigma_1$ on the combination of $(cpk_1,\overrightarrow{a_1})$ using $isk$. It passes on the signature and attributes to  $user1$. Similarly, if $user1$ at Level-1 wants to delegate certain attributes $\overrightarrow{a_2}$ to $user2$ with key pair $(cpk_2, csk_2)$, it generates a signature $\sigma_2$ using $csk1$ over $(cpk_2,\overrightarrow{a_2})$. $user2$ then forwards the $\sigma_1$, $\overrightarrow{a_1}$ and $cpk_1$ generated at Level-1 as well as $\sigma_2$, $\overrightarrow{a_2}$ generated at Level-2 to $user2$. This can go on till any Level-$l$ credential. So a Level-$l$ credential is a combination of all signatures, attributes and public keys of all $l-1$ levels and Level-$l$ private key.
 
-In order to anonymously present a credential at any level, the prover generates a NIZKP proof proving that he holds the entire credential chain (signatures, attributes and public keys at each level). He can selectively reveal attributes at each level. The public keys (and thereby the identity of users) at each level will remain hidden. The verifier verifies the token using just the root issuers public key $ipk$. The authors provided an instantiation of their construction scheme using Bilinear Pairings and Groth-Schnorr sibling signatures. They used Groth1 to denote Groth signatures on messages in $G1$ with public key in $G2$ (called SibGS1) and Groth2 to denote Groth signatures on messages in $G2$ with public key in $G1$ (called SibGS2). The final attribute token would then look like
+In order to anonymously present a credential at any level, the prover generates a NIZKP proof proving that he holds the entire credential chain (signatures, attributes and public keys at each level). He can selectively reveal attributes at each level. The public keys (and thereby the identity of users) at each level will remain hidden. The verifier verifies the token using just the root issuers public key $ipk$. The authors provided an instantiation of their construction scheme using Bilinear Pairings and Groth-Schnorr sibling signatures. They use Groth1 to denote Groth signatures on messages in $G1$ with public key in $G2$ (called SibGS1) and Groth2 to denote Groth signatures on messages in $G2$ with public key in $G1$ (called SibGS2). The final attribute token would then look like
 
 \begin{multline}
 $$
@@ -160,7 +159,7 @@ $$
 In order to prove that the prover holds the private key corresponding to the public key at Level-L($cpk_L$), the NIZK proof also includes the proof for a message $m$ signed with the private key at Level-L ($csk_L$). In the concrete instantiation, this proof of private key possession is later turned into Schnorr signature proof of knowledge using Fiat-Shamir heuristic.
 
 \subsubsection{Credential Revocation} \label{revoke}
-One of the important functionalities of any credential based system is to account for revoked credentials. Revocation allows the administrator to stop rouge elements from entering into the system. The authors in \citep{CamenischDD17} left out credential revocation as a future item. In this section we discuss how credential revocation can be achieved using the author's concrete instantiation.
+One of the important functionalities of any credential based system is to account for revoked credentials. Revocation allows the administrator to stop rouge elements from entering into the system. The authors in \citep{CamenischDD17} left out credential revocation as a future item. In this section we discuss how credential revocation can be achieved by extending the author's concrete instantiation.
 
 As mentioned in the previous section, if a user at level K-1 wants to delegate certain attributes ($\overrightarrow{a_K}$) to another user, he signs the message $(cpk_K,\overrightarrow{a_K})$ with $csk_{K-1}$. We propose to extend the signature message to include a Hash of $(cpk_K , \overrightarrow{a_K})$. We call this hash as the credential hash at level K. Therefore,
 
@@ -182,9 +181,9 @@ at \leftarrow NIZK \lbrace(\sigma_1,...,\sigma_L,cpk_1,...,cpk_L,<a_{i,j}>_{i \n
 $$
 \end{multline}
 
-When generating the attribute token, unlike other attributes, the credential hash value is always revealed to the verifier. There is no danger of someone modifying the hash as that would result in signature verification failure. If the root issuer or any delegator in the chain needs to revoke a credential, he would publish the credential hash in a Black List (BL) of credential hashes. The verifier has to check the credential hash for each level against the BL and if there is a match,  verification should fail.
+When generating the attribute token, unlike other attributes, the credential hash value is always revealed to the verifier. There is no danger of someone modifying the hash as that would result in signature verification failure. If the root issuer or any delegator in the chain needs to revoke a credential, he would publish the credential hash in a Black List (BL) of credential hashes. The verifier has to check the credential hash for each level against the BL and if there is a match, verification would fail.
 
-The instantiation of the NIZK for the attribute token would now look like (changes in bold),
+The concret instantiation of the NIZK for the attribute token would now look like (changes in bold),
 
 \begin{strip}
 \begin{gather*}
@@ -211,7 +210,7 @@ In the IoT scenario, once the token generated by the IoT device/User is verified
 In this section we discuss in detail the architectural components of our proposal and the messages exchanged between them. One of the primary requirements of the system was to provide a light weight solution for IoT devices and users to anonymously access IoT services. 
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=3in]{dac.png}}
+\centerline{\includegraphics[width=3in]{architecture.png}}
 \caption{System Architecture}
 \label{fig:sysarch}
 \end{figure}
@@ -223,9 +222,9 @@ As the name implies, the Root Issuer (RI) issues Level-1 credentials to users/Io
 
 The RI generates the system public parameters $G1, G2, g1, g2$ and the bilinear map $e$ when it is initialized for the very first time.
 
-All users/IoT devices are assumed to hold one long term public, private key pair. Any user/IoT device which wishes to obtain credentials from RI, submits the credential request containing their public key and the attributes that they wish to possess. RI then validates the entity's request and generates the credential. As mentioned in section \ref{revoke}, RI signs the combination of user/device's public key, the credential hash and the attributes, with its private key $isk$. the credential hash is the hash of the user's publick key and all the attributes that the RI wishes to assign to the entity. The entity's credential would then be a combination of the signature, the credential hash, the attributes and its public, private key pair.
+All users/IoT devices are assumed to hold one long term public, private key pair. Any user/IoT device which wishes to obtain credentials from RI, submits the credential request containing their public key and the attributes that they wish to possess. RI then validates the entity's request and generates the credential. As mentioned in section \ref{revoke}, RI signs the combination of user/device's public key, the credential hash and the attributes, with its private key $isk$. The credential hash is the hash of the user's publick key and all the attributes that the RI wishes to assign to the entity. The entity's credential would then be a combination of the signature, the credential hash, the attributes and its public, private key pair.
 
-If the root issuer wishes to revoke an entity's credential, it would publish the credential hash in a BlackList (BL) that is available for everyone in the system to view. Only the RI can add, delete or modify the entries in the BL. Since the credential hash is hashed over public key and attributes, no one can infer any useful information about the entity just by looking at the hash.
+If the root issuer wishes to revoke an entity's credential, it would publish the credential hash for that entity in a BlackList (BL) that is available for everyone in the system to view. Only the RI can add, delete or modify the entries in the BL. Since the credential hash is hashed over public key and attributes, no one can infer any useful information about the entity just by looking at the hash.
 
 \subsubsection{The Controller} \label{controller}
 The Controller forms the core of the system. One of the primary reasons for choosing a centralized controller based approach is to allow the flexibility for both constrained devices as well as resourceful endpoints to anonymously authenticate and authorize against services. Even on the services end, constrained IoT services for example a smart bulb do not have the resources to validate an anonymous credential. With our approach, we allow both less constrained and very constrained endpoints to participate in the system. Some of the core functionalities of the Controller are
@@ -242,7 +241,7 @@ IoT devices/Users generate events when there is a change in normal behaviour. Fo
 
 To elaborate more on the technical details, when a User/IoT device detects an event, it informs the Controller of the event. As part of the signalling mechanism, the IoT device delegates its credentials to the Controller. The device delegates all its attributes to the Controller. See section \ref{iotdevice}. On receiving the delegated credential and the event, the Controller first verifies the delegated credential using the Root Issuer's public key $ipk$. It also checks if the user's credentials are black listed or not. If the delegated credential is fine, it would then retrieve the list of services that need to be invoked for the event. For each such service, the Controller generates an anonymous credential based on the attributes that were delegated to the Controller by the user/device. The Controller selectively reveals only those attributes that are required for the service to process the request and hides the remaining attributes. The generated attribute token as mentioned in section \ref{revoke} will then be presented to the service for verification.
 
-Here we have certain design options on the Controller based on whether the invoked service is constrained or not. A very constrained service, for example a Temperature Sensor would not have the processing capability to verify the attribute token generated by the Controller. Where as a Smart TV or a Smart Fridge my be able to verify the attribute token. In addition to the token verification, the service may choose to implement a policy evaluation based on the user/device attributes received in the token. See section \ref{service}. Even here, constrained services may not be able to evaluate any policies based on the attributes in the token. the following are the design options.
+Here we have certain design options on the Controller based on whether the invoked service is constrained or not. A very constrained service, for example a Temperature Sensor would not have the processing capability to verify the attribute token generated by the Controller. Where as a Smart TV or a Smart Fridge may be able to verify the attribute token. In addition to the token verification, the service may choose to implement a policy evaluation based on the user/device attributes received in the token. See section \ref{service}. Even here, constrained services may not be able to evaluate any policies based on the attributes in the token. The following are the design options.
 
 \begin{enumerate}[label=\alph*)]
 	\item The Controller identifies the service as not a constrained one and would let the service perform the attribute token verification and policy evaluation.
@@ -260,7 +259,7 @@ Users or IoT devices generate system events. These events in turn need a series 
 
 Very constrained devices may not be able to authenticate/authorize themselves anonymously to each service in the chain. Less constrained devices may have the compute power to do so. In which case, they can directly interact with each service in the chain and provide the necessary credentials. In our design, we consider events generated from very constrained devices. Along with the event, the device generates a delegated credential to be issued to the Controller. The Controller is assumed to be a trusted service in the system and the device delegates all its attributes to the Controller. One of the primary reason for choosing \citep{CamenischDD17} as an implementation base is that it provides a flexibility where the delegation process is not anonymous. The delegator reveals its identity (the public key) and all its attributes during delegation. It is only during presentation the prover will hide the public keys of each of the entities in the delegation hierarchy. The prover also selectively reveals only those attributes that are needed for the Verifier. This works well with our model as IoT devices cannot perform the costly anonymous credential delegation. Moreover all devices and users trust the Controller service and so the privacy aspect is not lost during delegation.
 
-Every User/Device holds a public,private key pair and is issued a credential by the RI based on the attributes it possesses. That's the Level-1 credential as per \cite{CamenischDD17}. When the device detects an event, it generates a Level-2 delegated credential with the Controller's public key and all its attributes and passes it over to Controller. The Controller will then trigger the service chain using this delegated credential.
+Every User/Device holds a public, private key pair and is issued a credential by the RI based on the attributes it possesses. That's the Level-1 credential as per \cite{CamenischDD17}. When the device detects an event, it generates a Level-2 delegated credential with the Controller's public key and all its attributes and passes it over to Controller. The Controller will then trigger the service chain using this delegated credential.
 
 \subsubsection{The Service} \label{service}
 Services are the resource providers in the system. There could be very constrained services like a temperature sensor that reads and outputs the surrounding temperature and also less constrained services like a smart fridge that smartly manages the contents inside the refrigerator. An IoT device can also act as an IoT service. For example a Heart Monitoring System (HMS) provides the pulse rate of the patient as a service and it can also generate an event if the pulse goes beyond normal values. Any IoT service can have two basic functionalities, a sensing capability and an actuating capability. Anyone wanting to access the service may look to read (sense) or write (actuate) data from the service.
