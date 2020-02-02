@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7250 64-bit) (preloaded format=pdflatex 2020.1.23)  2 FEB 2020 08:38
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7250 64-bit) (preloaded format=pdflatex 2020.1.23)  2 FEB 2020 11:42
 entering extended mode
 **./dac.tex
 (dac.tex
@@ -736,18 +736,18 @@ File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 Package hyperref Warning: Difference (2) between bookmark levels is greater 
 (hyperref)                than one, level fixed on input line 70.
 
-<dac.png, id=104, 1371.1225pt x 770.88pt>
-File: dac.png Graphic file (type png)
-<use dac.png>
-Package pdftex.def Info: dac.png  used on input line 73.
-(pdftex.def)             Requested size: 216.81pt x 121.89651pt.
+<chain_1.png, id=104, 785.93625pt x 516.93124pt>
+File: chain_1.png Graphic file (type png)
+<use chain_1.png>
+Package pdftex.def Info: chain_1.png  used on input line 73.
+(pdftex.def)             Requested size: 216.81pt x 142.60219pt.
 LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 8
 1.
 ("C:\Program Files\MiKTeX 2.9\tex/latex/psnfss\ts1ptm.fd"
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 ) [2
 
-] [3 <./dac.png>]
+] [3 <./chain_1.png>]
 
 Package hyperref Warning: Difference (2) between bookmark levels is greater 
 (hyperref)                than one, level fixed on input line 109.
@@ -780,11 +780,11 @@ Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `\new@ifnextchar' on input line 138.
 
-<camen.png, id=163, 464.73625pt x 469.755pt>
+<camen.png, id=160, 462.22687pt x 452.18938pt>
 File: camen.png Graphic file (type png)
 <use camen.png>
 Package pdftex.def Info: camen.png  used on input line 142.
-(pdftex.def)             Requested size: 216.81pt x 219.1506pt.
+(pdftex.def)             Requested size: 216.81pt x 212.10124pt.
 [4 <./camen.png>]
 Overfull \hbox (6.43355pt too wide) detected at line 158
  []$[]  $$\OML/cmm/m/it/10 at \OMS/cmsy/m/n/10   \OML/cmm/m/it/10 NIZK\OMS/cmsy
@@ -841,6 +841,7 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
  [5]
+<dac.png, id=200, 1371.1225pt x 770.88pt>
 File: dac.png Graphic file (type png)
 <use dac.png>
 Package pdftex.def Info: dac.png  used on input line 214.
@@ -855,7 +856,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 224--225
 []\OT1/ptm/m/n/10 The RI gen-er-ates the sys-tem pub-lic pa-ram-e-ters
  []
 
-[6] [7] (dac.bbl
+[6 <./dac.png>] [7] (dac.bbl
 Underfull \hbox (badness 5231) in paragraph at lines 20--23
 []\OT1/ptm/m/n/10 Ioannis An-drea, Chrysos-to-mos Chrysos-to-mou, and
  []
@@ -897,10 +898,10 @@ Package rerunfilecheck Info: File `dac.out' has not changed.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 285.
  ) 
 Here is how much of TeX's memory you used:
- 10432 strings out of 492484
- 152950 string characters out of 3131042
- 275702 words of memory out of 3000000
- 14524 multiletter control sequences out of 15000+200000
+ 10438 strings out of 492484
+ 153035 string characters out of 3131042
+ 276702 words of memory out of 3000000
+ 14529 multiletter control sequences out of 15000+200000
  49568 words of font info for 105 fonts, out of 3000000 for 9000
  1144 hyphenation exceptions out of 8191
  39i,16n,37p,1931b,438s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -926,9 +927,9 @@ MiKTeX 2.9/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Program Files/MiKTeX 2.9/fon
 ts/type1/urw/times/utmb8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/time
 s/utmbi8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmr8a.pfb><C:
 /Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmri8a.pfb>
-Output written on dac.pdf (8 pages, 660534 bytes).
+Output written on dac.pdf (8 pages, 1258681 bytes).
 PDF statistics:
- 332 PDF objects out of 1000 (max. 8388607)
+ 333 PDF objects out of 1000 (max. 8388607)
  69 named destinations out of 1000 (max. 500000)
- 179 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 184 words of extra memory for PDF output out of 10000 (max. 10000000)
 

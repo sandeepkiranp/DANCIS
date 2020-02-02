@@ -1,6 +1,4 @@
-This is BibTeX, Version 0.99d (TeX Live 2017/Debian)
-Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
-The top-level auxiliary file: dac.aux
+This is BibTeX, Version 0.99dThe top-level auxiliary file: dac.aux
 The style file: unsrt.bst
 Database file #1: mybib.bib
 Warning--entry type for "pbc" isn't style-file defined
@@ -8,45 +6,4 @@ Warning--entry type for "pbc" isn't style-file defined
 Warning--empty journal in Evans
 Warning--empty booktitle in iot-sec
 Warning--empty journal in uprove
-You've used 14 entries,
-            1791 wiz_defined-function locations,
-            539 strings with 6188 characters,
-and the built_in function-call counts, 3586 in all, are:
-= -- 315
-> -- 140
-< -- 6
-+ -- 52
-- -- 38
-* -- 209
-:= -- 544
-add.period$ -- 46
-call.type$ -- 14
-change.case$ -- 14
-chr.to.int$ -- 0
-cite$ -- 17
-duplicate$ -- 178
-empty$ -- 363
-format.name$ -- 38
-if$ -- 836
-int.to.chr$ -- 0
-int.to.str$ -- 14
-missing$ -- 12
-newline$ -- 75
-num.names$ -- 20
-pop$ -- 58
-preamble$ -- 1
-purify$ -- 0
-quote$ -- 0
-skip$ -- 100
-stack$ -- 0
-substring$ -- 224
-swap$ -- 59
-text.length$ -- 6
-text.prefix$ -- 0
-top$ -- 0
-type$ -- 0
-warning$ -- 3
-while$ -- 33
-width$ -- 16
-write$ -- 155
 (There were 4 warnings)
