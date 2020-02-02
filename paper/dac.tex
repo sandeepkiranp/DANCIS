@@ -10,7 +10,6 @@
 \usepackage{natbib}
 \usepackage{hyperref}
 \usepackage{enumitem}
-\usepackage{lipsum}
 \usepackage{cuted}
 \colorlet{punct}{red!60!black}
 \definecolor{background}{HTML}{EEEEEE}
@@ -48,11 +47,7 @@ The abstract goes here.
 
 \end{IEEEkeywords}
 
-
-
 \IEEEpeerreviewmaketitle
-
-
 
 \section{Introduction} \label{introduction}
 
@@ -144,7 +139,7 @@ A signature scheme consists of the following algorithms.
 The authors in \cite{CamenischDD17} built a practical attribute based DAC system of L-level hierarchy where the delegation is not anonymous. The delegator reveals its identity and the identity of the entire chain to the delegatee during the delegation process. It is only during the presentation of the anonymous credential, the prover hides the identity of all the intermediate delegators. The prover also selectively reveals attributes at each level of delegation. The verifier in turn uses the root issuer's public key to verify the anonymous credential token. The authors also describe the instantiation of their DAC system based on Groth \cite{groth} and Schnorr \cite{rfc8235} schemes. The authors introduce a new signature scheme called \textit{sibling signatures} which allows a users with a single key pair with two different signature schemes. This single key pair can be used both during delegation and token presentation.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=3in]{dac.png}}
+\centerline{\includegraphics[width=3in]{camen.png}}
 \caption{Generic Construction of Camenisch \textit{et al.} \cite{CamenischDD17}}
 \label{fig:genconst}
 \end{figure}
