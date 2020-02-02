@@ -271,6 +271,16 @@ On start-up, each service loads the system parameters including the RI's public 
 For very constrained services which do not possess the compute power to verify an anonymous credential and evaluate policies, the Controller can perform both these operations at its end and pass on the results to the service. See section \ref{controller}.
 
 \section{Security Evaluation} \label{seceval}
+Some of the security-related properties of the scheme are discussed below.
+\subsubsection{Nonlinkability}
+One of the primary requirement for implementing a privacy preserving scheme is to ensure that an attacker does not gain any information from two different events where the events maybe related or unrelated. Once the user/device delegates all its attributes, the Controller generates anonymous credentials for every service in the chain. Each service looks for a set of attributes in the anonymous credential. So the Controller has to reveal those attributes (if the user possess them) to the service. As mentioned in the \ref{service} section, once a service completes the token verification and policy evaluation, it invokes the next service in the chain by passing the SessionID that it received from Controller. the next service goes to the Controller with this SessionID to get the new anonymous credential. This continues for all the services in the chain.
+
+The anonymous credential for each service reveals few attributes about the user/device. If the communication between Controller and Services happen in clear, a passive attacker can look at all the credentials for a specific SessionID and link them to a common user/device, thereby compromising the user/device's privacy. One way to thwart such an attack is to establish a secure channel over which the anonymous credentials are passed. With this, none of the attributes are revealed to a passive on-looker. A secure channel may not be feasible sometimes especially for constrained service. As another approach, the Controller could generate a random next-SessionID for the service to pass on to the subsequent service. The next service would then reach out to Controller with this new SessionID which only the Controller can link back to the user's credential. This approach works if the messages flying through the system are dense. If not, an attacker can easily correlate the SessionID and next-SessionID as belonging to the same user/device.
+
+An active attacker who can mount physical attacks on one or more services can easily correlate the user attributes gleaned from one or more services in the chain.
+ 
+\subsubsection{Credential Revocation}
+
 
 \section{Implementation and Results} \label{implementation}
 
