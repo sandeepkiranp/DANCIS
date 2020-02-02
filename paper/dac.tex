@@ -192,14 +192,21 @@ When generating the attribute token, unlike other attributes, the credential has
 The instantiation of the NIZK for the attribute token would now look like (changes in bold),
 
 \begin{strip}
-\begin{align*}
-SPK{(<s_i',t_{i,j}'>_{i=1,..L,j=1,..n_i},cpk_1,...,cpk_L,<a_{i,j}>_{i \notin D},tag)} : \\
+\begin{gather*}
+SPK\{(<s_i',t_{i,j}'>_{i=1,..L,j=1,..n_i},cpk_1,...,cpk_L,<a_{i,j}>_{i \notin D},tag) : \\
 \bigwedge \limits _{i=1,3,..} ( e(y_{1,1},g_2)[e(g_1,ipk)]_{i=1} = e(s_i',r_i')[e(g_1^{-1},cpk_{i-1})]_{i\neq1} \wedge \\
-1_{G_{t}}[e(g_1,ipk)]_{i=1} = e(t_{i,1}',r_i')[e(cpk_i,g_2^{-1})]_{i\neq L}[e(g_1,g_2^{-1})^{csk_i}]_{i=L} [e(y_{1,1}^{-1},cpk_{i-1})]_{i\neq1} \wedge  \\
-\boldsymbol{1_{G_{t}}[e(g_1,ipk)]_{i=1} = e(t_{i,2}',r_i')[e(h_i,g_2^{-1})][e(y_{1,2}^{-1},cpk_{i-1})]_{i\neq1}} \wedge  \\
+1_{G_{t}}[e(y_{1,1},ipk)]_{i=1} = e(t_{i,1}',r_i')[e(cpk_i,g_2^{-1})]_{i\neq L}[e(g_1,g_2^{-1})^{csk_i}]_{i=L} [e(y_{1,1}^{-1},cpk_{i-1})]_{i\neq1} \wedge  \\
+\boldsymbol{1_{G_{t}}[e(y_{1,2},ipk)]_{i=1} = e(t_{i,2}',r_i')e(h_i,g_2^{-1})[e(y_{1,2}^{-1},cpk_{i-1})]_{i\neq1}} \wedge  \\
+\bigwedge \limits _{j:(i,j) \in D} e(a_{i,j}, g_2) [e(y_{1,j+2},ipk)]_{i=1} = e(t_{i,j+2}',r_i')[e(y_{1,j+2}^{-1},cpk_{i-1})]_{i\neq1} \wedge  \\
+\bigwedge \limits _{j:(i,j) \notin D} 1_{G_{t}}[e(y_{1,j+2},ipk)]_{i=1} = e(t_{i,j+2}',r_i')e(a_{i,j},g_2^{-1})[e(y_{1,j+2}^{-1},cpk_{i-1})]_{i\neq1} 
+) \wedge  \\
 \\
-)
-\end{align*}
+\bigwedge \limits _{i=2,4,..} (e(g_1,y_{2,1}) = e(r_i',s_i')e(cpk_{i-1},g_2^{-1}) \wedge 
+1_{G_{t}} = e(r_i',t_{i,1}')[e(g_1^{-1},cpk_i)]_{i\neq L}[e(g_1^{-1},g_2)^{csk_i}]_{i=L} e(cpk_{i-1},y_{2,1}^{-1}) \wedge  \\
+\boldsymbol{1_{G_{t}} = e(r_i',t_{i,2}')e(g_1^{-1},h_i)e(cpk_{i-1},y_{2,2}^{-1})} \wedge  \\
+\bigwedge \limits _{j:(i,j) \in D} e(g_1,a_{i,j})  = e(r_i',t_{i,j+2}')e(cpk_{i-1},y_{2,j+2}^{-1}) \wedge  
+\bigwedge \limits _{j:(i,j) \notin D} 1_{G_{t}} = e(r_i',t_{i,j+2}')e(g_1^{-1},a_{i,j})e(cpk_{i-1},y_{2,j+2}^{-1}))\}(sp,r_1',...,r_L',m)
+\end{gather*}
 \end{strip}
 
 \subsubsection{Session Key Establishment}
