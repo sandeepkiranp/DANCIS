@@ -13,5 +13,11 @@
 \BOOKMARK [3][-]{subsubsection.4.0.2}{Session Key Establishment}{subsubsection.4.0.1}% 13
 \BOOKMARK [1][-]{section.5}{The Proposal}{}% 14
 \BOOKMARK [2][-]{subsubsection.5.0.1}{The Root Issuer}{section.5}% 15
-\BOOKMARK [1][-]{section.6}{Implementation and Results}{}% 16
-\BOOKMARK [1][-]{section.7}{Conclusion}{}% 17
+\BOOKMARK [3][-]{subsubsection.5.0.2}{The Controller}{subsubsection.5.0.1}% 16
+\BOOKMARK [3][-]{subsubsection.5.0.3}{The User/IoT device}{subsubsection.5.0.1}% 17
+\BOOKMARK [3][-]{subsubsection.5.0.4}{The Service}{subsubsection.5.0.1}% 18
+\BOOKMARK [1][-]{section.6}{Security Evaluation}{}% 19
+\BOOKMARK [2][-]{subsubsection.6.0.1}{Nonlinkability}{section.6}% 20
+\BOOKMARK [3][-]{subsubsection.6.0.2}{Credential Revocation}{subsubsection.6.0.1}% 21
+\BOOKMARK [1][-]{section.7}{Implementation and Results}{}% 22
+\BOOKMARK [1][-]{section.8}{Conclusion}{}% 23
