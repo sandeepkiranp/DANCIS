@@ -537,6 +537,7 @@ int read_policy_attributes_from_services()
             token = strtok(NULL, "', 'A");
         }
 	num_services++;
+	free(line);
 	fclose(fp);
     }
 

@@ -10,6 +10,7 @@
 #define N 3
 
 #define HOME_DIR "/home/sandeep/dac"
+//#define HOME_DIR "/root/dac"
 #define MAX_NUM_ATTRIBUTES 50
 #define TOTAL_ATTRIBUTES (MAX_NUM_ATTRIBUTES + 2) //cpk(i-1) + credential hash + MAX_NUM_ATTRIBUTES attributes
 

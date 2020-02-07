@@ -111,7 +111,7 @@ int is_credential_valid(element_t credhash)
 	    return FAILURE;
 	}
     }
-
+    free(line);
     free(base64e);
     free(buffer);
     return SUCCESS;
@@ -144,6 +144,7 @@ int read_services_location()
 
         i++;
     }
+    free(line);
     fclose(fp);
 
     return SUCCESS;

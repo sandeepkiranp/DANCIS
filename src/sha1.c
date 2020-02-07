@@ -106,6 +106,7 @@ void SHA1(char *hash, unsigned char * str1)
     //printf("\n\n");
     //printf("Hash: %x %x %x %x %x\n",h0, h1, h2, h3, h4);
     sprintf(hash, "%x%x%x%x%x",h0, h1, h2, h3, h4);
+    free(str);
     //printf("Int Hash %s\n", hash);
     //printf("\n\n");
 }

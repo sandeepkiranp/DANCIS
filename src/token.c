@@ -247,14 +247,11 @@ void token_free(token_t *tok)
 	element_clear(te->r1);
 	element_clear(te->ress);
 	element_clear(te->credhash);
+	element_clear(te->rescpk);
 
         if(l == tok->levels - 1)
 	{
 	    element_clear(te->rescsk);
-	}
-	else
-	{
-	    element_clear(te->rescpk);
 	}
 
 	for(i=0; i < te->num_attrs; i++)

@@ -185,6 +185,7 @@ int revoke_user_credential(char *user)
 	    fclose(revfp);
 	}
     }
+    free(line);
     fclose(fp);
 }
 

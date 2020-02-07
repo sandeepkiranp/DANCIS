@@ -216,6 +216,7 @@ int process_service_request(int sock)
     if(is_credential_valid(tok.te[0].credhash) == FAILURE)
     {
 	fprintf(logfp, "process_service_request failed as credential is blacklisted\n");
+        token_free(&tok);
 	return FAILURE;
     }
     gettimeofday(&end, NULL);
