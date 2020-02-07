@@ -674,6 +674,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
     	        te->revealed[i] = 1;
 	    }
         }
+	element_clear(temp5);
     }
 
     //clear of everything used in this function
@@ -691,7 +692,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 	element_clear(s1[l]);
         for(i=0; i<num_attrs; i++)
         {
-            element_init_G1(t1[l][i], pairing);
+            element_clear(t1[l][i]);
         }
     }
 
