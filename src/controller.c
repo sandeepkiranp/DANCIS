@@ -310,6 +310,9 @@ void send_constrined_service_response(char *service, char *dest_services, char *
     struct sockaddr_in     servaddr;
     messagetype mtype = CONSTRAINED_SERVICE_REQUEST;
 
+    fprintf(logfp, "send_constrined_service_response, sending service %s, sid %s, \
+next services %s\n", service, session_id, dest_services);
+
     // Creating socket file descriptor
     if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
         perror("socket creation failed");
@@ -416,6 +419,7 @@ int handle_constrained_service(credential_t *c, char *service, char *sid)
     if (!found)
     {
 	fndindx = num_constrained_services;
+	fprintf(logfp, "handle_constrained_service, loading policy for %s\n", service);
         load_policy(service, &cont_svcplcy[num_constrained_services++]);
     }
 
@@ -425,6 +429,8 @@ int handle_constrained_service(credential_t *c, char *service, char *sid)
         int attr_indx = attribute_element_to_index(c->cred[0]->ca->attributes[j]);
         attributes[attr_indx] = 1;
     }
+
+    fprintf(logfp, "handle_constrained_service, Evaluating policy for %s\n", service);
 
     for (i = 0; i < cont_svcplcy[fndindx].num_policies; i++)
     {
@@ -699,19 +705,33 @@ int process_service_chain_request(int sock)
     fprintf(logfp,"Received session ID %s\n", sid);
 
     generate_credential_token(sid, NULL, service);
-}    
+}
+
+contmode_t get_controller_mode(char *mode)
+{
+    if(!strcmp(mode, "DECENTRALIZED"))
+        return DECENTRALIZED;
+    else if(!strcmp(mode, "CENTRALIZED"))
+        return CENTRALIZED;
+    else if(!strcmp(mode, "HYBRID"))
+        return HYBRID;
+    else
+	return DECENTRALIZED; 
+}
 
 int main(int argc, char *argv[])
 {
     char str[100];
     sprintf(str, "%s/log.txt", CONTROLLER_DIR);
 
-    if (argc > 2)
+    if (argc > 1)
     {
-	MODE = (contmode_t)atoi(argv[1]);
+	MODE = get_controller_mode(argv[1]);
     }
 
     logfp = fopen(str, "a");
+
+    fprintf(logfp, "Running in mode %d\n", MODE);
 
     initialize_system_params(logfp);
     read_params();

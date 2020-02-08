@@ -13,7 +13,6 @@
 
 FILE *logfp;
 char service_name[20];
-int attributes[MAX_NUM_ATTRIBUTES] = {0};
 int attr_count = 0;
 
 int num_policies;
@@ -125,7 +124,7 @@ int process_constrined_service_request(int sock)
         return FAILURE;
     }
 
-    fprintf(logfp, "Received Constrined Service Request for Session %s\n", sid);
+    fprintf(logfp, "Received Constrained Service Request for Session %s, Destination Services %s\n", sid, dest_services);
     char* token = strtok(dest_services, ",");
 
     while (token != NULL)
