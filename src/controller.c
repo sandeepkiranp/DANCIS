@@ -71,6 +71,15 @@ int num_sessions = 0;
 int MAX_SESSIONS = 0;
 session_t *sessions;
 
+typedef enum contmode
+{
+    DECENTRALIZED = 1,
+    CENTRALIZED,
+    HYBRID
+}contmode_t;
+
+contmode_t MODE = DECENTRALIZED;
+
 void calculate_time_diff(char *prefix, struct timeval *start, struct timeval *end)
 {
     double time_taken;
@@ -219,6 +228,9 @@ int load_delegated_credentials(char *user)
 	dusers_count++;
     }
 
+    //TODO : Verify if the Delegated Crdentials are fine with root issuer's PK.
+    //TODO : Check the credetial against BL
+
     dc = (delegated_credential_t *)realloc(dc, dusers_count * (sizeof(delegated_credential_t)));
 
     for(i = old_dusers_count; i<dusers_count; i++)
@@ -340,6 +352,52 @@ int is_service_in_session_cache(int index, char *service)
     return FAILURE;
 }
 
+//loads policy for a service if not already done
+load_policy(char *service)
+{
+
+
+}
+
+handle_constrained_service(credential_t c, char *service)
+{
+    int i,j;
+    int attributes[MAX_NUM_ATTRIBUTES] = {0};
+
+    // verify only c->cred[0]. Thats the user's credential
+
+    // check for blacklist credential hash
+    if(is_credential_valid(c->cred[0]->ca->attributes[1]) == FAILURE)
+    {
+        fprintf(logfp, "process_service_request failed as credential is blacklisted\n");
+        return FAILURE;
+    }
+
+    load_policy(service);
+
+    //skip 0(CPK) and 1(credhash) indexes
+    for (j = 2; j < c->cred[0]->ca->num_of_attributes; j++)
+    {
+        int attr_indx = attribute_element_to_index(c->cred[0]->ca->attributes[j]);
+        attributes[attr_indx] = 1;
+    }
+
+    for (i = 0; i < num_policies; i++)
+    {
+        if(evaluate(attributes, policies[i].rule))
+        {
+            for(j = 0; j < policies[i].num_services; j++)
+            {
+                fprintf(logfp, "Invoking service %s\n", policies[i].services[j]);
+                invoke_service(sid, policies[i].services[j]);
+            }
+            break;
+        }
+    }
+
+
+}
+
 void generate_credential_token(char *session_id, char *user, char *service)
 {
     int i = 0,j = 0;
@@ -395,6 +453,13 @@ void generate_credential_token(char *session_id, char *user, char *service)
     {
 	if(!strcmp(svc_attrs[i].service, service))
 	{
+	    //If MODE is HYBRID and service is CONSTRAIANED, perform everything locally
+	    if(MODE == HYBRID && get_service_mode(service) == CONSTRINED)
+	    {
+		handle_constrained_service(c, service);
+                break;
+	    }
+
 	    fprintf(logfp, "Generating Token for %s for %s\n", user, service);
 	    char *revealed[2]; //two levels.
 	    revealed[0] = (char *)calloc(c->cred[0]->ca->num_of_attributes, 1);
@@ -592,6 +657,11 @@ int main(int argc, char *argv[])
 {
     char str[100];
     sprintf(str, "%s/log.txt", CONTROLLER_DIR);
+
+    if (argc > 2)
+    {
+	MODE = (contmode_t)atoi(argv[1]);
+    }
 
     logfp = fopen(str, "a");
 

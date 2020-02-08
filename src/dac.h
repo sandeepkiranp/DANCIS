@@ -79,6 +79,12 @@ typedef enum eventtype
     EVENT4
 }event_t;
 
+typedef enum servicemode
+{
+    CONSTRINED = 1,
+    UNCONSTRAINED
+}servicemode;
+
 extern element_t g1, g2;
 extern element_t system_attributes_g1[MAX_NUM_ATTRIBUTES];
 extern element_t system_attributes_g2[MAX_NUM_ATTRIBUTES];

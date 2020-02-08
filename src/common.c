@@ -21,10 +21,19 @@ typedef struct service_location
     char service[30];
     char ip[20];
     short int port;
+    servicemode mode;
 }service_location;
 
 static int num_services = 0;
 service_location *svc_loc = NULL;
+
+typedef struct policy
+{
+    char *rule;
+    int num_services;
+    char *services[10];
+}policy_t;
+
 
 void write_element_to_file(FILE *fp, char *param, element_t e)
 {
@@ -117,6 +126,16 @@ int is_credential_valid(element_t credhash)
     return SUCCESS;
 }
 
+enum get_service_mode(char mode)
+{
+    switch(mode)
+    {
+	case 'C' : return CONSTRINED;
+	case 'U' : return UNCONSTRAINED;
+	default  : return UNCONSTRAINED;
+    }
+}
+
 int read_services_location()
 {
     char port[10];
@@ -125,6 +144,7 @@ int read_services_location()
     size_t len = 0;
     ssize_t read;
     int i = 0, j=0;
+    char mode;
 
     if (fp == NULL)
     {
@@ -139,8 +159,9 @@ int read_services_location()
     {
         line[read - 1] = 0; //trim the new line character
 
-        sscanf(line, "%s %s %s", svc_loc[i].service, svc_loc[i].ip, port);
+        sscanf(line, "%s %s %s %c", svc_loc[i].service, svc_loc[i].ip, port, &mode);
 	svc_loc[i].port = atoi(port);
+	svc_loc[i].mode = get_service_mode(mode);
 
         i++;
     }
@@ -173,6 +194,19 @@ short int get_service_port(char *service)
         if(!strcmp(svc_loc[i].service, service))
         {
 	    return svc_loc[i].port;
+        }
+    }
+}
+
+servicemode get_service_mode(char *service)
+{
+    int i;
+
+    for(i = 0; i < num_services; i++)
+    {
+        if(!strcmp(svc_loc[i].service, service))
+        {
+            return svc_loc[i].mode;
         }
     }
 }
@@ -344,3 +378,80 @@ int attribute_element_to_index(element_t e)
         return i;
     }
 }
+
+int load_policy(char *svc)
+{
+    char str[100];
+    char attrs[400];
+    char c[200] = {0};
+    int i, j;
+
+    int num_policies;
+    policy_t *policies;
+
+    sprintf(str, "%s/services/%s/policy.txt", HOME_DIR, svc);
+    fprintf(logfp, "Reading policy from %s\n", str);
+
+    FILE *fp = fopen(str, "r");
+    if (fp == NULL)
+    {
+        fprintf(logfp, "Error opening file %s\n", strerror(errno));
+        return FAILURE;
+    }
+    fgets(attrs, sizeof(attrs), fp);
+
+    fprintf(logfp, "Attributes = %s\n", attrs);
+
+    char* token = strtok(attrs, "['A");
+
+    while (token != NULL)
+    {
+	if (isdigit(token[0]))
+        {
+            attributes[atoi(token)] = 1;
+	    attr_count++;
+	}
+
+        token = strtok(NULL, "', 'A");
+    }
+
+    fgets(c, sizeof(c), fp);
+    num_policies = atoi(c);
+
+    char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
+
+    policies = (policy_t *)calloc(num_policies * sizeof (policy_t), 1);
+
+    for (i = 0; i < num_policies; i++)
+    {
+	//read the rule
+        read = getline(&line, &len, fp);
+        policies[i].rule = (char *)calloc(1, read);
+        memcpy(policies[i].rule, line, read -1);
+
+	//read the services to be invoked
+        read = getline(&line, &len, fp);
+	line[read - 1] = 0; //trim the new line character
+	j = 0;
+
+        char* token = strtok(line, " ");
+
+        while (token != NULL)
+        {
+	    policies[i].services[j] = (char *)calloc(1, strlen(token));
+	    memcpy(policies[i].services[j], token, strlen(token));
+            token = strtok(NULL, " ");
+	    j++;
+        }
+	policies[i].num_services = j;
+        //skip empty line
+	getline(&line, &len, fp);
+    }
+
+    free(line);
+
+    return SUCCESS;
+}
+
