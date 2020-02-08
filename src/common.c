@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
+#include <ctype.h>
 
 #define PARAM_FILE HOME_DIR "/root/params.txt"
 #define SERVICES_FILE HOME_DIR "/root/services.txt"
@@ -26,14 +27,6 @@ typedef struct service_location
 
 static int num_services = 0;
 service_location *svc_loc = NULL;
-
-typedef struct policy
-{
-    char *rule;
-    int num_services;
-    char *services[10];
-}policy_t;
-
 
 void write_element_to_file(FILE *fp, char *param, element_t e)
 {
@@ -126,7 +119,7 @@ int is_credential_valid(element_t credhash)
     return SUCCESS;
 }
 
-enum get_service_mode(char mode)
+servicemode convert_service_mode(char mode)
 {
     switch(mode)
     {
@@ -161,7 +154,7 @@ int read_services_location()
 
         sscanf(line, "%s %s %s %c", svc_loc[i].service, svc_loc[i].ip, port, &mode);
 	svc_loc[i].port = atoi(port);
-	svc_loc[i].mode = get_service_mode(mode);
+	svc_loc[i].mode = convert_service_mode(mode);
 
         i++;
     }
@@ -379,7 +372,7 @@ int attribute_element_to_index(element_t e)
     }
 }
 
-int load_policy(char *svc)
+int load_policy(char *svc, service_policy *svcplcy)
 {
     char str[100];
     char attrs[400];
@@ -390,30 +383,14 @@ int load_policy(char *svc)
     policy_t *policies;
 
     sprintf(str, "%s/services/%s/policy.txt", HOME_DIR, svc);
-    fprintf(logfp, "Reading policy from %s\n", str);
 
     FILE *fp = fopen(str, "r");
     if (fp == NULL)
     {
-        fprintf(logfp, "Error opening file %s\n", strerror(errno));
         return FAILURE;
     }
+
     fgets(attrs, sizeof(attrs), fp);
-
-    fprintf(logfp, "Attributes = %s\n", attrs);
-
-    char* token = strtok(attrs, "['A");
-
-    while (token != NULL)
-    {
-	if (isdigit(token[0]))
-        {
-            attributes[atoi(token)] = 1;
-	    attr_count++;
-	}
-
-        token = strtok(NULL, "', 'A");
-    }
 
     fgets(c, sizeof(c), fp);
     num_policies = atoi(c);
@@ -451,6 +428,10 @@ int load_policy(char *svc)
     }
 
     free(line);
+
+    svcplcy->num_policies = num_policies;
+    svcplcy->policies = policies;
+    strcpy(svcplcy->service, svc);
 
     return SUCCESS;
 }

@@ -16,94 +16,16 @@ char service_name[20];
 int attributes[MAX_NUM_ATTRIBUTES] = {0};
 int attr_count = 0;
 
-typedef struct policy
-{
-    char *rule;
-    int num_services;
-    char *services[10];
-}policy_t;
-
 int num_policies;
 policy_t *policies;
-
-int load_policy(char *svc)
-{
-    char str[100];
-    char attrs[400];
-    char c[200] = {0};
-    int i, j;
-
-    sprintf(str, "%s/services/%s/policy.txt", HOME_DIR, svc);
-    fprintf(logfp, "Reading policy from %s\n", str);
-
-    FILE *fp = fopen(str, "r");
-    if (fp == NULL)
-    {
-        fprintf(logfp, "Error opening file %s\n", strerror(errno));
-        return FAILURE;
-    }
-    fgets(attrs, sizeof(attrs), fp);
-
-    fprintf(logfp, "Attributes = %s\n", attrs);
-
-    char* token = strtok(attrs, "['A");
-
-    while (token != NULL)
-    {
-	if (isdigit(token[0]))
-        {
-            attributes[atoi(token)] = 1;
-	    attr_count++;
-	}
-
-        token = strtok(NULL, "', 'A");
-    }
-
-    fgets(c, sizeof(c), fp);
-    num_policies = atoi(c);
-
-    char * line = NULL;
-    size_t len = 0;
-    ssize_t read;
-
-    policies = (policy_t *)calloc(num_policies * sizeof (policy_t), 1);
-
-    for (i = 0; i < num_policies; i++)
-    {
-	//read the rule
-        read = getline(&line, &len, fp);
-        policies[i].rule = (char *)calloc(1, read);
-        memcpy(policies[i].rule, line, read -1);
-
-	//read the services to be invoked
-        read = getline(&line, &len, fp);
-	line[read - 1] = 0; //trim the new line character
-	j = 0;
-
-        char* token = strtok(line, " ");
-
-        while (token != NULL)
-        {
-	    policies[i].services[j] = (char *)calloc(1, strlen(token));
-	    memcpy(policies[i].services[j], token, strlen(token)); 
-            token = strtok(NULL, " ");
-	    j++;
-        }
-	policies[i].num_services = j;
-        //skip empty line
-	getline(&line, &len, fp);
-    }
-
-    free(line);
-  
-    return SUCCESS;
-}
 
 int invoke_service(char *sid, char *service)
 {
     int sockfd;
     struct sockaddr_in     servaddr;
     messagetype mtype = SERVICE_CHAIN_REQUEST;
+
+    fprintf(logfp, "Sending service chain request to %s with SID %s\n", service, sid);
 
     // Creating socket file descriptor
     if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
@@ -172,6 +94,45 @@ void calculate_time_diff(char *prefix, struct timeval *start, struct timeval *en
     time_taken = (time_taken + (end->tv_usec -
                               start->tv_usec)) * 1e-3;
     fprintf(logfp, "time taken for %s = %fms\n", prefix, time_taken);
+}
+
+int process_constrined_service_request(int sock)
+{
+    token_t tok;
+    char sid[SID_LENGTH];
+    char dest_services[100] = {0};
+    int len, n;
+    struct sockaddr_in cliaddr;
+    struct timeval start, end;
+
+    len = sizeof(cliaddr);
+    n = recvfrom(sock, sid, sizeof(sid),
+                0, ( struct sockaddr *) &cliaddr,
+                &len);
+    if (n == -1)
+    {
+        fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
+        return FAILURE;
+    }
+
+    len = sizeof(cliaddr);
+    n = recvfrom(sock, dest_services, sizeof(dest_services),
+                0, ( struct sockaddr *) &cliaddr,
+                &len);
+    if (n == -1)
+    {
+        fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
+        return FAILURE;
+    }
+
+    fprintf(logfp, "Received Constrined Service Request for Session %s\n", sid);
+    char* token = strtok(dest_services, ",");
+
+    while (token != NULL)
+    {
+	invoke_service(sid,token);
+        token = strtok(NULL, ",");
+    }    
 }
 
 int process_service_request(int sock)
@@ -282,8 +243,11 @@ int process_service_chain_request(int sock)
 //./service <service_name> <port>
 int main(int argc, char *argv[])
 {
+    service_policy svcplcy;
     char str[100];
+
     sprintf(str, "%s/services/%s/log.txt", HOME_DIR, argv[1]);
+
 
     logfp = fopen(str, "a");
 
@@ -292,7 +256,9 @@ int main(int argc, char *argv[])
 
     strcpy(service_name, argv[1]);
 
-    load_policy(argv[1]);
+    load_policy(argv[1], &svcplcy);
+    num_policies = svcplcy.num_policies;
+    policies = svcplcy.policies;
 
     read_services_location();
 
@@ -352,6 +318,9 @@ int main(int argc, char *argv[])
             case SERVICE_CHAIN_REQUEST:
                 process_service_chain_request(server_fd);
                 break;
+            case CONSTRAINED_SERVICE_REQUEST:
+                process_constrined_service_request(server_fd);
+	        break;
             default:
 	        fprintf(logfp, "Unknown %d request\n", mtype);
         }

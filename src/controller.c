@@ -80,6 +80,9 @@ typedef enum contmode
 
 contmode_t MODE = DECENTRALIZED;
 
+int num_constrained_services = 0;
+service_policy cont_svcplcy[200];
+
 void calculate_time_diff(char *prefix, struct timeval *start, struct timeval *end)
 {
     double time_taken;
@@ -301,6 +304,38 @@ void send_token(token_t *tok, char *service, char *session_id)
     token_send(tok, sockfd, &servaddr);
 }
 
+void send_constrined_service_response(char *service, char *dest_services, char *session_id)
+{
+    int sockfd;
+    struct sockaddr_in     servaddr;
+    messagetype mtype = CONSTRAINED_SERVICE_REQUEST;
+
+    // Creating socket file descriptor
+    if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
+        perror("socket creation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    memset(&servaddr, 0, sizeof(servaddr));
+
+    // Filling service information
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_port = htons(get_service_port(service));
+    inet_aton(get_service_ip(service), &servaddr.sin_addr);
+
+    sendto(sockfd, (const char *)&mtype, sizeof(messagetype),
+        0, (const struct sockaddr *) &servaddr,
+            sizeof(servaddr));
+
+    sendto(sockfd, (const char *)session_id, SID_LENGTH,
+        0, (const struct sockaddr *) &servaddr,
+            sizeof(servaddr));
+
+    sendto(sockfd, (const char *)dest_services, strlen(dest_services),
+        0, (const struct sockaddr *) &servaddr,
+            sizeof(servaddr));
+}
+
 unsigned long get_time()
 {
         struct timeval tv;
@@ -352,28 +387,37 @@ int is_service_in_session_cache(int index, char *service)
     return FAILURE;
 }
 
-//loads policy for a service if not already done
-load_policy(char *service)
-{
-
-
-}
-
-handle_constrained_service(credential_t c, char *service)
+int handle_constrained_service(credential_t *c, char *service, char *sid)
 {
     int i,j;
     int attributes[MAX_NUM_ATTRIBUTES] = {0};
+    int found = 0, fndindx = -1;
 
     // verify only c->cred[0]. Thats the user's credential
 
     // check for blacklist credential hash
     if(is_credential_valid(c->cred[0]->ca->attributes[1]) == FAILURE)
     {
-        fprintf(logfp, "process_service_request failed as credential is blacklisted\n");
+        fprintf(logfp, "handle_constrained_service failed as credential is blacklisted. \
+			service %s, sid %s\n", service, sid);
         return FAILURE;
     }
+    
+    for (i = 0; i < num_constrained_services; i++)
+    {
+	if (!strcmp(cont_svcplcy[i].service, service))
+	{
+	    found = 1;
+	    fndindx = i;
+	    break;
+	}
+    }
 
-    load_policy(service);
+    if (!found)
+    {
+	fndindx = num_constrained_services;
+        load_policy(service, &cont_svcplcy[num_constrained_services++]);
+    }
 
     //skip 0(CPK) and 1(credhash) indexes
     for (j = 2; j < c->cred[0]->ca->num_of_attributes; j++)
@@ -382,20 +426,22 @@ handle_constrained_service(credential_t c, char *service)
         attributes[attr_indx] = 1;
     }
 
-    for (i = 0; i < num_policies; i++)
+    for (i = 0; i < cont_svcplcy[fndindx].num_policies; i++)
     {
-        if(evaluate(attributes, policies[i].rule))
+        if(evaluate(attributes, cont_svcplcy[fndindx].policies[i].rule))
         {
-            for(j = 0; j < policies[i].num_services; j++)
+	    char dest_services[400] = {0};
+            for(j = 0; j < cont_svcplcy[fndindx].policies[i].num_services; j++)
             {
-                fprintf(logfp, "Invoking service %s\n", policies[i].services[j]);
-                invoke_service(sid, policies[i].services[j]);
+		strcat(dest_services, cont_svcplcy[fndindx].policies[i].services[j]);
+		if (j != cont_svcplcy[fndindx].policies[i].num_services - 1)
+		    strcat(dest_services, ",");
             }
+	    send_constrined_service_response(service, dest_services, sid);
+
             break;
         }
     }
-
-
 }
 
 void generate_credential_token(char *session_id, char *user, char *service)
@@ -456,7 +502,9 @@ void generate_credential_token(char *session_id, char *user, char *service)
 	    //If MODE is HYBRID and service is CONSTRAIANED, perform everything locally
 	    if(MODE == HYBRID && get_service_mode(service) == CONSTRINED)
 	    {
-		handle_constrained_service(c, service);
+		handle_constrained_service(c, service, session_id);
+	        // Add service to session map
+	        add_service_to_session(session_id, service);
                 break;
 	    }
 

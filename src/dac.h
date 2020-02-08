@@ -68,7 +68,8 @@ typedef enum messagetype
     EVENT_REQUEST,
     EVENT_RESPONSE,
     SERVICE_CHAIN_REQUEST,
-    SERVICE_CHAIN_RESPONSE
+    SERVICE_CHAIN_RESPONSE,
+    CONSTRAINED_SERVICE_REQUEST
 }messagetype;
 
 typedef enum eventtype
@@ -92,6 +93,22 @@ extern element_t Y1[TOTAL_ATTRIBUTES], Y2[TOTAL_ATTRIBUTES];
 extern pairing_t pairing;
 extern element_t root_public_key;
 
+typedef struct policy
+{
+    char *rule;
+    int num_services;
+    char *services[10];
+}policy_t;
+
+typedef struct service_policy
+{
+    char service[20];
+    int num_policies;
+    policy_t *policies;
+}service_policy;
+
+extern int load_policy(char *svc, service_policy *svcplcy);
+
 extern void read_element_from_file(FILE *fp, char *param, element_t e, int skipline);
 
 extern void write_element_to_file(FILE *fp, char *param, element_t e);
@@ -114,6 +131,8 @@ extern int read_services_location();
 extern char *get_service_ip(char *service);
 
 extern short int get_service_port(char *service);
+
+extern servicemode get_service_mode(char *service);
 
 extern void dac_generate_parameters();
 
