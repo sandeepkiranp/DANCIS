@@ -505,8 +505,10 @@ void generate_credential_token(char *session_id, char *user, char *service)
     {
 	if(!strcmp(svc_attrs[i].service, service))
 	{
-	    //If MODE is HYBRID and service is CONSTRAIANED, perform everything locally
-	    if(MODE == HYBRID && get_service_mode(service) == CONSTRINED)
+	    //If MODE is HYBRID and service is CONSTRAIANED
+	    // OR if MODE is CENTRALIZED, perform everything locally
+	    if((MODE == HYBRID && get_service_mode(service) == CONSTRINED) ||
+	       MODE == CENTRALIZED)
 	    {
 		handle_constrained_service(c, service, session_id);
 	        // Add service to session map

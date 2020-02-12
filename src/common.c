@@ -116,6 +116,8 @@ int is_credential_valid(element_t credhash)
     free(line);
     free(base64e);
     free(buffer);
+
+    fclose(revfp);
     return SUCCESS;
 }
 
@@ -204,16 +206,23 @@ servicemode get_service_mode(char *service)
     }
 }
 
+#define SYSTEM_CURVE HOME_DIR "/root/a.param"
+
 int initialize_system_params(FILE *logfp)
 {
     char param[1024];
     int i;
     element_t dummy;
+    FILE *fp = NULL;
 
-    fprintf(logfp, "Initializing System Parameters...\n");
+    fp = fopen(SYSTEM_CURVE, "r");
 
-    int count = fread(param, 1, 1024, stdin);
+    fprintf(logfp, "Initializing System Parameters from %s\n", SYSTEM_CURVE);
+
+    int count = fread(param, 1, 1024, fp);
     if (!count) pbc_die("input error");
+
+    fclose(fp);
 
     fprintf(logfp, "Reading (%d) parameters \n%s \n",count, param);
     pairing_init_set_buf(pairing, param, count);
