@@ -610,6 +610,7 @@ int read_policy_attributes_from_services()
     ssize_t read;
     char str[100];
 
+    fprintf(logfp, "Opening directory %s\n", SERVICES_DIR );
     DIR *dr = opendir(SERVICES_DIR);
 
     if (dr == NULL)  // opendir returns NULL if couldn't open directory
@@ -662,10 +663,10 @@ int read_policy_attributes_from_services()
             token = strtok(NULL, "', 'A");
         }
 	num_services++;
-	free(line);
 	fclose(fp);
     }
 
+    free(line);
     closedir(dr);
 }
 
