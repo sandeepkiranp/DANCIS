@@ -10,12 +10,15 @@
 #include <netinet/in.h>
 #include <time.h>
 #include <sys/time.h>
+#include <pthread.h>
 #include "dac.h"
 
 #define USER_DIR HOME_DIR "/users"
 #define CONTROLLER_DIR HOME_DIR "/controller"
 #define SERVICES_DIR HOME_DIR "/services"
 #define PARAM_FILE HOME_DIR "/root/params.txt"
+
+#define LISTENQ 500
 
 element_t user_private_key;
 element_t user_public_key;
@@ -576,13 +579,9 @@ int process_event_request(int sock)
     double time_in_mill = (start.tv_sec) * 1000 + (start.tv_usec) / 1000 ;
     fprintf(logfp, "Received event request at %f ms\n", time_in_mill);
 
-    n = recvfrom(sock, user, sizeof(user),
-                0, ( struct sockaddr *) &cliaddr,
-                &len);    
+    n = recv(sock, user, sizeof(user), 0);    
 
-    n = recvfrom(sock, (char *)&evt, sizeof(event_t),
-                0, ( struct sockaddr *) &cliaddr,
-                &len);
+    n = recv(sock, (char *)&evt, sizeof(event_t), 0);
     fprintf(logfp, "Received %d event from %s\n", evt, user);
 
     //load the delegated credentials for this user
@@ -687,9 +686,7 @@ int process_service_chain_request(int sock)
 
     len = sizeof(cliaddr);
 
-    n = recvfrom(sock, service, sizeof(service),
-                0, ( struct sockaddr *) &cliaddr,
-                &len);
+    n = recv(sock, service, sizeof(service), 0);
     if (n == -1)
     {
         fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
@@ -697,15 +694,15 @@ int process_service_chain_request(int sock)
     }
     fprintf(logfp,"Received service name %s\n", service);
 
-    n = recvfrom(sock, sid, sizeof(sid),
-                0, ( struct sockaddr *) &cliaddr,
-                &len);
+    n = recv(sock, sid, sizeof(sid), 0);
     if (n == -1)
     {
         fprintf(logfp,"recvfrom returned %d, %s\n", errno, strerror(errno));
         return 0;
     }
     fprintf(logfp,"Received session ID %s\n", sid);
+
+    fflush(logfp);
 
     generate_credential_token(sid, NULL, service);
 }
@@ -720,6 +717,35 @@ contmode_t get_controller_mode(char *mode)
         return HYBRID;
     else
 	return DECENTRALIZED; 
+}
+
+void * socketThread(void *arg)
+{
+    int new_socket = *((int *)arg);
+    int n;
+
+    messagetype mtype;
+    n = recv(new_socket, (char *)&mtype, sizeof(messagetype), 0);
+    if (n == -1)
+    {
+        fprintf(logfp,"recvfrom returned %d, %s\n", errno, strerror(errno));
+        return 0;
+    }
+
+    switch(mtype)
+    {
+        case EVENT_REQUEST:
+            fprintf(logfp, "Received Event Request\n");
+            process_event_request(new_socket);
+            break;
+        case SERVICE_CHAIN_REQUEST:
+            fprintf(logfp, "Received Service Chain Request\n");
+            process_service_chain_request(new_socket);
+            break;
+        default:
+            fprintf(logfp, "Unknown %d request\n", mtype);
+    }
+    fflush(logfp);
 }
 
 int main(int argc, char *argv[])
@@ -751,7 +777,7 @@ int main(int argc, char *argv[])
     int addrlen = sizeof(address);
 
     // Creating socket file descriptor
-    if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) == 0)
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
         perror("socket failed");
         exit(EXIT_FAILURE);
@@ -775,33 +801,31 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+    if (listen(server_fd, LISTENQ) < 0)   
+    {   
+        perror("listen");   
+        exit(EXIT_FAILURE);   
+    }  
+
     while(1)
     {
         int len, n; 
         len = sizeof(cliaddr); 
-        messagetype mtype;
-        n = recvfrom(server_fd, (char *)&mtype, sizeof(messagetype),
-                    0, ( struct sockaddr *) &cliaddr,
-                    &len);
-        if (n == -1)
-        {
-            fprintf(logfp,"recvfrom returned %d, %s\n", errno, strerror(errno));
-            return 0;
+	pthread_t the_thread;
+        if ((new_socket = accept(server_fd,  
+                    (struct sockaddr *)&cliaddr, (socklen_t*)&len))<0)   
+        {   
+            perror("accept"); 
+            exit(EXIT_FAILURE);
         }
 
-        switch(mtype)
-        {
-            case EVENT_REQUEST:
-                fprintf(logfp, "Received Event Request\n");
-                process_event_request(server_fd);
-                break;
-            case SERVICE_CHAIN_REQUEST:
-                fprintf(logfp, "Received Service Chain Request\n");
-                process_service_chain_request(server_fd);
-                break;
-            default:
-                fprintf(logfp, "Unknown %d request\n", mtype);
+        if( pthread_create(&the_thread, NULL, socketThread, &new_socket) != 0 )
+	{
+            printf("Failed to create thread\n");
+            perror("accept");
+            exit(EXIT_FAILURE);
         }
-	fflush(logfp);
+
+        pthread_detach(the_thread);
     }
 }

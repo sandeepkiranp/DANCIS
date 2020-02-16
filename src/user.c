@@ -269,7 +269,8 @@ FILE *logfp;
 int main(int argc, char *argv[])
 {
     initialize_system_params(stdout);
-    read_user_params(argv[1]);
+    if(read_user_params(argv[1])== FAILURE)
+        exit(-1);
     read_services_location();
 
     //./user user1 DELEGATE user2 all|A1,A2
