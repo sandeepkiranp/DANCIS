@@ -139,9 +139,10 @@ int send_event_request(char *user, char *event)
     struct sockaddr_in     servaddr; 
     messagetype mtype = EVENT_REQUEST;
     event_t evt = get_event_from_string(event);
+    socklen_t addr_size;
 
     // Creating socket file descriptor 
-    if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) { 
+    if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) { 
         perror("socket creation failed"); 
         exit(EXIT_FAILURE); 
     } 
@@ -152,23 +153,25 @@ int send_event_request(char *user, char *event)
     servaddr.sin_family = AF_INET; 
     servaddr.sin_port = htons(get_service_port(CONTROLLER_SVC)); 
     servaddr.sin_addr.s_addr = INADDR_ANY; 
-      
+
+    addr_size = sizeof(servaddr);
+
+    if(connect(sockfd, (struct sockaddr *) &servaddr, addr_size) < 0)
+    {
+        perror("socket connection failed");
+        return FAILURE;
+    }
+
     int n, len; 
       
-    sendto(sockfd, (const char *)&mtype, sizeof(messagetype), 
-        0, (const struct sockaddr *) &servaddr,  
-            sizeof(servaddr)); 
+    send(sockfd, (const char *)&mtype, sizeof(messagetype), 0);
 
     printf("Sending %d event to controller for %s\n", evt, user);
 
     // send user name
-    sendto(sockfd, user, strlen(user),
-        0, (const struct sockaddr *) &servaddr,
-            sizeof(servaddr));
+    send(sockfd, user, strlen(user),0);
 
-    sendto(sockfd, (const char *)&evt, sizeof(event_t), 
-        0, (const struct sockaddr *) &servaddr,  
-            sizeof(servaddr)); 
+    send(sockfd, (const char *)&evt, sizeof(event_t), 0);
 }
 
 int delegate_credential(char *duser, char *attributes)

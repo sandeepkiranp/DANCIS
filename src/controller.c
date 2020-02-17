@@ -277,69 +277,81 @@ int load_delegated_credentials(char *user)
 
 }
 
-void send_token(token_t *tok, char *service, char *session_id)
+void send_token(token_t *tok, char *service, char *session_id, int sockfd)
 {
-    int sockfd;
     struct sockaddr_in     servaddr;
     messagetype mtype = SERVICE_REQUEST;
+    socklen_t addr_size;
 
-    // Creating socket file descriptor
-    if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
-        perror("socket creation failed");
-        exit(EXIT_FAILURE);
+    if (sockfd < 0)
+    {
+        // Creating socket file descriptor
+        if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
+            perror("socket creation failed");
+            exit(EXIT_FAILURE);
+        }
+
+        memset(&servaddr, 0, sizeof(servaddr));
+
+        // Filling service information
+        servaddr.sin_family = AF_INET;
+        servaddr.sin_port = htons(get_service_port(service));
+        inet_aton(get_service_ip(service), &servaddr.sin_addr);
+
+        addr_size = sizeof(servaddr);
+
+        if(connect(sockfd, (struct sockaddr *) &servaddr, addr_size) < 0)
+        {
+            perror("socket connection failed");
+            return;
+        }
     }
 
-    memset(&servaddr, 0, sizeof(servaddr));
+    send(sockfd, (const char *)&mtype, sizeof(messagetype), 0);
 
-    // Filling service information
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(get_service_port(service));
-    inet_aton(get_service_ip(service), &servaddr.sin_addr);
-
-    sendto(sockfd, (const char *)&mtype, sizeof(messagetype),
-        0, (const struct sockaddr *) &servaddr,
-            sizeof(servaddr));
-
-    sendto(sockfd, (const char *)session_id, SID_LENGTH,
-        0, (const struct sockaddr *) &servaddr,
-            sizeof(servaddr));
+    send(sockfd, (const char *)session_id, SID_LENGTH,0);
 
     token_send(tok, sockfd, &servaddr);
 }
 
-void send_constrined_service_response(char *service, char *dest_services, char *session_id)
+void send_constrined_service_response(char *service, char *dest_services, char *session_id, int sockfd)
 {
-    int sockfd;
     struct sockaddr_in     servaddr;
     messagetype mtype = CONSTRAINED_SERVICE_REQUEST;
+    socklen_t addr_size;
 
     fprintf(logfp, "send_constrined_service_response, sending service %s, sid %s, \
 next services %s\n", service, session_id, dest_services);
 
-    // Creating socket file descriptor
-    if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
-        perror("socket creation failed");
-        exit(EXIT_FAILURE);
+
+    if (sockfd < 0)
+    {
+        // Creating socket file descriptor
+        if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
+            perror("socket creation failed");
+            return;
+        }
+        memset(&servaddr, 0, sizeof(servaddr));
+
+        // Filling service information
+        servaddr.sin_family = AF_INET;
+        servaddr.sin_port = htons(get_service_port(service));
+        inet_aton(get_service_ip(service), &servaddr.sin_addr);
+
+        addr_size = sizeof(servaddr);
+
+        if(connect(sockfd, (struct sockaddr *) &servaddr, addr_size) < 0)
+        {
+            perror("socket connection failed");
+            return;
+        }
     }
 
-    memset(&servaddr, 0, sizeof(servaddr));
+    send(sockfd, (const char *)&mtype, sizeof(messagetype), 0);
 
-    // Filling service information
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(get_service_port(service));
-    inet_aton(get_service_ip(service), &servaddr.sin_addr);
+    send(sockfd, (const char *)session_id, SID_LENGTH, 0);
 
-    sendto(sockfd, (const char *)&mtype, sizeof(messagetype),
-        0, (const struct sockaddr *) &servaddr,
-            sizeof(servaddr));
-
-    sendto(sockfd, (const char *)session_id, SID_LENGTH,
-        0, (const struct sockaddr *) &servaddr,
-            sizeof(servaddr));
-
-    sendto(sockfd, (const char *)dest_services, strlen(dest_services),
-        0, (const struct sockaddr *) &servaddr,
-            sizeof(servaddr));
+    send(sockfd, (const char *)dest_services, strlen(dest_services), 0);
 }
 
 unsigned long get_time()
@@ -393,7 +405,7 @@ int is_service_in_session_cache(int index, char *service)
     return FAILURE;
 }
 
-int handle_constrained_service(credential_t *c, char *service, char *sid)
+int handle_constrained_service(credential_t *c, char *service, char *sid, int sockfd)
 {
     int i,j;
     int attributes[MAX_NUM_ATTRIBUTES] = {0};
@@ -446,14 +458,14 @@ int handle_constrained_service(credential_t *c, char *service, char *sid)
 		if (j != cont_svcplcy[fndindx].policies[i].num_services - 1)
 		    strcat(dest_services, ",");
             }
-	    send_constrined_service_response(service, dest_services, sid);
+	    send_constrined_service_response(service, dest_services, sid, sockfd);
 
             break;
         }
     }
 }
 
-void generate_credential_token(char *session_id, char *user, char *service)
+void generate_credential_token(char *session_id, char *user, char *service, int sockfd)
 {
     int i = 0,j = 0;
     credential_t *c = NULL;
@@ -513,7 +525,7 @@ void generate_credential_token(char *session_id, char *user, char *service)
 	    if((MODE == HYBRID && get_service_mode(service) == CONSTRINED) ||
 	       MODE == CENTRALIZED)
 	    {
-		handle_constrained_service(c, service, session_id);
+		handle_constrained_service(c, service, session_id, sockfd);
 	        // Add service to session map
 	        add_service_to_session(session_id, service);
                 break;
@@ -547,7 +559,7 @@ void generate_credential_token(char *session_id, char *user, char *service)
 
 	    //verify_attribute_token(&tok);
 	    gettimeofday(&start, NULL);
-	    send_token(&tok, service, session_id);
+	    send_token(&tok, service, session_id, sockfd);
 	    gettimeofday(&end, NULL);
 	    calculate_time_diff("send attribute token", &start, &end);
 
@@ -593,7 +605,7 @@ int process_event_request(int sock)
 	{
 	    for(j = 0; esmap[i].services[j] != NULL; j++)
 	    {
-                generate_credential_token(NULL, user, esmap[i].services[j]);
+                generate_credential_token(NULL, user, esmap[i].services[j], -1);
 	    }
 	}
     }	
@@ -704,7 +716,7 @@ int process_service_chain_request(int sock)
 
     fflush(logfp);
 
-    generate_credential_token(sid, NULL, service);
+    generate_credential_token(sid, NULL, service, sock);
 }
 
 contmode_t get_controller_mode(char *mode)
@@ -729,6 +741,7 @@ void * socketThread(void *arg)
     if (n == -1)
     {
         fprintf(logfp,"recvfrom returned %d, %s\n", errno, strerror(errno));
+        close(new_socket);
         return 0;
     }
 
@@ -745,6 +758,9 @@ void * socketThread(void *arg)
         default:
             fprintf(logfp, "Unknown %d request\n", mtype);
     }
+
+    close(new_socket);
+
     fflush(logfp);
 }
 

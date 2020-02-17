@@ -9,7 +9,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <pthread.h>
 #define PORT 8080
+#define LISTENQ 100
 
 FILE *logfp;
 char service_name[20];
@@ -23,11 +25,12 @@ int invoke_service(char *sid, char *service)
     int sockfd;
     struct sockaddr_in     servaddr;
     messagetype mtype = SERVICE_CHAIN_REQUEST;
+    socklen_t addr_size;
 
     fprintf(logfp, "Sending service chain request to %s with SID %s\n", service, sid);
 
     // Creating socket file descriptor
-    if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
+    if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
         perror("socket creation failed");
         exit(EXIT_FAILURE);
     }
@@ -45,13 +48,17 @@ int invoke_service(char *sid, char *service)
     }
     inet_aton(ip, &servaddr.sin_addr);
 
-    sendto(sockfd, (const char *)&mtype, sizeof(messagetype),
-        0, (const struct sockaddr *) &servaddr,
-            sizeof(servaddr));
+    addr_size = sizeof(servaddr);
 
-    sendto(sockfd, (const char *)sid, SID_LENGTH,
-        0, (const struct sockaddr *) &servaddr,
-            sizeof(servaddr));
+    if(connect(sockfd, (struct sockaddr *) &servaddr, addr_size) < 0)
+    {
+        perror("socket connection failed");
+        return FAILURE;
+    }
+
+    send(sockfd, (const char *)&mtype, sizeof(messagetype), 0);
+
+    send(sockfd, (const char *)sid, SID_LENGTH, 0);
 }
 
 void evaluate_policy(char *sid, token_t *tok)
@@ -105,9 +112,7 @@ int process_constrined_service_request(int sock)
     struct timeval start, end;
 
     len = sizeof(cliaddr);
-    n = recvfrom(sock, sid, sizeof(sid),
-                0, ( struct sockaddr *) &cliaddr,
-                &len);
+    n = recv(sock, sid, sizeof(sid), 0);
     if (n == -1)
     {
         fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
@@ -115,9 +120,7 @@ int process_constrined_service_request(int sock)
     }
 
     len = sizeof(cliaddr);
-    n = recvfrom(sock, dest_services, sizeof(dest_services),
-                0, ( struct sockaddr *) &cliaddr,
-                &len);
+    n = recv(sock, dest_services, sizeof(dest_services), 0);
     if (n == -1)
     {
         fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
@@ -143,9 +146,7 @@ int process_service_request(int sock)
     struct timeval start, end;
 
     len = sizeof(cliaddr);
-    n = recvfrom(sock, sid, sizeof(sid),
-                0, ( struct sockaddr *) &cliaddr,
-                &len);
+    n = recv(sock, sid, sizeof(sid), 0);
     if (n == -1)
     {
         fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
@@ -198,9 +199,7 @@ int process_service_chain_request(int sock)
     struct sockaddr_in cliaddr;
 
     len = sizeof(cliaddr);
-    n = recvfrom(sock, sid, sizeof(sid),
-                0, ( struct sockaddr *) &cliaddr,
-                &len);
+    n = recv(sock, sid, sizeof(sid), 0);
     if (n == -1)
     {
         fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
@@ -211,12 +210,13 @@ int process_service_chain_request(int sock)
     //make a request to controller for attribute token for this sid and service
     int sockfd;
     struct sockaddr_in     servaddr;
+    socklen_t addr_size;
     messagetype mtype = SERVICE_CHAIN_REQUEST;
 
     // Creating socket file descriptor
-    if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
+    if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
         perror("socket creation failed");
-        exit(EXIT_FAILURE);
+	return FAILURE;
     }
 
     memset(&servaddr, 0, sizeof(servaddr));
@@ -226,17 +226,52 @@ int process_service_chain_request(int sock)
     servaddr.sin_port = htons(get_service_port(CONTROLLER_SVC));
     inet_aton(get_service_ip(CONTROLLER_SVC), &servaddr.sin_addr);
 
-    sendto(sockfd, (const char *)&mtype, sizeof(messagetype),
-        0, (const struct sockaddr *) &servaddr,
-            sizeof(servaddr));
+    addr_size = sizeof(servaddr);
 
-    sendto(sockfd, (const char *)service_name, strlen(service_name),
-        0, (const struct sockaddr *) &servaddr,
-            sizeof(servaddr));
+    if(connect(sockfd, (struct sockaddr *) &servaddr, addr_size) < 0)
+    {
+        perror("socket connection failed");
+	return FAILURE;
+    }
 
-    sendto(sockfd, (const char *)sid, SID_LENGTH,
-        0, (const struct sockaddr *) &servaddr,
-            sizeof(servaddr));
+    send(sockfd, (const char *)&mtype, sizeof(messagetype), 0);
+
+    send(sockfd, (const char *)service_name, strlen(service_name),0);
+
+    send(sockfd, (const char *)sid, SID_LENGTH,0);
+}
+
+void * socketThread(void *arg)
+{
+    int new_socket = *((int *)arg);
+    int n;
+
+    messagetype mtype;
+    n = recv(new_socket, (char *)&mtype, sizeof(messagetype), 0);
+    if (n == -1)
+    {
+        fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
+        close(new_socket);
+        return 0;
+    }
+
+    switch(mtype)
+    {
+        case SERVICE_REQUEST:
+            process_service_request(new_socket);
+            break;
+        case SERVICE_CHAIN_REQUEST:
+            process_service_chain_request(new_socket);
+            break;
+        case CONSTRAINED_SERVICE_REQUEST:
+            process_constrined_service_request(new_socket);
+            break;
+        default:
+            fprintf(logfp, "Unknown %d request\n", mtype);
+    }
+
+    close(new_socket);
+    fflush(logfp);
 }
 
 //./service <service_name> <port>
@@ -270,7 +305,7 @@ int main(int argc, char *argv[])
     char buffer[1024] = {0}; 
        
     // Creating socket file descriptor 
-    if ((server_fd = socket(AF_INET, SOCK_DGRAM, 0)) == 0) 
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) 
     { 
         perror("socket failed"); 
         exit(EXIT_FAILURE); 
@@ -295,35 +330,41 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE); 
     } 
 
+    if (listen(server_fd, LISTENQ) < 0)
+    {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+
     while(1)
     {
         int len, n;
         len = sizeof(cliaddr);
-        messagetype mtype;
-        n = recvfrom(server_fd, (char *)&mtype, sizeof(messagetype),
-                    0, ( struct sockaddr *) &cliaddr,
-                    &len);
-        if (n == -1)
+        pthread_t the_thread;
+        if ((new_socket = accept(server_fd,
+                    (struct sockaddr *)&cliaddr, (socklen_t*)&len))<0)
         {
-            fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
-            return 0;
+            perror("accept");
+            exit(EXIT_FAILURE);
         }
-    
-        switch(mtype)
+        // TODO : Is it something from my port and my IP? If so, continue
+	if (/*!strcmp(inet_ntoa(cliaddr.sin_addr), ) && */ntohs(cliaddr.sin_port) == address.sin_port)
+	{
+            close(new_socket);
+	    continue;
+	}
+
+        if( pthread_create(&the_thread, NULL, socketThread, &new_socket) != 0 )
         {
-            case SERVICE_REQUEST:
-                process_service_request(server_fd);
-	        break;
-            case SERVICE_CHAIN_REQUEST:
-                process_service_chain_request(server_fd);
-                break;
-            case CONSTRAINED_SERVICE_REQUEST:
-                process_constrined_service_request(server_fd);
-	        break;
-            default:
-	        fprintf(logfp, "Unknown %d request\n", mtype);
+            printf("Failed to create thread\n");
+            perror("accept");
+            exit(EXIT_FAILURE);
         }
+
+        pthread_detach(the_thread);
+
 	fflush(logfp);
+
     }
 
     return 0;

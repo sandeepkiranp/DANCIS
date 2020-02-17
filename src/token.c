@@ -8,9 +8,7 @@
 
 void send_data(int length, char *data, int sock, struct sockaddr_in *servaddr)
 {
-    sendto(sock, data, length,
-        0, (const struct sockaddr *) servaddr,
-            sizeof(*servaddr));
+    send(sock, data, length, 0);
 }
 void send_element(element_t e, int sock, struct sockaddr_in *servaddr)
 {
@@ -100,9 +98,7 @@ void receive_data(int length, char *data, int sock)
     struct sockaddr_in address, cliaddr;
 
     len = sizeof(cliaddr);
-    n = recvfrom(sock, data, length,
-                0, ( struct sockaddr *) &cliaddr,
-                &len);
+    n = recv(sock, data, length,0);
     if (n == -1)
     {
         printf("Error receiving data %s\n", strerror(errno));
