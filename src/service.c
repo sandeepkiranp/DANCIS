@@ -14,7 +14,7 @@
 #define LISTENQ 100
 
 FILE *logfp;
-char service_name[20];
+char service_name[SERVICE_LENGTH];
 int attr_count = 0;
 
 int num_policies;
@@ -236,7 +236,7 @@ int process_service_chain_request(int sock)
 
     send(sockfd, (const char *)&mtype, sizeof(messagetype), 0);
 
-    send(sockfd, (const char *)service_name, strlen(service_name),0);
+    send(sockfd, (const char *)service_name, sizeof(service_name),0);
 
     send(sockfd, (const char *)sid, SID_LENGTH,0);
 }

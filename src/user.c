@@ -6,6 +6,8 @@
 
 #include <netdb.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
 
 #include "dac.h"
 
@@ -140,12 +142,16 @@ int send_event_request(char *user, char *event)
     messagetype mtype = EVENT_REQUEST;
     event_t evt = get_event_from_string(event);
     socklen_t addr_size;
+    int one = 1;
 
     // Creating socket file descriptor 
     if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) { 
         perror("socket creation failed"); 
         exit(EXIT_FAILURE); 
     } 
+
+    //setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one));
+    //setsockopt(sockfd, SOL_TCP, TCP_NODELAY, &one, sizeof(one));
   
     memset(&servaddr, 0, sizeof(servaddr)); 
       
@@ -169,7 +175,9 @@ int send_event_request(char *user, char *event)
     printf("Sending %d event to controller for %s\n", evt, user);
 
     // send user name
-    send(sockfd, user, strlen(user),0);
+    send(sockfd, user, USER_LENGTH,0);
+
+    printf("evt - %d, len - %d\n", evt, sizeof(event_t));
 
     send(sockfd, (const char *)&evt, sizeof(event_t), 0);
 }
@@ -271,6 +279,7 @@ FILE *logfp;
 
 int main(int argc, char *argv[])
 {
+    char user[USER_LENGTH] = {0};
     initialize_system_params(stdout);
     if(read_user_params(argv[1])== FAILURE)
         exit(-1);
@@ -286,7 +295,8 @@ int main(int argc, char *argv[])
     if (argc > 2 && !strcmp(argv[2],"EVENT"))
     {
         delegate_credential(CONTROLLER_SVC, "all");
-	send_event_request(argv[1],argv[3]);
+	strcpy(user, argv[1]);
+	send_event_request(user,argv[3]);
     }    
 
     return 0;

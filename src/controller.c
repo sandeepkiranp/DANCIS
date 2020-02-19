@@ -11,6 +11,8 @@
 #include <time.h>
 #include <sys/time.h>
 #include <pthread.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
 #include "dac.h"
 
 #define USER_DIR HOME_DIR "/users"
@@ -282,6 +284,7 @@ void send_token(token_t *tok, char *service, char *session_id, int sockfd)
     struct sockaddr_in     servaddr;
     messagetype mtype = SERVICE_REQUEST;
     socklen_t addr_size;
+    int one = 1;
 
     if (sockfd < 0)
     {
@@ -582,7 +585,7 @@ int process_event_request(int sock)
     event_t evt;
     len = sizeof(cliaddr);
     messagetype mtype;
-    char user[20] = {0};
+    char user[USER_LENGTH] = {0};
     int i,j;
     struct timeval start;
 
@@ -592,9 +595,10 @@ int process_event_request(int sock)
     fprintf(logfp, "Received event request at %f ms\n", time_in_mill);
 
     n = recv(sock, user, sizeof(user), 0);    
+    fprintf(logfp, "Received event from %s len %d\n", user, n);
 
     n = recv(sock, (char *)&evt, sizeof(event_t), 0);
-    fprintf(logfp, "Received %d event from %s\n", evt, user);
+    fprintf(logfp, "Received %d event from %s, len = %d\n", evt, user, n);
 
     //load the delegated credentials for this user
     load_delegated_credentials(user);
@@ -686,7 +690,7 @@ int process_service_chain_request(int sock)
     char sid[SID_LENGTH];
     int len, n;
     struct sockaddr_in cliaddr;
-    char service[20] = {0};
+    char service[SERVICE_LENGTH] = {0};
     struct timeval start;
 
     gettimeofday(&start, NULL);
@@ -704,7 +708,7 @@ int process_service_chain_request(int sock)
         fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
         return 0;
     }
-    fprintf(logfp,"Received service name %s\n", service);
+    fprintf(logfp,"Received service name %s, len = %d\n", service, n);
 
     n = recv(sock, sid, sizeof(sid), 0);
     if (n == -1)
@@ -712,7 +716,7 @@ int process_service_chain_request(int sock)
         fprintf(logfp,"recvfrom returned %d, %s\n", errno, strerror(errno));
         return 0;
     }
-    fprintf(logfp,"Received session ID %s\n", sid);
+    fprintf(logfp,"Received session ID %s, len = %d\n", sid, n);
 
     fflush(logfp);
 
@@ -826,6 +830,7 @@ int main(int argc, char *argv[])
     while(1)
     {
         int len, n; 
+	int one = 1;
         len = sizeof(cliaddr); 
 	pthread_t the_thread;
         if ((new_socket = accept(server_fd,  
