@@ -177,8 +177,6 @@ int send_event_request(char *user, char *event)
     // send user name
     send(sockfd, user, USER_LENGTH,0);
 
-    printf("evt - %d, len - %d\n", evt, sizeof(event_t));
-
     send(sockfd, (const char *)&evt, sizeof(event_t), 0);
 }
 
