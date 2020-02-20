@@ -20,6 +20,8 @@ int attr_count = 0;
 int num_policies;
 policy_t *policies;
 
+void handle_request(int sockfd);
+
 int invoke_service(char *sid, char *service)
 {
     int sockfd;
@@ -59,6 +61,8 @@ int invoke_service(char *sid, char *service)
     send(sockfd, (const char *)&mtype, sizeof(messagetype), 0);
 
     send(sockfd, (const char *)sid, SID_LENGTH, 0);
+
+    close(sockfd);
 }
 
 void evaluate_policy(char *sid, token_t *tok)
@@ -239,39 +243,46 @@ int process_service_chain_request(int sock)
     send(sockfd, (const char *)service_name, sizeof(service_name),0);
 
     send(sockfd, (const char *)sid, SID_LENGTH,0);
+
+    handle_request(sockfd);
 }
 
-void * socketThread(void *arg)
+void handle_request(int sockfd)
 {
-    int new_socket = *((int *)arg);
     int n;
-
     messagetype mtype;
-    n = recv(new_socket, (char *)&mtype, sizeof(messagetype), 0);
+
+    n = recv(sockfd, (char *)&mtype, sizeof(messagetype), 0);
     if (n == -1)
     {
         fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
-        close(new_socket);
-        return 0;
+        close(sockfd);
+        return;
     }
 
     switch(mtype)
     {
         case SERVICE_REQUEST:
-            process_service_request(new_socket);
+            process_service_request(sockfd);
             break;
         case SERVICE_CHAIN_REQUEST:
-            process_service_chain_request(new_socket);
+            process_service_chain_request(sockfd);
             break;
         case CONSTRAINED_SERVICE_REQUEST:
-            process_constrined_service_request(new_socket);
+            process_constrined_service_request(sockfd);
             break;
         default:
             fprintf(logfp, "Unknown %d request\n", mtype);
     }
-
-    close(new_socket);
+    close(sockfd);
     fflush(logfp);
+}
+
+void * socketThread(void *arg)
+{
+    int new_socket = *((int *)arg);
+
+    handle_request(new_socket);
 }
 
 //./service <service_name> <port>
