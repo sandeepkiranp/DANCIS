@@ -753,6 +753,7 @@ void * socketThread(void *arg)
     int new_socket = *((int *)arg);
     int n;
 
+    fprintf(logfp, "thread %d Address of teh argument %p\n", (int)pthread_self(), arg);
     messagetype mtype;
     n = recv(new_socket, (char *)&mtype, sizeof(messagetype), 0);
     if (n == -1)
@@ -773,11 +774,11 @@ void * socketThread(void *arg)
             process_service_chain_request(new_socket);
             break;
         default:
-            fprintf(logfp, "Thread %d Unknown %d request on socket %d\n", (int)pthread_self(), mtype, new_socket);
+            fprintf(logfp, "Thread %d Unknown %d request on socket %d len = %d\n", (int)pthread_self(), mtype, new_socket, n);
     }
 
     close(new_socket);
-
+    free(arg);
     fflush(logfp);
 }
 
@@ -797,7 +798,12 @@ int main(int argc, char *argv[])
 	MODE = get_controller_mode(argv[1]);
     }
 
-    logfp = fopen(str, "a");
+    logfp = fopen(str, "w");
+    if (logfp == NULL)
+    {
+	printf("Error creating log file %d %s\n", errno, strerror(errno)); 
+	exit(-1);
+    }
 
     fprintf(logfp, "Running in mode %d\n", MODE);
 
@@ -810,10 +816,9 @@ int main(int argc, char *argv[])
     load_delegated_credentials(NULL);
     fflush(logfp);
 
-    int server_fd, new_socket, valread;
-    struct sockaddr_in address, cliaddr;
+    int server_fd;
+    struct sockaddr_in address;
     int opt = 1;
-    int addrlen = sizeof(address);
 
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
@@ -850,23 +855,33 @@ int main(int argc, char *argv[])
     {
         int len, n; 
 	int one = 1;
-        len = sizeof(cliaddr); 
 	pthread_t the_thread;
-        if ((new_socket = accept(server_fd,  
+        int *new_socket;
+        struct sockaddr_in cliaddr;
+        int opt = 1;
+
+	new_socket = (int *)malloc(sizeof(int));
+
+        len = sizeof(cliaddr); 
+        if ((*new_socket = accept(server_fd,  
                     (struct sockaddr *)&cliaddr, (socklen_t*)&len))<0)   
         {   
             perror("accept"); 
             exit(EXIT_FAILURE);
         }
 
-        fprintf(logfp, "Received connection from %s port %d\n",inet_ntop(AF_INET,&cliaddr.sin_addr,str,sizeof(str)),htons(cliaddr.sin_port));
+        fprintf(logfp, "Received connection on socket %d from %s port %d\n", 
+			*new_socket, inet_ntop(AF_INET,&cliaddr.sin_addr,str,sizeof(str)),htons(cliaddr.sin_port));
 
-        if( pthread_create(&the_thread, NULL, socketThread, &new_socket) != 0 )
+        fprintf(logfp, "Address of the new socket variable %p\n", new_socket);
+
+        if( pthread_create(&the_thread, NULL, socketThread, new_socket) != 0 )
 	{
             printf("Failed to create thread\n");
             perror("accept");
             exit(EXIT_FAILURE);
         }
+	fprintf(logfp, "Created Thread %d for socket %d\n", (int)the_thread,*new_socket);
 
         pthread_detach(the_thread);
     }

@@ -1,7 +1,7 @@
 import random
 import os
 
-services_dir = "/home/sandeep/dac/services/"
+services_dir = "/home/users/sandeep/dac/dac/services/"
 
 ops = ["&","|","& !", "| !"]
 
@@ -45,7 +45,7 @@ def generate_policy_component(s):
             component += " " + ops[random.randint(0,len(ops) - 1)] + " "
     return "( " + component + " )"
 
-for indx in range(50):
+for indx in range(500):
     service = "service" + str(indx + 1);
     num_policies = random.randint(5,10)
     attribute_set = set()
@@ -55,7 +55,7 @@ for indx in range(50):
         num_services = random.randint(1,3)
         services = ''
         for y in range(num_services):
-            service_id = random.randint(0,49)
+            service_id = random.randint(0,499)
             services += "service" + str(service_id) + " "
         output  += policy + "\n" + services + "\n\n"
 
