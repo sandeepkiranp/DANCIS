@@ -13,6 +13,7 @@
 #include <pthread.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <arpa/inet.h>
 #include "dac.h"
 
 #define USER_DIR HOME_DIR "/users"
@@ -32,6 +33,7 @@ int user_level;
 int dusers_count = 0;
 
 FILE *logfp = NULL;
+pthread_mutex_t lock;
 
 typedef struct delegted_credential
 {
@@ -94,7 +96,7 @@ void calculate_time_diff(char *prefix, struct timeval *start, struct timeval *en
     time_taken = (end->tv_sec - start->tv_sec) * 1e6;
     time_taken = (time_taken + (end->tv_usec -
                               start->tv_usec)) * 1e-3;
-    fprintf(logfp, "time taken for %s = %fms\n", prefix, time_taken);
+    fprintf(logfp, "Thread = %d  : time taken for %s = %fms\n", (int) pthread_self(), prefix, time_taken);
 }
 
 #define EVENTS_FILE HOME_DIR "/root/event.txt"
@@ -323,8 +325,8 @@ void send_constrined_service_response(char *service, char *dest_services, char *
     messagetype mtype = CONSTRAINED_SERVICE_REQUEST;
     socklen_t addr_size;
 
-    fprintf(logfp, "send_constrined_service_response, sending service %s, sid %s, \
-next services %s\n", service, session_id, dest_services);
+    fprintf(logfp, "Thread %d send_constrined_service_response, sending service %s, sid %s, \
+next services %s\n", (int)pthread_self(), service, session_id, dest_services);
 
 
     if (sockfd < 0)
@@ -388,9 +390,11 @@ void add_service_to_session(char *sid, char *service)
     {
         if(!strcmp(sessions[i].sid, sid))
 	{
+	    pthread_mutex_lock(&lock);
 	    sessions[i].services[sessions[i].num_services] = calloc(20, sizeof(char));
 	    strcpy(sessions[i].services[sessions[i].num_services], service);
 	    sessions[i].num_services++;
+	    pthread_mutex_unlock(&lock);
 	}
     }    
 }
@@ -419,8 +423,8 @@ int handle_constrained_service(credential_t *c, char *service, char *sid, int so
     // check for blacklist credential hash
     if(is_credential_valid(c->cred[0]->ca->attributes[1]) == FAILURE)
     {
-        fprintf(logfp, "handle_constrained_service failed as credential is blacklisted. \
-			service %s, sid %s\n", service, sid);
+        fprintf(logfp, "thread %d handle_constrained_service failed as credential is blacklisted. \
+			service %s, sid %s\n", (int)pthread_self(), service, sid);
         return FAILURE;
     }
     
@@ -437,7 +441,7 @@ int handle_constrained_service(credential_t *c, char *service, char *sid, int so
     if (!found)
     {
 	fndindx = num_constrained_services;
-	fprintf(logfp, "handle_constrained_service, loading policy for %s\n", service);
+	fprintf(logfp, "Thread %d handle_constrained_service, loading policy for %s\n", (int)pthread_self(), service);
         load_policy(service, &cont_svcplcy[num_constrained_services++]);
     }
 
@@ -448,7 +452,7 @@ int handle_constrained_service(credential_t *c, char *service, char *sid, int so
         attributes[attr_indx] = 1;
     }
 
-    fprintf(logfp, "handle_constrained_service, Evaluating policy for %s\n", service);
+    fprintf(logfp, "thread %d handle_constrained_service, Evaluating policy for %s\n", (int)pthread_self(), service);
 
     for (i = 0; i < cont_svcplcy[fndindx].num_policies; i++)
     {
@@ -498,11 +502,20 @@ void generate_credential_token(char *session_id, char *user, char *service, int 
 	    {
                 // Check if we already processed this SID for this service. If yes, simply return back.
                 if(is_service_in_session_cache(i, service) == SUCCESS)
+		{
+                    fprintf(logfp, "Thread %d service %s already processed for sessionID %s\n", (int)pthread_self(), service, session_id);
 		    return;	
+		}
 	        user = sessions[i].user;
 		break;
 	    }
 	}
+    }
+
+    if (user == NULL)
+    {
+        fprintf(logfp, "Thread %d User not found for sessionID %s\n", (int)pthread_self(), session_id);
+        return;
     }
 
     for(i = 0; i < dusers_count; i++)
@@ -515,7 +528,7 @@ void generate_credential_token(char *session_id, char *user, char *service, int 
 
     if (NULL == c)
     {
-	fprintf(logfp, "Delegated Credentials not found for %s\n", user);
+	fprintf(logfp, "Thread %d Delegated Credentials not found for %s\n", (int)pthread_self(), user);
 	return;
     }
 
@@ -534,7 +547,7 @@ void generate_credential_token(char *session_id, char *user, char *service, int 
                 break;
 	    }
 
-	    fprintf(logfp, "Generating Token for %s for %s\n", user, service);
+	    fprintf(logfp, "Thread %d Generating Token for %s for %s\n", (int)pthread_self(), user, service);
 	    char *revealed[2]; //two levels.
 	    revealed[0] = (char *)calloc(c->cred[0]->ca->num_of_attributes, 1);
 	    revealed[1] = (char *)calloc(c->cred[1]->ca->num_of_attributes, 1);
@@ -592,13 +605,13 @@ int process_event_request(int sock)
     gettimeofday(&start, NULL);
 
     double time_in_mill = (start.tv_sec) * 1000 + (start.tv_usec) / 1000 ;
-    fprintf(logfp, "Received event request at %f ms\n", time_in_mill);
+    fprintf(logfp, "Thread %d Received event request at %f ms\n", (int)pthread_self(), time_in_mill);
 
     n = recv(sock, user, sizeof(user), 0);    
-    fprintf(logfp, "Received event from %s len %d\n", user, n);
+    fprintf(logfp, "Thread %d Received event from %s len %d\n", (int)pthread_self(), user, n);
 
     n = recv(sock, (char *)&evt, sizeof(event_t), 0);
-    fprintf(logfp, "Received %d event from %s, len = %d\n", evt, user, n);
+    fprintf(logfp, "Thread %d Received %d event from %s, len = %d\n", (int)pthread_self(), evt, user, n);
 
     //load the delegated credentials for this user
     load_delegated_credentials(user);
@@ -697,7 +710,7 @@ int process_service_chain_request(int sock)
 
     double time_in_mill =
            (start.tv_sec) * 1000 + (start.tv_usec) / 1000 ;
-    fprintf(logfp, "Received service chain request at %f ms\n", time_in_mill);
+    fprintf(logfp, "Thread %d Received service chain request at %f ms\n", (int)pthread_self(), time_in_mill);
 
 
     len = sizeof(cliaddr);
@@ -705,18 +718,18 @@ int process_service_chain_request(int sock)
     n = recv(sock, service, sizeof(service), 0);
     if (n == -1)
     {
-        fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
+        fprintf(logfp, "Thread %d recvfrom returned %d, %s\n", (int)pthread_self(), errno, strerror(errno));
         return 0;
     }
-    fprintf(logfp,"Received service name %s, len = %d\n", service, n);
+    fprintf(logfp,"Thread %d Received service name %s, len = %d\n", (int)pthread_self(), service, n);
 
     n = recv(sock, sid, sizeof(sid), 0);
     if (n == -1)
     {
-        fprintf(logfp,"recvfrom returned %d, %s\n", errno, strerror(errno));
+        fprintf(logfp,"Thread %d process_service_chain_request, recv returned %d, %s\n", (int)pthread_self(), errno, strerror(errno));
         return 0;
     }
-    fprintf(logfp,"Received session ID %s, len = %d\n", sid, n);
+    fprintf(logfp,"Thread %d Received session ID %s, len = %d\n", (int)pthread_self(), sid, n);
 
     fflush(logfp);
 
@@ -744,7 +757,7 @@ void * socketThread(void *arg)
     n = recv(new_socket, (char *)&mtype, sizeof(messagetype), 0);
     if (n == -1)
     {
-        fprintf(logfp,"recvfrom returned %d, %s\n", errno, strerror(errno));
+        fprintf(logfp,"Thread %d socketThread, recv returned %d, %s\n", (int)pthread_self(), errno, strerror(errno));
         close(new_socket);
         return 0;
     }
@@ -752,15 +765,15 @@ void * socketThread(void *arg)
     switch(mtype)
     {
         case EVENT_REQUEST:
-            fprintf(logfp, "Received Event Request\n");
+            fprintf(logfp, "Thread %d Received Event Request on socket %d\n", (int)pthread_self(), new_socket);
             process_event_request(new_socket);
             break;
         case SERVICE_CHAIN_REQUEST:
-            fprintf(logfp, "Received Service Chain Request\n");
+            fprintf(logfp, "Thread %d Received Service Chain Request on socket %d\n", (int)pthread_self(), new_socket);
             process_service_chain_request(new_socket);
             break;
         default:
-            fprintf(logfp, "Unknown %d request\n", mtype);
+            fprintf(logfp, "Thread %d Unknown %d request on socket %d\n", (int)pthread_self(), mtype, new_socket);
     }
 
     close(new_socket);
@@ -772,6 +785,12 @@ int main(int argc, char *argv[])
 {
     char str[100];
     sprintf(str, "%s/log.txt", CONTROLLER_DIR);
+
+    if (pthread_mutex_init(&lock, NULL) != 0) 
+    { 
+        printf("\n mutex init has failed\n"); 
+        return 1; 
+    } 
 
     if (argc > 1)
     {
@@ -839,6 +858,8 @@ int main(int argc, char *argv[])
             perror("accept"); 
             exit(EXIT_FAILURE);
         }
+
+        fprintf(logfp, "Received connection from %s port %d\n",inet_ntop(AF_INET,&cliaddr.sin_addr,str,sizeof(str)),htons(cliaddr.sin_port));
 
         if( pthread_create(&the_thread, NULL, socketThread, &new_socket) != 0 )
 	{

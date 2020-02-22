@@ -12,9 +12,12 @@
 #include <pthread.h>
 #define PORT 8080
 #define LISTENQ 100
+#define MAX_SESSIONS 20
 
 FILE *logfp;
 char service_name[SERVICE_LENGTH];
+int num_sessions = 0;
+char session_list[MAX_SESSIONS][SID_LENGTH] = {0};
 int attr_count = 0;
 
 int num_policies;
@@ -106,7 +109,7 @@ void calculate_time_diff(char *prefix, struct timeval *start, struct timeval *en
     fprintf(logfp, "time taken for %s = %fms\n", prefix, time_taken);
 }
 
-int process_constrined_service_request(int sock)
+int process_constrained_service_request(int sock)
 {
     token_t tok;
     char sid[SID_LENGTH];
@@ -132,6 +135,13 @@ int process_constrined_service_request(int sock)
     }
 
     fprintf(logfp, "Received Constrained Service Request for Session %s, Destination Services %s\n", sid, dest_services);
+
+    if (num_sessions == MAX_SESSIONS)
+        num_sessions = 0;
+
+    strcpy(session_list[num_sessions], sid);
+    num_sessions++;
+
     char* token = strtok(dest_services, ",");
 
     while (token != NULL)
@@ -158,6 +168,11 @@ int process_service_request(int sock)
     }
 
     fprintf(logfp, "Received Service Request for Session %s\n", sid);
+
+    if (num_sessions == MAX_SESSIONS)
+	num_sessions = 0;
+    strcpy(session_list[num_sessions], sid);
+    num_sessions++;
 
     gettimeofday(&start, NULL);
     //receive the token
@@ -199,7 +214,7 @@ int process_service_request(int sock)
 int process_service_chain_request(int sock)
 {
     char sid[SID_LENGTH];
-    int len, n;
+    int len, n, i;
     struct sockaddr_in cliaddr;
 
     len = sizeof(cliaddr);
@@ -210,6 +225,15 @@ int process_service_chain_request(int sock)
         return FAILURE;
     }
     fprintf(logfp, "Received service chain request for session ID %s\n", sid);
+
+    for (i = 0; i < MAX_SESSIONS; i++)
+    {
+	if (session_list[i] && !strcmp(session_list[i], sid))
+	{
+            fprintf(logfp, "Session %s already encountered for this service \n", sid);
+	    return SUCCESS;
+	}
+    }
 
     //make a request to controller for attribute token for this sid and service
     int sockfd;
@@ -269,7 +293,7 @@ void handle_request(int sockfd)
             process_service_chain_request(sockfd);
             break;
         case CONSTRAINED_SERVICE_REQUEST:
-            process_constrined_service_request(sockfd);
+            process_constrained_service_request(sockfd);
             break;
         default:
             fprintf(logfp, "Unknown %d request\n", mtype);

@@ -3,7 +3,7 @@ ip="$(ifconfig | grep -A 1 'eno1' | tail -1 | awk '{print $2}'| awk --field-sepa
 echo $ip
 input=$1
 i=0
-echo "removing containers"
+echo "removing containers" 
 docker ps -a -q
 
 docker stop $(docker ps -a -q)
@@ -27,7 +27,7 @@ do
 
   if [ $ip == $lip ]
   then
-    portstring="${port}:${port}"
+    portstring="${port}:${port}" 
 
     echo $portstring
 
@@ -37,17 +37,6 @@ do
     else
       dstr=""
     fi
-
-    docker run --name $name $dstr -p $portstring -itd repository/dac_service
-
-    docker exec $name  mkdir -p /root/dac/services/$name
-
-    docker cp ../root/services.txt $name:/root/dac/root
-
-    docker cp ../services/$name/policy.txt $name:/root/dac/services/$name/
-
-    echo "starting $name"
-    docker exec -d $name /root/dac/src/service $name
-
+    ./docker.sh $name $portstring &
   fi
 done < "$input"
