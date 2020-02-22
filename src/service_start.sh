@@ -37,6 +37,6 @@ do
     else
       dstr=""
     fi
-    ./docker.sh $name $portstring &
+    ./docker.sh $name $portstring $dstr &
   fi
 done < "$input"

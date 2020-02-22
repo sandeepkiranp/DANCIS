@@ -1,5 +1,6 @@
 name=$1
 portstring=$2
+dstr=$3
 
 docker run --name $name $dstr -p $portstring -itd repository/dac_service
 
