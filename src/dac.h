@@ -94,6 +94,7 @@ extern element_t system_attributes_g2[MAX_NUM_ATTRIBUTES];
 extern element_t Y1[TOTAL_ATTRIBUTES], Y2[TOTAL_ATTRIBUTES];
 extern pairing_t pairing;
 extern element_t root_public_key;
+extern element_t root_secret_key;
 
 typedef struct policy
 {

@@ -11,6 +11,7 @@
 
 element_t g1, g2;
 pairing_t pairing;
+element_t root_secret_key;
 element_t root_public_key;
 element_t system_attributes_g1[MAX_NUM_ATTRIBUTES];
 element_t system_attributes_g2[MAX_NUM_ATTRIBUTES];
@@ -230,6 +231,7 @@ int initialize_system_params(FILE *logfp)
     element_init_G1(g1, pairing);
     element_init_G2(g2, pairing);
 
+    element_init_Zr(root_secret_key, pairing);
     element_init_G2(root_public_key, pairing);
 
     for(i=0; i<TOTAL_ATTRIBUTES; i++)
@@ -263,7 +265,7 @@ int initialize_system_params(FILE *logfp)
         }
         read_element_from_file(fp, "g1", g1, 0);
         read_element_from_file(fp, "g2", g2, 0);
-        read_element_from_file(fp, "dummy", dummy, 1);
+	read_element_from_file(fp, "private_key", root_secret_key, 0);
         read_element_from_file(fp, "public_key", root_public_key, 0);
 
         for(i=0; i<MAX_NUM_ATTRIBUTES; i++)
@@ -290,7 +292,7 @@ int initialize_system_params(FILE *logfp)
     else
     {
         fprintf(logfp, "error reading %s, %s\n", PARAM_FILE, strerror(errno));
-	return FAILURE;
+	return -1; //return -1 for root to generate system parameters
     }
     fprintf(logfp, "Done!\n");
     return SUCCESS;

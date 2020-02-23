@@ -14,91 +14,12 @@
 
 #define REVOKED_FILE HOME_DIR "/root/revoked.txt"
 
-element_t g1, g2;
-element_t root_secret_key;
-element_t root_public_key;
-pairing_t pairing;
-element_t system_attributes_g1[MAX_NUM_ATTRIBUTES];
-element_t system_attributes_g2[MAX_NUM_ATTRIBUTES];
-element_t Y1[TOTAL_ATTRIBUTES];
-element_t Y2[TOTAL_ATTRIBUTES];
-
 void dac_generate_parameters()
 {
-    char param[1024];
     int i;
+    int ret = initialize_system_params(stdout);
 
-    printf("Generating System Parameters...");
-
-    int count = fread(param, 1, 1024, stdin);
-    if (!count) pbc_die("input error");
-
-    printf("Reading (%d) parameters \n%s \n",count, param);
-    pairing_init_set_buf(pairing, param, count);
-
-    element_init_G1(g1, pairing);
-    element_init_G2(g2, pairing);
-
-    //root key (g2^sk,sk)
-    element_init_Zr(root_secret_key, pairing);
-    element_init_G2(root_public_key, pairing);
-
-    for(i=0; i<TOTAL_ATTRIBUTES; i++)
-    {
-        element_init_G1(Y1[i], pairing);
-    }
-
-    for(i=0; i<TOTAL_ATTRIBUTES; i++)
-    {
-        element_init_G2(Y2[i], pairing);
-    }
-
-    for(i=0; i<MAX_NUM_ATTRIBUTES; i++)
-    {
-        element_init_G1(system_attributes_g1[i], pairing);
-        element_init_G2(system_attributes_g2[i], pairing);
-    }
-
-    // check if HOME_DIR/root/params.txt is existing
-    if( access( PARAM_FILE, F_OK ) != -1 )
-    {
-        //Read parameters from file
-	char str[10];
-        FILE *fp = fopen(PARAM_FILE, "r");
-
-        printf("param file %s\n", PARAM_FILE);
-        if (fp == NULL)
-        {
-            printf("errno %d, str %s\n", errno, strerror(errno));
-            return;
-        }
-	read_element_from_file(fp, "g1", g1, 0);
-	read_element_from_file(fp, "g2", g2, 0);
-	read_element_from_file(fp, "private_key", root_secret_key, 0);
-	read_element_from_file(fp, "public_key", root_public_key, 0);
-
-        for(i=0; i<MAX_NUM_ATTRIBUTES; i++)
-        {
-            sprintf(str, "att_g1[%d]", i);
-            read_element_from_file(fp, str, system_attributes_g1[i], 0);
-            sprintf(str, "att_g2[%d]", i);
-            read_element_from_file(fp, str, system_attributes_g2[i], 0);
-        }
-
-        for(i=0; i<TOTAL_ATTRIBUTES; i++)
-        {
-            sprintf(str, "Y1[%d]", i);
-            read_element_from_file(fp, str, Y1[i], 0);
-        }
-
-        for(i=0; i<TOTAL_ATTRIBUTES; i++)
-        {
-            sprintf(str, "Y2[%d]", i);
-            read_element_from_file(fp, str, Y2[i], 0);
-        }
-	fclose(fp);
-    }
-    else
+    if(ret == -1)
     {
 	char str[10];
         FILE *fp = fopen(PARAM_FILE, "w");
