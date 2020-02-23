@@ -63,6 +63,8 @@ int invoke_service(char *sid, char *service)
 
     send(sockfd, (const char *)&mtype, sizeof(messagetype), 0);
 
+    send(sockfd, (const char *)service_name, sizeof(service_name),0);
+
     send(sockfd, (const char *)sid, SID_LENGTH, 0);
 
     close(sockfd);
@@ -216,15 +218,23 @@ int process_service_chain_request(int sock)
     char sid[SID_LENGTH];
     int len, n, i;
     struct sockaddr_in cliaddr;
+    char service[SERVICE_LENGTH] = {0};
 
     len = sizeof(cliaddr);
+    n = recv(sock, service, sizeof(service), 0);
+    if (n == -1)
+    {
+        fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
+        return FAILURE;
+    }
+
     n = recv(sock, sid, sizeof(sid), 0);
     if (n == -1)
     {
         fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
         return FAILURE;
     }
-    fprintf(logfp, "Received service chain request for session ID %s\n", sid);
+    fprintf(logfp, "Received service chain request from %s for session ID %s\n", service, sid);
 
     for (i = 0; i < MAX_SESSIONS; i++)
     {

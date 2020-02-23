@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <errno.h>
 #include <ctype.h>
+#include <sys/time.h>
+#include <time.h>
 
 #define PARAM_FILE HOME_DIR "/root/params.txt"
 #define SERVICES_FILE HOME_DIR "/root/services.txt"
@@ -28,6 +30,20 @@ typedef struct service_location
 
 static int num_services = 0;
 service_location *svc_loc = NULL;
+
+void get_current_time()
+{
+    struct timeval curTime;
+    gettimeofday(&curTime, NULL);
+    int milli = curTime.tv_usec / 1000;
+
+    char buffer [80];
+    strftime(buffer, 80, "%Y-%m-%d %H:%M:%S", localtime(&curTime.tv_sec));
+
+    char currentTime[84] = "";
+    sprintf(currentTime, "%s:%03d", buffer, milli);
+    printf("current time: %s \n", currentTime);
+}
 
 void write_element_to_file(FILE *fp, char *param, element_t e)
 {

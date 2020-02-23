@@ -753,7 +753,6 @@ void * socketThread(void *arg)
     int new_socket = *((int *)arg);
     int n;
 
-    fprintf(logfp, "thread %d Address of teh argument %p\n", (int)pthread_self(), arg);
     messagetype mtype;
     n = recv(new_socket, (char *)&mtype, sizeof(messagetype), 0);
     if (n == -1)
@@ -872,8 +871,6 @@ int main(int argc, char *argv[])
 
         fprintf(logfp, "Received connection on socket %d from %s port %d\n", 
 			*new_socket, inet_ntop(AF_INET,&cliaddr.sin_addr,str,sizeof(str)),htons(cliaddr.sin_port));
-
-        fprintf(logfp, "Address of the new socket variable %p\n", new_socket);
 
         if( pthread_create(&the_thread, NULL, socketThread, new_socket) != 0 )
 	{
