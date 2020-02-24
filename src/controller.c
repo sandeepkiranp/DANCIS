@@ -96,7 +96,8 @@ void calculate_time_diff(char *prefix, struct timeval *start, struct timeval *en
     time_taken = (end->tv_sec - start->tv_sec) * 1e6;
     time_taken = (time_taken + (end->tv_usec -
                               start->tv_usec)) * 1e-3;
-    fprintf(logfp, "Thread = %d  : time taken for %s = %fms\n", (int) pthread_self(), prefix, time_taken);
+    //fprintf(logfp, "Thread = %d  : time taken for %s = %fms\n", (int) pthread_self(), prefix, time_taken);
+    mylog(logfp, "time taken for %s = %fms\n", prefix, time_taken);
 }
 
 #define EVENTS_FILE HOME_DIR "/root/event.txt"

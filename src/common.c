@@ -6,6 +6,8 @@
 #include <ctype.h>
 #include <sys/time.h>
 #include <time.h>
+#include <stdarg.h>
+#include <pthread.h>
 
 #define PARAM_FILE HOME_DIR "/root/params.txt"
 #define SERVICES_FILE HOME_DIR "/root/services.txt"
@@ -31,19 +33,56 @@ typedef struct service_location
 static int num_services = 0;
 service_location *svc_loc = NULL;
 
-void get_current_time()
+void mylog(FILE *logfp, char *fmt, ...)
 {
+    va_list ap; /* points to each unnamed arg in turn */
+    char *p, *sval;
+    int ival;
+    double dval;
+    char buffer[200] = {0};
+    int index = 0;
+
     struct timeval curTime;
     gettimeofday(&curTime, NULL);
     int milli = curTime.tv_usec / 1000;
 
-    char buffer [80];
-    strftime(buffer, 80, "%Y-%m-%d %H:%M:%S", localtime(&curTime.tv_sec));
+    char tbuffer [80];
+    strftime(tbuffer, 80, "%Y-%m-%d %H:%M:%S", localtime(&curTime.tv_sec));
 
-    char currentTime[84] = "";
-    sprintf(currentTime, "%s:%03d", buffer, milli);
-    printf("current time: %s \n", currentTime);
+    index = sprintf(buffer, "%s:%03d %d ", tbuffer, milli, (int)pthread_self());
+
+    va_start(ap, fmt); /* make ap point to 1st unnamed arg */
+    for (p = fmt; *p; p++)
+    {
+       if (*p != '%')
+       {
+          index += sprintf(buffer + index, "%c", *p);
+          continue;
+       }
+       switch (*++p)
+       {
+          case 'd':
+             ival = va_arg(ap, int);
+             index += sprintf(buffer + index, "%d", ival);
+             break;
+         case 'f':
+             dval = va_arg(ap, double);
+             index += sprintf(buffer + index, "%f", dval);
+             break;
+         case 's':
+             for (sval = va_arg(ap, char *); *sval; sval++) {
+               index += sprintf(buffer + index, "%c", *sval);
+             }
+             break;
+         default:
+             index += sprintf(buffer + index, "%c", *p);
+             break;
+       }
+    }
+    va_end(ap); /* clean up when done */
+    fprintf(logfp, "%s", buffer);
 }
+
 
 void write_element_to_file(FILE *fp, char *param, element_t e)
 {

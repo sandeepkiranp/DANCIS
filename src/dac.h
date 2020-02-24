@@ -176,3 +176,5 @@ extern void groth_generate_signature_2(element_t secret_key, credential_attribut
 extern int groth_verify_signature_2(element_t public_key, credential_attributes *ca, credential_element_t *ic);
 
 extern void SHA1(char *hash, unsigned char * str1);
+
+extern void mylog(FILE *logfp, char *fmt, ...);
