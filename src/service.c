@@ -32,7 +32,7 @@ int invoke_service(char *sid, char *service)
     messagetype mtype = SERVICE_CHAIN_REQUEST;
     socklen_t addr_size;
 
-    fprintf(logfp, "Sending service chain request to %s with SID %s\n", service, sid);
+    mylog(logfp, "Sending service chain request to %s with SID %s\n", service, sid);
 
     // Creating socket file descriptor
     if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
@@ -48,7 +48,7 @@ int invoke_service(char *sid, char *service)
     char *ip = get_service_ip(service);
     if (ip == NULL)
     {
-	fprintf(logfp,"Invalid service %s\n", service);
+	mylog(logfp,"Invalid service %s\n", service);
         return FAILURE;
     }
     inet_aton(ip, &servaddr.sin_addr);
@@ -94,7 +94,7 @@ void evaluate_policy(char *sid, token_t *tok)
 	{
             for(j = 0; j < policies[i].num_services; j++)
             {
-                fprintf(logfp, "Invoking service %s\n", policies[i].services[j]);
+                mylog(logfp, "Invoking service %s\n", policies[i].services[j]);
                 invoke_service(sid, policies[i].services[j]);
 	    }
 	    break;
@@ -108,7 +108,7 @@ void calculate_time_diff(char *prefix, struct timeval *start, struct timeval *en
     time_taken = (end->tv_sec - start->tv_sec) * 1e6;
     time_taken = (time_taken + (end->tv_usec -
                               start->tv_usec)) * 1e-3;
-    fprintf(logfp, "time taken for %s = %fms\n", prefix, time_taken);
+    mylog(logfp, "time taken for %s = %fms\n", prefix, time_taken);
 }
 
 int process_constrained_service_request(int sock)
@@ -124,7 +124,7 @@ int process_constrained_service_request(int sock)
     n = recv(sock, sid, sizeof(sid), 0);
     if (n == -1)
     {
-        fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
+        mylog(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
         return FAILURE;
     }
 
@@ -132,11 +132,11 @@ int process_constrained_service_request(int sock)
     n = recv(sock, dest_services, sizeof(dest_services), 0);
     if (n == -1)
     {
-        fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
+        mylog(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
         return FAILURE;
     }
 
-    fprintf(logfp, "Received Constrained Service Request for Session %s, Destination Services %s\n", sid, dest_services);
+    mylog(logfp, "Received Constrained Service Request for Session %s, Destination Services %s\n", sid, dest_services);
 
     if (num_sessions == MAX_SESSIONS)
         num_sessions = 0;
@@ -165,11 +165,11 @@ int process_service_request(int sock)
     n = recv(sock, sid, sizeof(sid), 0);
     if (n == -1)
     {
-        fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
+        mylog(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
         return FAILURE;
     }
 
-    fprintf(logfp, "Received Service Request for Session %s\n", sid);
+    mylog(logfp, "Received Service Request for Session %s\n", sid);
 
     if (num_sessions == MAX_SESSIONS)
 	num_sessions = 0;
@@ -186,7 +186,7 @@ int process_service_request(int sock)
     //verify the token
     if(verify_attribute_token(&tok) == FAILURE)
     {
-        fprintf(logfp, "Attribute token verification failed!\n");
+        mylog(logfp, "Attribute token verification failed!\n");
 	return FAILURE;
     }
     gettimeofday(&end, NULL);
@@ -197,7 +197,7 @@ int process_service_request(int sock)
     // check for blacklist credential hash
     if(is_credential_valid(tok.te[0].credhash) == FAILURE)
     {
-	fprintf(logfp, "process_service_request failed as credential is blacklisted\n");
+	mylog(logfp, "process_service_request failed as credential is blacklisted\n");
         token_free(&tok);
 	return FAILURE;
     }
@@ -224,23 +224,23 @@ int process_service_chain_request(int sock)
     n = recv(sock, service, sizeof(service), 0);
     if (n == -1)
     {
-        fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
+        mylog(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
         return FAILURE;
     }
 
     n = recv(sock, sid, sizeof(sid), 0);
     if (n == -1)
     {
-        fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
+        mylog(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
         return FAILURE;
     }
-    fprintf(logfp, "Received service chain request from %s for session ID %s\n", service, sid);
+    mylog(logfp, "Received service chain request from %s for session ID %s\n", service, sid);
 
     for (i = 0; i < MAX_SESSIONS; i++)
     {
 	if (session_list[i] && !strcmp(session_list[i], sid))
 	{
-            fprintf(logfp, "Session %s already encountered for this service \n", sid);
+            mylog(logfp, "Session %s already encountered for this service \n", sid);
 	    return SUCCESS;
 	}
     }
@@ -289,7 +289,7 @@ void handle_request(int sockfd)
     n = recv(sockfd, (char *)&mtype, sizeof(messagetype), 0);
     if (n == -1)
     {
-        fprintf(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
+        mylog(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
         close(sockfd);
         return;
     }
@@ -306,7 +306,7 @@ void handle_request(int sockfd)
             process_constrained_service_request(sockfd);
             break;
         default:
-            fprintf(logfp, "Unknown %d request\n", mtype);
+            mylog(logfp, "Unknown %d request\n", mtype);
     }
     close(sockfd);
     fflush(logfp);
