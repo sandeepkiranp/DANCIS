@@ -81,6 +81,7 @@ void mylog(FILE *logfp, char *fmt, ...)
     }
     va_end(ap); /* clean up when done */
     fprintf(logfp, "%s", buffer);
+    fflush(logfp);
 }
 
 
