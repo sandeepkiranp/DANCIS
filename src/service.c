@@ -233,6 +233,7 @@ int process_service_chain_request(int sock)
 	if (session_list[i] && !strcmp(session_list[i], sid))
 	{
             mylog(logfp, "Session %s already encountered for this service \n", sid);
+            pthread_mutex_unlock(&lock);
 	    return SUCCESS;
 	}
     }
@@ -246,6 +247,7 @@ int process_service_chain_request(int sock)
     // Creating socket file descriptor
     if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
         perror("socket creation failed");
+        pthread_mutex_unlock(&lock);
 	return FAILURE;
     }
 
@@ -261,6 +263,7 @@ int process_service_chain_request(int sock)
     if(connect(sockfd, (struct sockaddr *) &servaddr, addr_size) < 0)
     {
         perror("socket connection failed");
+        pthread_mutex_unlock(&lock);
 	return FAILURE;
     }
 
