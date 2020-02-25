@@ -22,6 +22,7 @@ int attr_count = 0;
 
 int num_policies;
 policy_t *policies;
+pthread_mutex_t lock;
 
 void handle_request(int sockfd);
 
@@ -138,12 +139,6 @@ int process_constrained_service_request(int sock)
 
     mylog(logfp, "Received Constrained Service Request for Session %s, Destination Services %s\n", sid, dest_services);
 
-    if (num_sessions == MAX_SESSIONS)
-        num_sessions = 0;
-
-    strcpy(session_list[num_sessions], sid);
-    num_sessions++;
-
     char* token = strtok(dest_services, ",");
 
     while (token != NULL)
@@ -170,11 +165,6 @@ int process_service_request(int sock)
     }
 
     mylog(logfp, "Received Service Request for Session %s\n", sid);
-
-    if (num_sessions == MAX_SESSIONS)
-	num_sessions = 0;
-    strcpy(session_list[num_sessions], sid);
-    num_sessions++;
 
     gettimeofday(&start, NULL);
     //receive the token
@@ -236,6 +226,8 @@ int process_service_chain_request(int sock)
     }
     mylog(logfp, "Received service chain request from %s for session ID %s\n", service, sid);
 
+    pthread_mutex_lock(&lock);
+
     for (i = 0; i < MAX_SESSIONS; i++)
     {
 	if (session_list[i] && !strcmp(session_list[i], sid))
@@ -272,11 +264,23 @@ int process_service_chain_request(int sock)
 	return FAILURE;
     }
 
+    mylog(logfp, "Sending service chain request to controller for Session %s \n", sid);
+
     send(sockfd, (const char *)&mtype, sizeof(messagetype), 0);
 
     send(sockfd, (const char *)service_name, sizeof(service_name),0);
 
     send(sockfd, (const char *)sid, SID_LENGTH,0);
+
+    mylog(logfp, "Adding Session %s to session list\n", sid);
+
+    if (num_sessions == MAX_SESSIONS)
+        num_sessions = 0;
+
+    strcpy(session_list[num_sessions], sid);
+    num_sessions++;
+
+    pthread_mutex_unlock(&lock);
 
     handle_request(sockfd);
 }
@@ -327,6 +331,11 @@ int main(int argc, char *argv[])
 
     sprintf(str, "%s/services/%s/log.txt", HOME_DIR, argv[1]);
 
+    if (pthread_mutex_init(&lock, NULL) != 0)
+    {
+        printf("\n mutex init has failed\n");
+        return 1;
+    }
 
     logfp = fopen(str, "a");
 
