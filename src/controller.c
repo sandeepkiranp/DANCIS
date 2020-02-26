@@ -71,7 +71,7 @@ typedef struct session
     char user[30];
     char sid[SID_LENGTH];
     int num_services;
-    char *services[100];
+    char *services[1000];
 }session_t;
 
 int num_sessions = 0;
@@ -88,7 +88,7 @@ typedef enum contmode
 contmode_t MODE = DECENTRALIZED;
 
 int num_constrained_services = 0;
-service_policy cont_svcplcy[200];
+service_policy cont_svcplcy[1000];
 
 void calculate_time_diff(char *prefix, struct timeval *start, struct timeval *end)
 {
