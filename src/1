@@ -316,6 +316,7 @@ void handle_request(int sockfd)
             mylog(logfp, "Unknown %d request\n", mtype);
     }
     close(sockfd);
+    fflush(logfp);
 }
 
 void * socketThread(void *arg)
@@ -323,7 +324,6 @@ void * socketThread(void *arg)
     int new_socket = *((int *)arg);
 
     handle_request(new_socket);
-    free(arg);
 }
 
 //./service <service_name> <port>
@@ -352,6 +352,8 @@ int main(int argc, char *argv[])
     policies = svcplcy.policies;
 
     read_services_location();
+
+    fflush(logfp);
 
     int server_fd; 
     struct sockaddr_in address; 
@@ -395,6 +397,7 @@ int main(int argc, char *argv[])
         pthread_t the_thread;
         int *new_socket;
         struct sockaddr_in cliaddr;
+        int opt = 1;
 
         new_socket = (int *)malloc(sizeof(int));
 
@@ -408,14 +411,13 @@ int main(int argc, char *argv[])
 	if (/*!strcmp(inet_ntoa(cliaddr.sin_addr), ) && */ntohs(cliaddr.sin_port) == address.sin_port)
 	{
             close(*new_socket);
-            free(new_socket);
 	    continue;
 	}
 
         if( pthread_create(&the_thread, NULL, socketThread, new_socket) != 0 )
         {
             printf("Failed to create thread\n");
-            perror("pthread_create");
+            perror("accept");
             exit(EXIT_FAILURE);
         }
 

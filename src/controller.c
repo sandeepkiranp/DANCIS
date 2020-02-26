@@ -286,7 +286,6 @@ void send_token(token_t *tok, char *service, char *session_id, int sockfd)
     struct sockaddr_in     servaddr;
     messagetype mtype = SERVICE_REQUEST;
     socklen_t addr_size;
-    int one = 1;
 
     if (sockfd < 0)
     {
@@ -371,11 +370,12 @@ unsigned long get_time()
 
 static char *rand_string(char *str, size_t size)
 {
+    size_t n = 0;
     const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890+-*%$#@!";
     srand(get_time());
     if (size) {
         --size;
-        for (size_t n = 0; n < size; n++) {
+        for (n = 0; n < size; n++) {
             int key = rand() % (int) (sizeof charset - 1);
             str[n] = charset[key];
         }
@@ -731,8 +731,6 @@ int process_service_chain_request(int sock)
     }
     mylog(logfp,"Received session ID %s, len = %d\n", sid, n);
 
-    fflush(logfp);
-
     generate_credential_token(sid, NULL, service, sock);
 }
 
@@ -778,7 +776,6 @@ void * socketThread(void *arg)
 
     close(new_socket);
     free(arg);
-    fflush(logfp);
 }
 
 int main(int argc, char *argv[])
@@ -853,7 +850,6 @@ int main(int argc, char *argv[])
     while(1)
     {
         int len, n; 
-	int one = 1;
 	pthread_t the_thread;
         int *new_socket;
         struct sockaddr_in cliaddr;
@@ -875,7 +871,7 @@ int main(int argc, char *argv[])
         if( pthread_create(&the_thread, NULL, socketThread, new_socket) != 0 )
 	{
             printf("Failed to create thread\n");
-            perror("accept");
+            perror("pthread_create");
             exit(EXIT_FAILURE);
         }
 	mylog(logfp, "Created Thread %d for socket %d\n", (int)the_thread,*new_socket);
