@@ -500,6 +500,8 @@ int load_policy(char *svc, service_policy *svcplcy)
     svcplcy->policies = policies;
     strcpy(svcplcy->service, svc);
 
+    fclose(fp);
+
     return SUCCESS;
 }
 

@@ -398,6 +398,8 @@ int main(int argc, char *argv[])
 
         new_socket = (int *)malloc(sizeof(int));
 
+	len = sizeof(cliaddr);
+
         if ((*new_socket = accept(server_fd,
                     (struct sockaddr *)&cliaddr, (socklen_t*)&len))<0)
         {
