@@ -8,7 +8,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-
+#include <time.h>
+#include <sys/time.h>
 #include "dac.h"
 
 #define USER_DIR HOME_DIR "/users"
@@ -24,6 +25,16 @@ int attribute_indx_array[MAX_NUM_ATTRIBUTES];
 int user_level;
 
 credential_t ic;
+
+void calculate_time_diff(char *prefix, struct timeval *start, struct timeval *end)
+{
+    double time_taken;
+    time_taken = (end->tv_sec - start->tv_sec) * 1e6;
+    time_taken = (time_taken + (end->tv_usec -
+                              start->tv_usec)) * 1e-3;
+    printf("time taken for %s = %fms\n", prefix, time_taken);
+}
+
 
 int read_user_params(char *user)
 {
@@ -278,6 +289,7 @@ FILE *logfp;
 int main(int argc, char *argv[])
 {
     char user[USER_LENGTH] = {0};
+    struct timeval start, end;
     initialize_system_params(stdout);
     if(read_user_params(argv[1])== FAILURE)
         exit(-1);
@@ -286,7 +298,10 @@ int main(int argc, char *argv[])
     //./user user1 DELEGATE user2 all|A1,A2
     if (argc > 2 && !strcmp(argv[2],"DELEGATE"))
     {
+	gettimeofday(&start, NULL);
         delegate_credential(argv[3],argv[4]);
+        gettimeofday(&end, NULL);
+        calculate_time_diff("Delegate Credentials", &start, &end);
     }
 
     //./user user1 EVENT EVENT1 

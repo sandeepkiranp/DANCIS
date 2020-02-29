@@ -5,6 +5,8 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <time.h>
+#include <sys/time.h>
 #include "dac.h"
 
 #define USER_DIR HOME_DIR "/users"
@@ -13,6 +15,16 @@
 
 
 #define REVOKED_FILE HOME_DIR "/root/revoked.txt"
+
+void calculate_time_diff(char *prefix, struct timeval *start, struct timeval *end)
+{
+    double time_taken;
+    time_taken = (end->tv_sec - start->tv_sec) * 1e6;
+    time_taken = (time_taken + (end->tv_usec -
+                              start->tv_usec)) * 1e-3;
+    printf("time taken for %s = %fms\n", prefix, time_taken);
+}
+
 
 void dac_generate_parameters()
 {
@@ -130,6 +142,8 @@ static int issue_user_credential(char *user, char *attributes)
 	int a[MAX_NUM_ATTRIBUTES] = {0};
 	int i = 0, j=0;
 	int ret;
+	struct timeval start, end;
+
         printf("Issuing credentials to %s with attributes %s\n", user, attributes);
 
         /* Directory does not exist. */
@@ -154,7 +168,11 @@ static int issue_user_credential(char *user, char *attributes)
 	ca = set_credential_attributes(1, pub, i, a);
 
 	memset(&ic, 0, sizeof(ic));
+	gettimeofday(&start, NULL);
         ret = issue_credential(root_secret_key, root_public_key, ca, &ic); //called by issuer with its private and public key
+        gettimeofday(&end, NULL);
+        calculate_time_diff("issue credential", &start, &end);
+
         if (ret != SUCCESS)
         {
             printf("issue_credential Failed\n");
