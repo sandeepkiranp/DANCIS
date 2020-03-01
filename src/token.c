@@ -6,11 +6,12 @@
 #include <string.h>
 #include "dac.h"
 
-void send_data(int length, char *data, int sock, struct sockaddr_in *servaddr)
+void send_data(int length, char *data, int sock, struct sockaddr_in *servaddr, char *sid, FILE *fp)
 {
-    send(sock, data, length, 0);
+    mysend(sock, data, length, 0, sid, fp);
 }
-void send_element(element_t e, int sock, struct sockaddr_in *servaddr)
+
+void send_element(element_t e, int sock, struct sockaddr_in *servaddr, char *sid, FILE *fp)
 {
     unsigned char len;
     unsigned char *buffer;
@@ -21,71 +22,71 @@ void send_element(element_t e, int sock, struct sockaddr_in *servaddr)
     element_to_bytes(buffer, e);
 
     //first send length
-    send_data(sizeof(len), (char *)&len, sock, servaddr);
+    send_data(sizeof(len), (char *)&len, sock, servaddr, sid, fp);
     //send the data
-    send_data(len, buffer, sock, servaddr); 
+    send_data(len, buffer, sock, servaddr, sid, fp); 
 
     free(buffer);
 }
 
-void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr)
+void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr, char *sid, FILE *fp)
 {
     int i, j, k, l;
     token_element_t *te;
 
     //send number of levels
-    send_data(1, &tok->levels, sock, servaddr);
+    send_data(1, &tok->levels, sock, servaddr, sid, fp);
 
     // send c
-    send_element(tok->c, sock, servaddr);
+    send_element(tok->c, sock, servaddr, sid, fp);
 
     for(l=0; l<tok->levels; l++)
     {
         te = &tok->te[l];
 
 	//send r1
-	send_element(te->r1, sock, servaddr);
+	send_element(te->r1, sock, servaddr, sid, fp);
 
 	//send ress
-	send_element(te->ress, sock, servaddr);
+	send_element(te->ress, sock, servaddr, sid, fp);
 
 	if(l == tok->levels - 1)
 	{
             //send rescsk
-            send_element(te->rescsk, sock, servaddr); 
+            send_element(te->rescsk, sock, servaddr, sid, fp); 
 	}
 	else
 	{
             //send rescpk
-            send_element(te->rescpk, sock, servaddr); 
+            send_element(te->rescpk, sock, servaddr, sid, fp); 
 	}
 
         //send credhash
-        send_element(te->credhash, sock, servaddr);
+        send_element(te->credhash, sock, servaddr, sid, fp);
 
 	//send num_attrs
-	send_data(1, &te->num_attrs, sock, servaddr);
+	send_data(1, &te->num_attrs, sock, servaddr, sid, fp);
 
 	for(i=0; i < te->num_attrs; i++)
 	{
             //send rest
-            send_element(te->rest[i], sock, servaddr);            
+            send_element(te->rest[i], sock, servaddr, sid, fp);            
 	}
 
 	//send revealed
-	send_data(te->num_attrs - 2, te->revealed, sock, servaddr);
+	send_data(te->num_attrs - 2, te->revealed, sock, servaddr, sid, fp);
 
         for(i=0,j=0,k=0; i < te->num_attrs - 2; i++)
         {
 	    if(te->revealed[i])
 	    {
                 //send attributes
-                send_element(te->attributes[j++], sock, servaddr);
+                send_element(te->attributes[j++], sock, servaddr, sid, fp);
 	    }
 	    else
             {
                 //send resa
-                send_element(te->resa[k++], sock, servaddr);
+                send_element(te->resa[k++], sock, servaddr, sid, fp);
 	    }
 
         }

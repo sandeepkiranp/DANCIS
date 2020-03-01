@@ -62,11 +62,11 @@ int invoke_service(char *sid, char *service)
         return FAILURE;
     }
 
-    send(sockfd, (const char *)&mtype, sizeof(messagetype), 0);
+    mysend(sockfd, (const char *)&mtype, sizeof(messagetype), 0, sid, logfp);
 
-    send(sockfd, (const char *)service_name, sizeof(service_name),0);
+    mysend(sockfd, (const char *)service_name, sizeof(service_name),0, sid, logfp);
 
-    send(sockfd, (const char *)sid, SID_LENGTH, 0);
+    mysend(sockfd, (const char *)sid, SID_LENGTH, 0, sid, logfp);
 
     close(sockfd);
 }
@@ -269,11 +269,11 @@ int process_service_chain_request(int sock)
 
     mylog(logfp, "Sending service chain request to controller for Session %s \n", sid);
 
-    send(sockfd, (const char *)&mtype, sizeof(messagetype), 0);
+    mysend(sockfd, (const char *)&mtype, sizeof(messagetype), 0, sid, logfp);
 
-    send(sockfd, (const char *)service_name, sizeof(service_name),0);
+    mysend(sockfd, (const char *)service_name, sizeof(service_name),0, sid, logfp);
 
-    send(sockfd, (const char *)sid, SID_LENGTH,0);
+    mysend(sockfd, (const char *)sid, SID_LENGTH,0, sid, logfp);
 
     mylog(logfp, "Adding Session %s to session list\n", sid);
 

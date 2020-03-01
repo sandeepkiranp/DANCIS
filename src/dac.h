@@ -161,7 +161,7 @@ extern int verify_attribute_token(token_t *tok);
 
 extern int is_credential_valid(element_t credhash);
 
-extern void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr);
+extern void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr, char *sid, FILE *fp);
 
 extern  void token_receive(token_t *tok, int sock);
 
@@ -178,3 +178,4 @@ extern int groth_verify_signature_2(element_t public_key, credential_attributes 
 extern void SHA1(char *hash, unsigned char * str1);
 
 extern void mylog(FILE *logfp, char *fmt, ...);
+extern void mysend(int sockfd, const char *msg, int length, int flags, char *sid, FILE *logfp);

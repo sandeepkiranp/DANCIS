@@ -311,11 +311,11 @@ void send_token(token_t *tok, char *service, char *session_id, int sockfd)
         }
     }
 
-    send(sockfd, (const char *)&mtype, sizeof(messagetype), 0);
+    mysend(sockfd, (const char *)&mtype, sizeof(messagetype), 0, session_id, logfp);
 
-    send(sockfd, (const char *)session_id, SID_LENGTH,0);
+    mysend(sockfd, (const char *)session_id, SID_LENGTH,0, session_id, logfp);
 
-    token_send(tok, sockfd, &servaddr);
+    token_send(tok, sockfd, &servaddr, session_id, logfp);
 }
 
 void send_constrined_service_response(char *service, char *dest_services, char *session_id, int sockfd)
@@ -351,11 +351,11 @@ next services %s\n", service, session_id, dest_services);
         }
     }
 
-    send(sockfd, (const char *)&mtype, sizeof(messagetype), 0);
+    mysend(sockfd, (const char *)&mtype, sizeof(messagetype), 0, session_id, logfp);
 
-    send(sockfd, (const char *)session_id, SID_LENGTH, 0);
+    mysend(sockfd, (const char *)session_id, SID_LENGTH, 0, session_id, logfp);
 
-    send(sockfd, (const char *)dest_services, strlen(dest_services), 0);
+    mysend(sockfd, (const char *)dest_services, strlen(dest_services), 0, session_id, logfp);
 }
 
 unsigned long get_time()
