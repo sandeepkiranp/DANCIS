@@ -145,7 +145,9 @@ int is_credential_valid(element_t credhash)
     unsigned char *buffer;
     char *line = NULL;
     ssize_t read;
-    FILE *revfp = NULL;
+    int pos, ret;
+    int end, start=0, found=0;
+    FILE *fp = NULL;
 
     len = element_length_in_bytes(credhash);
     buffer =  (unsigned char *)malloc(len);
@@ -153,29 +155,67 @@ int is_credential_valid(element_t credhash)
     element_to_bytes(buffer, credhash);
     base64e = base64_encode(buffer, len, &outlen);
 
-    revfp = fopen(REVOKED_FILE, "r");
-    if (revfp == NULL)
+    fp = fopen(REVOKED_FILE, "r");
+    if (fp == NULL)
     {
         printf("Error opening %s\n", REVOKED_FILE);
         return FAILURE;
     }
 
-    while ((read = getline(&line, &len, revfp)) != -1)
-    {
-        line[read - 1] = 0; //trim the new line character
+    fseek(fp, 0, SEEK_END);
+    end = pos = ftell(fp);
 
-        if (!strcmp(line, base64e))
+    while(1)
+    {
+        if(start >= end)
         {
-	    printf("Credential revoked!\n");
-	    return FAILURE;
-	}
+            break;
+        }
+
+        pos = (start + end)/2;
+
+        if(pos)
+        {
+            fseek(fp, pos -1, SEEK_SET);
+
+            if (fgetc(fp) == '\n')
+            {
+            }
+            else
+            {
+                while(1)
+                {
+                    if(fgetc(fp) == '\n')
+                        break;
+                }
+            }
+        }
+        else //first line
+            fseek(fp, 0, SEEK_SET);
+
+        read = getline(&line, &len, fp);
+        line[read - 1] = 0;
+        ret = strcmp(base64e, line);
+        if (ret == 0)
+        {
+            found = 1;
+            break;
+        }
+        if (ret > 0)
+            start = ftell(fp);
+        else
+            end = pos;
     }
     free(line);
     free(base64e);
     free(buffer);
 
-    fclose(revfp);
-    return SUCCESS;
+    fclose(fp);
+
+    if(found)
+	return FAILURE;
+    else
+	return SUCCESS;
 }
 
 servicemode convert_service_mode(char mode)
