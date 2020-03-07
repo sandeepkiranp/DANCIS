@@ -19,5 +19,6 @@
 \BOOKMARK [1][-]{section.6}{Security Evaluation}{}% 19
 \BOOKMARK [2][-]{subsubsection.6.0.1}{Nonlinkability}{section.6}% 20
 \BOOKMARK [3][-]{subsubsection.6.0.2}{Credential Revocation}{subsubsection.6.0.1}% 21
-\BOOKMARK [1][-]{section.7}{Implementation and Results}{}% 22
-\BOOKMARK [1][-]{section.8}{Conclusion}{}% 23
+\BOOKMARK [3][-]{subsubsection.6.0.3}{Centralized Controller}{subsubsection.6.0.1}% 22
+\BOOKMARK [1][-]{section.7}{Simulation Results}{}% 23
+\BOOKMARK [1][-]{section.8}{Conclusion}{}% 24
