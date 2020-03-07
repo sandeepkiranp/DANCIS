@@ -3,7 +3,9 @@ The style file: unsrt.bst
 Database file #1: mybib.bib
 Warning--entry type for "pbc" isn't style-file defined
 --line 133 of file mybib.bib
+Warning--entry type for "gmp" isn't style-file defined
+--line 141 of file mybib.bib
 Warning--empty journal in Evans
 Warning--empty booktitle in iot-sec
 Warning--empty journal in uprove
-(There were 4 warnings)
+(There were 5 warnings)

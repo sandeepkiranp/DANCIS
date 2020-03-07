@@ -87,4 +87,13 @@ Jens Groth.
 \newblock Efficient fully structure-preserving signatures for large messages.
 \newblock {\em IACR Cryptology ePrint Archive}, 2015:824, 2015.
 
+\bibitem{gmp}
+The gnu multiple precision arithmetic library.
+\newblock \url{https://gmplib.org/}.
+
+\bibitem{bn254}
+Paulo S. L.~M. Barreto and Michael Naehrig.
+\newblock Pairing-friendly elliptic curves of prime order.
+\newblock {\em IACR Cryptology ePrint Archive}, 2005:133, 2005.
+
 \end{thebibliography}
