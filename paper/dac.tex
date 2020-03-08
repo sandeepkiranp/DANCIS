@@ -285,7 +285,8 @@ An active attacker who can mount physical attacks on one or more services can ea
 It can be a single point of failure
 
 \section{Simulation Results} \label{implementation}
-In this section we evaluate the performance of the system under two different use cases, one of Home Automation and the other an Industrial Thermal Power plant. Home Automation System typically has few tens of IoT devices with applications ranging from Lighting Control, HVAC, Home Security, Power/Water Metering, entertainment etc. Service chains on any event, say a Guest entering the home would typically be less than thirty in length and are managed in a single administrative domain. On the other hand a shop floor in a manufacturing industry or a nuclear/thermal power plant will have hundreds of sensors and actuators monitoring various critical parameters. These include monitoring the Generator parameters, Oil/Water cooling system, Power Distribution Systems, Fire Fighting Systems and so on. When a critical event happens, for example, the turbine bearing temperature going high, there would be hundreds of services that are put into operation. These include turning off the generator and turbine,  gradually increasing the coolant flow, keeping the emergency services in standby etc. A fire in a shop floor is another example which invokes a large number of services. The service chains in such scenarios easily run into hundreds services. Note that these services may not all be managed in a single domain. The services coming under turbine control will be managed differently than those under generator control. The manufacturers of the sensors and actuators may also be from different vendors.
+In this section we evaluate the performance of the system under two different use cases, one of Home Automation and the other an Industrial Thermal Power plant. Home Automation System typically has few tens of IoT devices with applications ranging from Lighting Control, HVAC, Home Security, Power/Water Metering, entertainment etc. Service chains on any event, say a Guest entering the home would typically be less than thirty in length and are managed in a single administrative domain. Ensuring privacy of the users or devices which act on behalf of the users is very important to control any misuse of personal information.
+On the other hand a shop floor in a manufacturing industry or a nuclear/thermal power plant will have hundreds of sensors and actuators monitoring various critical parameters. These include monitoring the Generator parameters, Oil/Water cooling system, Power Distribution Systems, Fire Fighting Systems and so on. When a critical event happens, for example, the turbine bearing temperature going high, there would be hundreds of services that are put into operation. These include turning off the generator and turbine,  gradually increasing the coolant flow, keeping the emergency services in standby etc. A fire in a shop floor is another example which invokes a large number of services. The service chains in such scenarios easily run into hundreds services. Note that these services may not all be managed in a single domain. The services coming under turbine control will be managed differently than those under generator control. The manufacturers of the sensors and actuators may also be from different vendors.
 
 The simulation environment consists of a Controller running on a Intel(R) Xeon(R) CPU E5-2640 v2 @ 2.00GHz with 32 cores and 128GB RAM. The Home automation set-up consists of 100 services running on three Intel(R) Xeon(R) CPU E5-2420 0 @ 1.90GHz machines with 24 cores and 32GB RAM as docker containers. Docker commands allows us to specify the hard and soft limits on CPU and RAM within which the container operates. We manage these limits to simulate constrained and less constrained services. All machines are running The power plant set-up consists of running 500 services again distributed across three different machines and running as docker containers. The Root Issuer (RI) service is running on a 1GB RAM,1 CPU 2.4 Ghz Intel(R) Xeon(R) CPU processor.  All machines are running Ubuntu 18.04.x LTS.
 
@@ -297,18 +298,28 @@ As discussed in section \ref{controller}, Controller can operate in the followin
 	\item \textbf{Decentralized Mode} is where the Controller only generates the anonymous credentials. Services in turn verify the credential token that they receive from Controller. Service policy evaluation also happens at the service. This mode becomes relevant when most or all the services in the domain are resourceful and have sufficient processing power for token verification and policy evaluation. 
 	\item \textbf{Centralized Mode} is where both user/device credential validation and service policy evaluation happen at the Controller. This mode is useful when the services in the domain are very constrained in resources.
 	\item \textbf{Hybrid Mode} is for a mixed scenario where there are both resourceful and constrained services in the domain. The Controller has a list of what services fall under which category and therefore makes a decision whether to generate a token or validate the device credential by itself. If the service is a constrained one, the Controller evaluates the service policy and returns to the service a list of next services to be invoked.
+\end{enumerate}
 	
 Figure. \ref{fig:cont_home} shows the total time taken for each of the Controller modes for a service chain of 30 services. This is the typically the maximum length of chain for Home Automation. The horizontal axis shows the number of attributes the user/device possesses. As can be seen from the figure, the more the number of attributes the device holds, the greater will be the time taken for chain completion. This is because the token generation and verification depend on the number of attributes the device holds. Also note that the Decentralized mode of operation takes the maximum time to complete as the Controller would generate the attribute token for each service (based on the attributes that the service requires and the attributes that the user possesses)in the chain. In the Centralized mode, there is no token generation and propagation. Policy evaluation also happens at Controller. Therefore the time take is very minimum. If the number of service is too huge, this mode becomes a bottle neck for the system. Time taken for Hybrid mode as the figure shows, falls in between Centralized and Decentralized values.
-
-\subsubsection{Nuclear/Thermal Power Plant}
-Hello
-\end{enumerate}
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=3in]{controller_modes_home.png}}
 \caption{Controller Modes Of Operation}
 \label{fig:cont_home}
 \end{figure}
+
+\subsubsection{Nuclear/Thermal Power Plant}
+A power generation plant will typically have thousands of constrained and less constrained IoT devices and services running. These devices monitor, report and control various critical parameters of the plant. In case of a critical event, for example bearing temperature going high, a series of services have to be deployed within no time. The chain of services that get invoked can run into hundreds in some cases. For such critical events, latency and reliability in terms of service invocations are crucial parameters which the system has to ensure. We ran simulations to capture the time and resources it takes to invoke a service chain of length 400 that we typically see in power plants. 
+
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=3in]{controller_modes_home.png}}
+\caption{Controller Modes Of Operation}
+\label{fig:cont_power}
+\end{figure}
+
+As can be seen in figure \ref{fig:cont_power}, the time it takes to complete the chain is relatively longer when compared to the Home Automation case. As the number of services increase, chain propagation time also increases. There are more services for which the Controller has to generate anonymous credentials and the number of service verifications has also increased. Centralized mode continues to take least time of all the three modes with Hybrid mode performing better than Decentralized mode.
+
 
 \section{Conclusion}
 The conclusion goes here.
