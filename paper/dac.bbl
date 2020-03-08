@@ -96,4 +96,14 @@ Paulo S. L.~M. Barreto and Michael Naehrig.
 \newblock Pairing-friendly elliptic curves of prime order.
 \newblock {\em IACR Cryptology ePrint Archive}, 2005:133, 2005.
 
+\bibitem{docker}
+Docker ubuntu image.
+\newblock \url{https://hub.docker.com/_/ubuntu}.
+
+\bibitem{cpu}
+Docker runtime options with memory, cpus, and gpus.
+\newblock
+  \url{https://docs.docker.com/config/containers/resource_constraints/}.
+\newblock Accessed: 2020-03-08.
+
 \end{thebibliography}

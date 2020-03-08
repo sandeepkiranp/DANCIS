@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7250 64-bit) (preloaded format=pdflatex 2020.1.23)  8 MAR 2020 05:54
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7250 64-bit) (preloaded format=pdflatex 2020.1.23)  8 MAR 2020 12:24
 entering extended mode
 **./dac.tex
 (dac.tex
@@ -625,11 +625,7 @@ Package: cuted 2012/10/04 v1.5 Mixing onecolumn and twocolumn modes
 \viper@penalty=\count138
 \hold@viper=\box64
 \ht@viper=\dimen155
-) (dac.aux
-
-LaTeX Warning: Label `fig:cont_home' multiply defined.
-
-)
+) (dac.aux)
 \openout1 = `dac.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 22.
@@ -647,7 +643,8 @@ LaTeX Font Info:    ... okay on input line 22.
 LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 22.
 LaTeX Font Info:    Trying to load font information for TS1+cmr on input line 2
 2.
- ("C:\Program Files\MiKTeX 2.9\tex/latex/base\ts1cmr.fd"
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/base\ts1cmr.fd"
 File: ts1cmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    ... okay on input line 22.
@@ -866,9 +863,22 @@ Package pdftex.def Info: controller_modes_home.png  used on input line 306.
 (pdftex.def)             Requested size: 216.81pt x 121.95532pt.
 File: controller_modes_home.png Graphic file (type png)
 <use controller_modes_home.png>
-Package pdftex.def Info: controller_modes_home.png  used on input line 316.
+Package pdftex.def Info: controller_modes_home.png  used on input line 315.
 (pdftex.def)             Requested size: 216.81pt x 121.95532pt.
-(dac.bbl [8 <./controller_modes_home.png>]
+[8 <./controller_modes_home.png>]
+File: controller_modes_home.png Graphic file (type png)
+<use controller_modes_home.png>
+Package pdftex.def Info: controller_modes_home.png  used on input line 325.
+(pdftex.def)             Requested size: 216.81pt x 121.95532pt.
+File: controller_modes_home.png Graphic file (type png)
+<use controller_modes_home.png>
+Package pdftex.def Info: controller_modes_home.png  used on input line 335.
+(pdftex.def)             Requested size: 216.81pt x 121.95532pt.
+File: controller_modes_home.png Graphic file (type png)
+<use controller_modes_home.png>
+Package pdftex.def Info: controller_modes_home.png  used on input line 345.
+(pdftex.def)             Requested size: 216.81pt x 121.95532pt.
+ (dac.bbl [9]
 Underfull \hbox (badness 5231) in paragraph at lines 20--23
 []\OT1/ptm/m/n/10 Ioannis An-drea, Chrysos-to-mos Chrysos-to-mou, and
  []
@@ -898,26 +908,30 @@ Underfull \hbox (badness 10000) in paragraph at lines 42--48
 \OT1/ptm/m/n/10 U-[]Prove20Cryptographic20Specication20V1 . 1 . pdf$[],
  []
 
+
+Underfull \hbox (badness 10000) in paragraph at lines 104--108
+[]$\OT1/ptm/m/n/10 https : / / docs . docker . com / cong / containers / resou
+rce[]
+ []
+
 )
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 327.
- [9]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 327.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 358.
+ [10
+
+]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 358.
  (dac.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 327.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 327.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 358.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 358.
 Package rerunfilecheck Info: File `dac.out' has not changed.
-(rerunfilecheck)             Checksum: 5B5942BABD96D4935EBBCC9DD74AC49A;1893.
-
-
-LaTeX Warning: There were multiply-defined labels.
-
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 327.
+(rerunfilecheck)             Checksum: EE8DBB99B2C59936011EB099054BA264;1912.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 358.
  ) 
 Here is how much of TeX's memory you used:
- 10470 strings out of 492484
- 153603 string characters out of 3131042
- 284880 words of memory out of 3000000
- 14546 multiletter control sequences out of 15000+200000
+ 10486 strings out of 492484
+ 153787 string characters out of 3131042
+ 285064 words of memory out of 3000000
+ 14556 multiletter control sequences out of 15000+200000
  49568 words of font info for 105 fonts, out of 3000000 for 9000
  1144 hyphenation exceptions out of 8191
  39i,16n,37p,1931b,438s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -943,9 +957,9 @@ MiKTeX 2.9/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Program Files/MiKTeX 2.9/fon
 ts/type1/urw/times/utmb8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/time
 s/utmbi8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmr8a.pfb><C:
 /Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmri8a.pfb>
-Output written on dac.pdf (9 pages, 1012484 bytes).
+Output written on dac.pdf (10 pages, 1019423 bytes).
 PDF statistics:
- 375 PDF objects out of 1000 (max. 8388607)
- 82 named destinations out of 1000 (max. 500000)
+ 395 PDF objects out of 1000 (max. 8388607)
+ 88 named destinations out of 1000 (max. 500000)
  229 words of extra memory for PDF output out of 10000 (max. 10000000)
 
