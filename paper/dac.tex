@@ -299,6 +299,14 @@ As discussed in section \ref{controller}, Controller can operate in the followin
 	\item \textbf{Centralized Mode} is where both user/device credential validation and service policy evaluation happen at the Controller. This mode is useful when the services in the domain are very constrained in resources.
 	\item \textbf{Hybrid Mode} is for a mixed scenario where there are both resourceful and constrained services in the domain. The Controller has a list of what services fall under which category and therefore makes a decision whether to generate a token or validate the device credential by itself. If the service is a constrained one, the Controller evaluates the service policy and returns to the service a list of next services to be invoked.
 \end{enumerate}
+
+Figure \ref{fig:message_model} shows the messages that flow between Controller and the Services in Hybrid Mode. When an IoT device or User reports an event (1), Controller invokes a set of corresponding high level services by generating an attribute token and sending a SERVICE\_REQUEST (2) for each of the services. The service verifies the token and evaluates its policy. Based on the access policy it replies back to Controller with either SUCCESS or FAILURE message (3). As a result of the policy evaluation, the service may in turn invoke other services by sending a SERVICE\_CHAIN\_REQUEST (4). When a service receives such a request, it relays the request back to the Controller (5). If the service is constrained, Controller skips token generation and evaluates the corresponding service policy. The result of policy evaluation is then conveyed back to the service via CONSTRAINED\_SERVICE\_RESPONSE (6). If the chain request is coming from a resourceful service, Controller generates an attribute token and makes a SERVICE\_REQUEST (2). This continues till the entire chain completes execution.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=3.5in]{messages.png}}
+\caption{DISC Messages}
+\label{fig:message_model}
+\end{figure}
 	
 Figure. \ref{fig:cont_home} shows the total time taken for each of the Controller modes for a service chain of 30 services. This is the typically the maximum length of chain for Home Automation. The horizontal axis shows the number of attributes the user/device possesses. As can be seen from the figure, the more the number of attributes the device holds, the greater will be the time taken for chain completion. This is because the token generation and verification depend on the number of attributes the device holds. Also note that the Decentralized mode of operation takes the maximum time to complete as the Controller would generate the attribute token for each service (based on the attributes that the service requires and the attributes that the user possesses)in the chain. In the Centralized mode, there is no token generation and propagation. Policy evaluation also happens at Controller. Therefore the time take is very minimum. If the number of service is too huge, this mode becomes a bottle neck for the system. Time taken for Hybrid mode as the figure shows, falls in between Centralized and Decentralized values.
 
@@ -349,12 +357,12 @@ The RI periodically publishes a list of all BlackListed (BL) Credentials. Servic
 
 Figure. \ref{fig:blacklist} shows the time taken by a service to validate an attribute token against the BL. Although the number of attributes in an attribute token doesn't matter (credential hash is compared against the BL), the token used for experiment had 20 attributes. The experiment was conducted with a BL containing 100,000 entries. A point to note is that, the RI sorts the entries in the BL whenever it updates the BL. The service would use the Binary Search algorithm to quickly find out if the credential hash is present in the list or not. This saves time and resources when compared to a linear search. As the results show, BL validation for an unconstrained service takes much lesser time compared to a constrained service.
 
-We also measure the total number of bytes exchanged
+We also measured the total number of bytes exchanged for the different Controller modes. the experiment was carried out with a device having 20 attributes for a service chain of length 400. As can be seen, in the Decentralized mode maximum data exchange happens. This includes the attribute token exchange for each service. In Hybrid mode, Controller skips token generation for constrained services. thereby the total data exchanged is less. In Centralized mode, there are no attribute tokens generated. Controller itself will validate the user/device credential.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=3in]{controller_modes_home.png}}
-\caption{BlackList Verification}
-\label{fig:blacklist}
+\caption{Total bytes exchanged}
+\label{fig:bytes}
 \end{figure}
 
 
