@@ -32,7 +32,7 @@ char *base64_encode(const unsigned char *data,
     int i,j;
     *output_length = 4 * ((input_length + 2) / 3);
  
-    char *encoded_data = calloc(*output_length,1);
+    char *encoded_data = calloc(*output_length + 3,1);
     if (encoded_data == NULL) return NULL;
  
     for (i = 0, j = 0; i < input_length;) {

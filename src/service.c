@@ -85,7 +85,7 @@ void evaluate_policy(char *sid, token_t *tok)
 
     for (j = 0; j < num_revealed; j++)
     {
-        int attr_indx = attribute_element_to_index(tok->te[1].attributes[j]);
+        int attr_indx = attribute_element_to_index(tok->te[1].attributes[j], 1);
 	attributes[attr_indx] = 1;
     }
 

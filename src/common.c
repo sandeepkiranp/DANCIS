@@ -468,14 +468,24 @@ event_t get_event_from_string(char *evt)
         return EVENT4;
 }
 
-int attribute_element_to_index(element_t e)
+int attribute_element_to_index(element_t e, int level)
 {
     int i = 0;
+    int found = 0;
+
     for(i = 0; i < MAX_NUM_ATTRIBUTES; i++)
     {
-        if(!(element_cmp(e, system_attributes_g1[i])) ||
-           !(element_cmp(e, system_attributes_g2[i])))
-        return i;
+	if ((level+1) % 2)
+	{
+            found = !(element_cmp(e, system_attributes_g1[i]));
+	}
+	else
+	{
+            found = !(element_cmp(e, system_attributes_g2[i]));
+
+	}
+	if(found)
+            return i;
     }
 }
 
@@ -548,11 +558,13 @@ int load_policy(char *svc, service_policy *svcplcy)
 void mysend(int sockfd, const char *msg, int length, int flags, char *sid, FILE *logfp)
 {
     int n = send(sockfd, msg, length, flags);
+/*
     if(n < 0)
     {
 	mylog(logfp, "send failed for socket %d, session %s\n", sockfd, sid);
 	return;
     }
     mylog(logfp, "sent %d bytes for session %s\n", n, sid);
+    */
 }
 

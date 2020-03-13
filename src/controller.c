@@ -192,7 +192,6 @@ int read_params()
 
 int load_delegated_credentials(char *user)
 {
-    char c[200] = {0};
     char str[50] = {0};
     char luser[30] = {0};
     int levels;
@@ -278,7 +277,6 @@ int load_delegated_credentials(char *user)
         setup_credentials_from_file(fp,dc[i].num_dattrs,&dc[i].dic);
     }
     mylog(logfp, "Finished loading Delegated credentials for all users\n");
-
 }
 
 void send_token(token_t *tok, char *service, char *session_id, int sockfd)
@@ -446,9 +444,9 @@ int handle_constrained_service(credential_t *c, char *service, char *sid, int so
     }
 
     //skip 0(CPK) and 1(credhash) indexes
-    for (j = 2; j < c->cred[0]->ca->num_of_attributes; j++)
+    for (j = 2; j < c->cred[1]->ca->num_of_attributes; j++)
     {
-        int attr_indx = attribute_element_to_index(c->cred[0]->ca->attributes[j]);
+        int attr_indx = attribute_element_to_index(c->cred[1]->ca->attributes[j], 1);
         attributes[attr_indx] = 1;
     }
 
@@ -477,6 +475,7 @@ void generate_credential_token(char *session_id, char *user, char *service, int 
     int i = 0,j = 0;
     credential_t *c = NULL;
     struct timeval start, end;
+
 
     if (session_id == NULL)
     {
@@ -562,7 +561,7 @@ void generate_credential_token(char *session_id, char *user, char *service, int 
             revealed[1][1] = 1;
 	    for (j = 2; j < c->cred[1]->ca->num_of_attributes; j++)
 	    {
-                int attr_indx = attribute_element_to_index(c->cred[1]->ca->attributes[j]); 
+                int attr_indx = attribute_element_to_index(c->cred[1]->ca->attributes[j], 1); 
 		if(svc_attrs[i].attributes[attr_indx])
 		    revealed[1][j] = 1;
 	    }
