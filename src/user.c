@@ -307,7 +307,10 @@ int main(int argc, char *argv[])
     //./user user1 EVENT EVENT1 
     if (argc > 2 && !strcmp(argv[2],"EVENT"))
     {
+	gettimeofday(&start, NULL);
         delegate_credential(CONTROLLER_SVC, "all");
+        gettimeofday(&end, NULL);
+        calculate_time_diff("Delegate Credentials", &start, &end);
 	strcpy(user, argv[1]);
 	send_event_request(user,argv[3]);
     }    

@@ -125,7 +125,7 @@ extern unsigned char *base64_decode(const char *data,
 
 extern int evaluate(int *attributes, char * tokens);
 
-extern int attribute_element_to_index(element_t e);
+extern int attribute_element_to_index(element_t e, int level);
 
 extern event_t get_event_from_string(char *evt);
 

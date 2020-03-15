@@ -115,9 +115,9 @@ void read_element_from_file(FILE *fp, char *param, element_t e, int skipline)
     size_t outlen;
     char *base64e;
     unsigned char *buffer;
-    char c[200] = {0};
+    char c[400] = {0};
     char str1[20];
-    char str2[200] = {0};
+    char str2[400] = {0};
 
     //printf("Reading %s from param.txt...", param);
 
