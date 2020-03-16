@@ -63,7 +63,7 @@ Jan Camenisch, Manu Drijvers, and Maria Dubovitskaya.
 
 \bibitem{pbc}
 {Ben Lynn}.
-\newblock The pairing-based cryptography library.
+\newblock The {P}airing-{B}ased {C}ryptography {L}ibrary.
 \newblock \url{https://crypto.stanford.edu/pbc/}.
 
 \bibitem{zkp}
@@ -88,13 +88,13 @@ Jens Groth.
 \newblock {\em IACR Cryptology ePrint Archive}, 2015:824, 2015.
 
 \bibitem{gmp}
-The gnu multiple precision arithmetic library.
+The {GNU} {M}ultiple {P}recision {A}rithmetic {L}ibrary.
 \newblock \url{https://gmplib.org/}.
 
-\bibitem{bn254}
-Paulo S. L.~M. Barreto and Michael Naehrig.
-\newblock Pairing-friendly elliptic curves of prime order.
-\newblock {\em IACR Cryptology ePrint Archive}, 2005:133, 2005.
+\bibitem{curve}
+{PBC} {T}ype {A} {ECC} {C}urve.
+\newblock \url{https://crypto.stanford.edu/pbc/manual/ch08s03.html}.
+\newblock Accessed: 2020-03-17.
 
 \bibitem{docker}
 Docker ubuntu image.

@@ -290,7 +290,7 @@ On the other hand a shop floor in a manufacturing industry or a nuclear/thermal 
 
 The simulation environment consists of a Controller running on a Intel(R) Xeon(R) CPU E5-2640 v2 @ 2.00GHz with 32 cores and 128GB RAM. The Home automation set-up consists of 100 services running on three Intel(R) Xeon(R) CPU E5-2420 0 @ 1.90GHz machines with 24 cores and 32GB RAM as docker containers. Docker commands allows us to specify the hard and soft limits on CPU and RAM within which the container operates. We manage these limits to simulate constrained and less constrained services. All machines are running The power plant set-up consists of running 500 services again distributed across three different machines and running as docker containers. The Root Issuer (RI) service is running on a 1GB RAM,1 CPU 2.4 Ghz Intel(R) Xeon(R) CPU processor.  All machines are running Ubuntu 18.04.x LTS.
 
-All components are implemented in C language. We used the Pairing Based Cryptography (PBC) Library from \cite{pbc} for the pairing-based operations. PBC library is built on GMP Library \cite{gmp} for  mathematical operations. We use the 254-bit Barreto-Naehrig curve \cite{bn254}.
+All components are implemented in C language. We used the Pairing Based Cryptography (PBC) Library from \cite{pbc} for the pairing-based operations. PBC library is built on GMP Library \cite{gmp} for  mathematical operations. We use the Type A curve from PBC \cite{curve}.
 
 \subsubsection{Home Automation}
 As discussed in section \ref{controller}, Controller can operate in the following modes.
@@ -308,20 +308,20 @@ Figure \ref{fig:message_model} shows the messages that flow between Controller a
 \label{fig:message_model}
 \end{figure}
 	
-Figure. \ref{fig:cont_home} shows the total time taken for each of the Controller modes for a service chain of 30 services. This is the typically the maximum length of chain for Home Automation. The horizontal axis shows the number of attributes the user/device possesses. As can be seen from the figure, the more the number of attributes the device holds, the greater will be the time taken for chain completion. This is because the token generation and verification depend on the number of attributes the device holds. Also note that the Decentralized mode of operation takes the maximum time to complete as the Controller would generate the attribute token for each service (based on the attributes that the service requires and the attributes that the user possesses)in the chain. In the Centralized mode, there is no token generation and propagation. Policy evaluation also happens at Controller. Therefore the time take is very minimum. If the number of service is too huge, this mode becomes a bottle neck for the system. Time taken for Hybrid mode as the figure shows, falls in between Centralized and Decentralized values.
+Figure. \ref{fig:cont_home} shows the total time taken for each of the Controller modes for a service chain of 50 services. This is the typically the maximum length of chain for Home Automation. The horizontal axis shows the number of attributes the user/device possesses. As can be seen from the figure, the more the number of attributes the device holds, the greater will be the time taken for chain completion. This is because the token generation and verification depend on the number of attributes the device holds. Also note that the Decentralized mode of operation takes the maximum time to complete as the Controller would generate the attribute token for each service (based on the attributes that the service requires and the attributes that the user possesses)in the chain. In the Centralized mode, there is no token generation and propagation. Policy evaluation also happens at Controller. It took around 50 milliseconds for the chain to complete. If the number of service is too huge, this mode becomes a bottle neck for the system. Time taken for Hybrid mode as the figure shows, falls in between Centralized and Decentralized values.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=3in]{controller_modes_home.png}}
-\caption{Controller Modes Of Operation}
+\centerline{\includegraphics[width=3.5in]{100services.pdf}}
+\caption{Controller Modes of Operation - Chain of 50 services}
 \label{fig:cont_home}
 \end{figure}
 
 \subsubsection{Nuclear/Thermal Power Plant}
-A power generation plant will typically have thousands of constrained and less constrained IoT devices and services running. These devices monitor, report and control various critical parameters of the plant. In case of a critical event, for example bearing temperature going high, a series of services have to be deployed within no time. The chain of services that get invoked can run into hundreds in some cases. For such critical events, latency and reliability in terms of service invocations are crucial parameters which the system has to ensure. We ran simulations to capture the time and resources it takes to invoke a service chain of length 400 that we typically see in power plants. 
+A power generation plant will typically have thousands of constrained and less constrained IoT devices and services running. These devices monitor, report and control various critical parameters of the plant. In case of a critical event, for example bearing temperature going high, a series of services have to be deployed within no time. The chain of services that get invoked can run into hundreds in some cases. For such critical events, latency and reliability in terms of service invocations are crucial parameters which the system has to ensure. We ran simulations to capture the time and resources it takes to invoke a service chain of length 400 that we typically see in power plants. The Centralized mode took around 100 milliseconds to complete and is not shown in the graph.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=3in]{controller_modes_home.png}}
-\caption{Controller Modes Of Operation}
+\centerline{\includegraphics[width=3.5in]{500services.pdf}}
+\caption{Controller Modes of Operation - Chain of 400 services}
 \label{fig:cont_power}
 \end{figure}
 
@@ -330,7 +330,7 @@ As can be seen in figure \ref{fig:cont_power}, the time it takes to complete the
 We further monitor the time it takes for each of the DISC operations. Credentials are issued by the Root Issuer (RI) to users and devices. Each user/device is assigned certain attributes based on who the user is and to what group it belongs. Credential Delegation happens when a constrained device detects an event and informs the Controller of the event. The device delegates the credentials that it received from the RI. Controller then initiates the service chain by presenting an anonymous credential token to each service in the chain. The service in turn verifies the token forwarded by the Controller.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=3in]{controller_modes_home.png}}
+\centerline{\includegraphics[width=3.5in]{operations.pdf}}
 \caption{DISC operations}
 \label{fig:disc_op}
 \end{figure}
@@ -340,7 +340,7 @@ As can be seen in figure \ref{fig:disc_op}, as the number of attributes the user
 The time it takes for attribute token verification depends on the resources that the service possesses. IoT services such as a smart bulb or a temperature sensor are be quite constrained in terms of resources. Whereas a smart TV or a Smart Fridge has sufficient resources for verifying the token. In Figure. \ref{fig:token_ver} we determine the time it takes for a service to verify an anonymous attribute token generated by the Controller. The attribute token was generated for a device with 20 attributes.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=3in]{controller_modes_home.png}}
+\centerline{\includegraphics[width=3.5in]{verification.pdf}}
 \caption{Token Verification}
 \label{fig:token_ver}
 \end{figure}
@@ -350,12 +350,20 @@ In our environment we run services within Docker containers. We use the official
 The RI periodically publishes a list of all BlackListed (BL) Credentials. Services should verify if a credential is BlackListed before granting the service. Entries in the BL reveal nothing about the user whose credential is black listed. An entry in BL is a hash of the credential attributes issued to the user. The hash is then encode in Base64 format and stored in BL. Number of entries in the BL can be huge for domains consisting of huge number of devices and users, for example a shop floor in a manufacturing industry.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=3in]{controller_modes_home.png}}
+\centerline{\includegraphics[width=3.5in]{blacklist.pdf}}
 \caption{BlackList Verification}
 \label{fig:blacklist}
 \end{figure}
 
 Figure. \ref{fig:blacklist} shows the time taken by a service to validate an attribute token against the BL. Although the number of attributes in an attribute token doesn't matter (credential hash is compared against the BL), the token used for experiment had 20 attributes. The experiment was conducted with a BL containing 100,000 entries. A point to note is that, the RI sorts the entries in the BL whenever it updates the BL. The service would use the Binary Search algorithm to quickly find out if the credential hash is present in the list or not. This saves time and resources when compared to a linear search. As the results show, BL validation for an unconstrained service takes much lesser time compared to a constrained service.
+
+The Type A Curve \cite{curve} has a base field size of 512 bits with a Discrete log security of 1024 bits  therefore providing an overall security of 80 bits. In Figure. \ref{fig:security} we determine the time taken by each of the DISC operations for a device with 20 attributes with varying Base field sizes. As the field size increases, resulting in increased security, the underlying cryptographic operations take more time to complete.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=3.5in]{security.pdf}}
+\caption{Time taken for different Base Field sizes}
+\label{fig:security}
+\end{figure}
 
 We also measured the total number of bytes exchanged for the different Controller modes. the experiment was carried out with a device having 20 attributes for a service chain of length 400. As can be seen, in the Decentralized mode maximum data exchange happens. This includes the attribute token exchange for each service. In Hybrid mode, Controller skips token generation for constrained services. thereby the total data exchanged is less. In Centralized mode, there are no attribute tokens generated. Controller itself will validate the user/device credential.
 
