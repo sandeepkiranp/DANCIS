@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7250 64-bit) (preloaded format=pdflatex 2020.1.23)  22 MAR 2020 10:19
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (MiKTeX 2.9.7250 64-bit) (preloaded format=pdflatex 2020.1.23)  22 MAR 2020 11:52
 entering extended mode
 **./dac.tex
 (dac.tex
@@ -731,26 +731,21 @@ File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 Package hyperref Warning: Difference (2) between bookmark levels is greater 
 (hyperref)                than one, level fixed on input line 70.
 
+<chain.png, id=133, 785.93625pt x 516.93124pt>
+File: chain.png Graphic file (type png)
+<use chain.png>
+Package pdftex.def Info: chain.png  used on input line 73.
+(pdftex.def)             Requested size: 216.81pt x 142.60219pt.
 LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 7
-1.
+6.
 ("C:\Program Files\MiKTeX 2.9\tex/latex/psnfss\ts1ptm.fd"
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 ) [1{C:/Users/sapinjal/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}
 
 
-]
-<chain.png, id=150, 785.93625pt x 516.93124pt>
-File: chain.png Graphic file (type png)
-<use chain.png>
-Package pdftex.def Info: chain.png  used on input line 73.
-(pdftex.def)             Requested size: 216.81pt x 142.60219pt.
- [2 <./chain.png>]
+] [2 <./chain.png>]
 Underfull \vbox (badness 4543) has occurred while \output is active []
 
-
-
-Package hyperref Warning: Difference (2) between bookmark levels is greater 
-(hyperref)                than one, level fixed on input line 111.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
@@ -781,7 +776,7 @@ Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `\new@ifnextchar' on input line 139.
 
 [3]
-<camen.png, id=224, 462.22687pt x 452.18938pt>
+<camen.png, id=227, 462.22687pt x 452.18938pt>
 File: camen.png Graphic file (type png)
 <use camen.png>
 Package pdftex.def Info: camen.png  used on input line 143.
@@ -794,32 +789,28 @@ a[] >[]; tag\OT1/cmr/m/n/10 ) :$
  []
 
 
-Package hyperref Warning: Difference (2) between bookmark levels is greater 
-(hyperref)                than one, level fixed on input line 164.
-
-
-Overfull \hbox (6.43355pt too wide) detected at line 184
+Overfull \hbox (6.43355pt too wide) detected at line 185
  []$[]  $$\OML/cmm/m/it/10 at \OMS/cmsy/m/n/10   \OML/cmm/m/it/10 NIZK\OMS/cmsy
 /m/n/10 f\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 []; :::; []; cpk[]; :::; cpk[]; < 
 a[] >[]; tag\OT1/cmr/m/n/10 ) :$ 
  []
 
 
-Overfull \hbox (7.13686pt too wide) detected at line 184
+Overfull \hbox (7.13686pt too wide) detected at line 185
  []$[] [] \OT1/cmr/m/n/10 1 = \OML/cmm/m/it/10 SibGS\OT1/cmr/m/n/10 1\OML/cmm/m
 /it/10 :Verify[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 cpk[]; []; []; cpk[]; a[]; :
 ::a[]\OT1/cmr/m/n/10 )$ 
  []
 
 
-Overfull \hbox (8.2937pt too wide) detected at line 184
+Overfull \hbox (8.2937pt too wide) detected at line 185
  []$[] [] \OT1/cmr/m/n/10 1 = \OML/cmm/m/it/10 SibGS\OT1/cmr/m/n/10 1\OML/cmm/m
 /it/10 :Verify[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 cpk[]; []; []; cpk[]; a[]; :
 ::a[]\OT1/cmr/m/n/10 )$ 
  []
 
 [4 <./camen.png>]
-Overfull \hbox (12.75728pt too wide) detected at line 205
+Overfull \hbox (12.75728pt too wide) detected at line 206
 []
  []
 
@@ -829,46 +820,59 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
-Extra height:0.0pt when 25.08246pt
+Extra height:10.0pt when 67.08246pt
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
-(2)Left:25.08246pt Right:22.0pt Output:25.08246pt
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+Extra height:10.0pt when 68.08246pt
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+Extra height:10.0pt when 69.08246pt
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+Extra height:0.0pt when 70.08246pt
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+(2)Left:70.08246pt Right:70.0pt Output:70.08246pt
 - LAST -
-Left:25.08246pt
-Right:22.0pt
-Output:25.08246pt
+Left:70.08246pt
+Right:70.0pt
+Output:70.08246pt
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
-<architecture.png, id=242, 741.26938pt x 415.5525pt>
+<architecture.png, id=245, 741.26938pt x 415.5525pt>
 File: architecture.png Graphic file (type png)
 <use architecture.png>
-Package pdftex.def Info: architecture.png  used on input line 215.
+Package pdftex.def Info: architecture.png  used on input line 216.
 (pdftex.def)             Requested size: 216.81pt x 121.54068pt.
-
-
-Package hyperref Warning: Difference (2) between bookmark levels is greater 
-(hyperref)                than one, level fixed on input line 223.
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 225--226
+ [5 <./architecture.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 226--227
 []\OT1/ptm/m/n/10 The RI gen-er-ates the sys-tem pub-lic pa-ram-e-ters
  []
 
-[5 <./architecture.png>] [6] [7]
-<messages.png, id=279, 963.6pt x 542.025pt>
+[6] [7]
+<messages.png, id=281, 963.6pt x 542.025pt>
 File: messages.png Graphic file (type png)
 <use messages.png>
-Package pdftex.def Info: messages.png  used on input line 279.
+Package pdftex.def Info: messages.png  used on input line 280.
 (pdftex.def)             Requested size: 252.94499pt x 142.27956pt.
 
 
 Package hyperref Warning: Difference (2) between bookmark levels is greater 
-(hyperref)                than one, level fixed on input line 288.
+(hyperref)                than one, level fixed on input line 289.
 
 
-Underfull \hbox (badness 1742) in paragraph at lines 304--305
+Underfull \hbox (badness 1742) in paragraph at lines 305--306
  \OT1/ptm/m/it/10 5) Cre-den-tial Del-e-ga-tion: [][][] \OT1/ptm/m/n/10 DISC al
 -lows re-source con-
  []
@@ -876,43 +880,42 @@ Underfull \hbox (badness 1742) in paragraph at lines 304--305
 [8 <./messages.png>]
 
 Package hyperref Warning: Difference (2) between bookmark levels is greater 
-(hyperref)                than one, level fixed on input line 316.
+(hyperref)                than one, level fixed on input line 317.
 
-<100services.pdf, id=293, 702.625pt x 424.58624pt>
+<100services.pdf, id=296, 702.625pt x 424.58624pt>
 File: 100services.pdf Graphic file (type pdf)
 <use 100services.pdf>
-Package pdftex.def Info: 100services.pdf  used on input line 326.
+Package pdftex.def Info: 100services.pdf  used on input line 327.
 (pdftex.def)             Requested size: 252.94499pt x 152.85092pt.
-<500services.pdf, id=294, 642.4pt x 481.8pt>
+<500services.pdf, id=297, 642.4pt x 481.8pt>
 File: 500services.pdf Graphic file (type pdf)
 <use 500services.pdf>
-Package pdftex.def Info: 500services.pdf  used on input line 335.
+Package pdftex.def Info: 500services.pdf  used on input line 336.
 (pdftex.def)             Requested size: 252.94499pt x 189.70975pt.
 [9 <./100services.pdf>]
-<operations.pdf, id=316, 702.625pt x 424.58624pt>
+<operations.pdf, id=318, 702.625pt x 424.58624pt>
 File: operations.pdf Graphic file (type pdf)
 <use operations.pdf>
-Package pdftex.def Info: operations.pdf  used on input line 345.
+Package pdftex.def Info: operations.pdf  used on input line 346.
 (pdftex.def)             Requested size: 252.94499pt x 152.85092pt.
-<verification.pdf, id=319, 702.625pt x 424.58624pt>
+<verification.pdf, id=321, 702.625pt x 424.58624pt>
 File: verification.pdf Graphic file (type pdf)
 <use verification.pdf>
-Package pdftex.def Info: verification.pdf  used on input line 355.
+Package pdftex.def Info: verification.pdf  used on input line 356.
 (pdftex.def)             Requested size: 252.94499pt x 152.85092pt.
-<blacklist.pdf, id=323, 702.625pt x 424.58624pt>
+<blacklist.pdf, id=325, 702.625pt x 424.58624pt>
 File: blacklist.pdf Graphic file (type pdf)
 <use blacklist.pdf>
-Package pdftex.def Info: blacklist.pdf  used on input line 365.
+Package pdftex.def Info: blacklist.pdf  used on input line 366.
 (pdftex.def)             Requested size: 252.94499pt x 152.85092pt.
- [10 <./500services.pdf> <./operations.pdf> <./verification.pdf> <./blacklist.p
-df>]
-<security.pdf, id=372, 702.625pt x 424.58624pt>
+ [10 <./500services.pdf> <./operations.pdf> <./verification.pdf>]
+<security.pdf, id=366, 702.625pt x 424.58624pt>
 File: security.pdf Graphic file (type pdf)
 <use security.pdf>
-Package pdftex.def Info: security.pdf  used on input line 375.
+Package pdftex.def Info: security.pdf  used on input line 376.
 (pdftex.def)             Requested size: 252.94499pt x 152.85092pt.
 
-Underfull \hbox (badness 3219) in paragraph at lines 381--382
+Underfull \hbox (badness 3219) in paragraph at lines 382--383
 []\OT1/ptm/m/n/10 Ensuring User and De-vice pri-vacy is paramount to
  []
 
@@ -951,12 +954,12 @@ Underfull \hbox (badness 2435) in paragraph at lines 82--86
 []\OT1/ptm/m/n/10 Almudena Al-caide, Es-ther Palo-mar, Jos[]e Montero-
  []
 
-
+[11 <./blacklist.pdf> <./security.pdf>]
 Underfull \hbox (badness 1629) in paragraph at lines 99--105
 []\OT1/ptm/m/n/10 Yogachandran Rahu-la-math-a-van, Raphael C-W Phan,
  []
 
-[11 <./security.pdf>]
+
 Underfull \hbox (badness 2111) in paragraph at lines 114--119
 []\OT1/ptm/m/n/10 Cl[]ementine Gritti, Melek []Onen, and Re-fik Molva.
  []
@@ -968,26 +971,26 @@ rce[]
  []
 
 )
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 388.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 389.
  [12
 
 ]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 388.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 389.
  (dac.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 388.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 388.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 389.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 389.
 Package rerunfilecheck Info: File `dac.out' has not changed.
-(rerunfilecheck)             Checksum: 74783FED0EC1BD511FA865FD2CA00721;2155.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 388.
+(rerunfilecheck)             Checksum: 9FF9BE53199C36318327CCC4072EC905;2165.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 389.
  ) 
 Here is how much of TeX's memory you used:
- 10570 strings out of 492484
- 155344 string characters out of 3131042
- 262395 words of memory out of 3000000
- 14619 multiletter control sequences out of 15000+200000
+ 10573 strings out of 492484
+ 155348 string characters out of 3131042
+ 262453 words of memory out of 3000000
+ 14621 multiletter control sequences out of 15000+200000
  49568 words of font info for 105 fonts, out of 3000000 for 9000
  1144 hyphenation exceptions out of 8191
- 39i,16n,37p,2375b,467s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 39i,16n,37p,2375b,457s stack positions out of 5000i,500n,10000p,200000b,50000s
 {C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/base/8r.enc}<C:/Program Files/Mi
 KTeX 2.9/fonts/type1/public/amsfonts/cmextra/cmbsy7.pfb><C:/Program Files/MiKTe
 X 2.9/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Program Files/MiKTeX 2.9/fo
@@ -1010,9 +1013,9 @@ MiKTeX 2.9/fonts/type1/urw/helvetic/uhvr8a.pfb><C:/Program Files/MiKTeX 2.9/fon
 ts/type1/urw/times/utmb8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/time
 s/utmbi8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmr8a.pfb><C:
 /Program Files/MiKTeX 2.9/fonts/type1/urw/times/utmri8a.pfb>
-Output written on dac.pdf (12 pages, 1159269 bytes).
+Output written on dac.pdf (12 pages, 1160083 bytes).
 PDF statistics:
- 504 PDF objects out of 1000 (max. 8388607)
- 103 named destinations out of 1000 (max. 500000)
- 283 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 507 PDF objects out of 1000 (max. 8388607)
+ 104 named destinations out of 1000 (max. 500000)
+ 291 words of extra memory for PDF output out of 10000 (max. 10000000)
 

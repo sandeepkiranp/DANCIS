@@ -5,25 +5,26 @@
 \BOOKMARK [3][-]{subsubsection.2.0.3}{Our Contribution}{subsubsection.2.0.1}% 5
 \BOOKMARK [3][-]{subsubsection.2.0.4}{Related Work}{subsubsection.2.0.1}% 6
 \BOOKMARK [1][-]{section.3}{Preliminaries}{}% 7
-\BOOKMARK [2][-]{subsubsection.3.0.1}{Bilinear map}{section.3}% 8
-\BOOKMARK [3][-]{subsubsection.3.0.2}{Zero Knowledge Proofs}{subsubsection.3.0.1}% 9
-\BOOKMARK [3][-]{subsubsection.3.0.3}{Signature Schemes}{subsubsection.3.0.1}% 10
-\BOOKMARK [1][-]{section.4}{DAC By Camenisch et al. CamenischDD17 and our extensions}{}% 11
-\BOOKMARK [2][-]{subsubsection.4.0.1}{Credential Revocation}{section.4}% 12
-\BOOKMARK [3][-]{subsubsection.4.0.2}{Session Key Establishment}{subsubsection.4.0.1}% 13
-\BOOKMARK [1][-]{section.5}{The Proposal}{}% 14
-\BOOKMARK [2][-]{subsubsection.5.0.1}{The Root Issuer}{section.5}% 15
-\BOOKMARK [3][-]{subsubsection.5.0.2}{The Controller}{subsubsection.5.0.1}% 16
-\BOOKMARK [3][-]{subsubsection.5.0.3}{The User/IoT device}{subsubsection.5.0.1}% 17
-\BOOKMARK [3][-]{subsubsection.5.0.4}{The Service}{subsubsection.5.0.1}% 18
-\BOOKMARK [3][-]{subsubsection.5.0.5}{Message Model}{subsubsection.5.0.1}% 19
-\BOOKMARK [1][-]{section.6}{Security Evaluation}{}% 20
-\BOOKMARK [2][-]{subsubsection.6.0.1}{Nonlinkability}{section.6}% 21
-\BOOKMARK [3][-]{subsubsection.6.0.2}{Device/User Privacy}{subsubsection.6.0.1}% 22
-\BOOKMARK [3][-]{subsubsection.6.0.3}{Credential Revocation}{subsubsection.6.0.1}% 23
-\BOOKMARK [3][-]{subsubsection.6.0.4}{Key Establishment}{subsubsection.6.0.1}% 24
-\BOOKMARK [3][-]{subsubsection.6.0.5}{Credential Delegation}{subsubsection.6.0.1}% 25
-\BOOKMARK [1][-]{section.7}{Implementation and Simulation Results}{}% 26
-\BOOKMARK [2][-]{subsubsection.7.0.1}{Home Automation}{section.7}% 27
-\BOOKMARK [3][-]{subsubsection.7.0.2}{Nuclear/Thermal Power Plant}{subsubsection.7.0.1}% 28
-\BOOKMARK [1][-]{section.8}{Conclusion}{}% 29
+\BOOKMARK [2][-]{subsection.3.1}{Bilinear map}{section.3}% 8
+\BOOKMARK [2][-]{subsection.3.2}{Zero Knowledge Proofs}{section.3}% 9
+\BOOKMARK [2][-]{subsection.3.3}{Signature Schemes}{section.3}% 10
+\BOOKMARK [2][-]{subsection.3.4}{DAC By Camenisch et al. CamenischDD17 and our extensions}{section.3}% 11
+\BOOKMARK [1][-]{section.4}{The Proposal}{}% 12
+\BOOKMARK [2][-]{subsection.4.1}{Credential Revocation}{section.4}% 13
+\BOOKMARK [2][-]{subsection.4.2}{Session Key Establishment}{section.4}% 14
+\BOOKMARK [2][-]{subsection.4.3}{The Architecture}{section.4}% 15
+\BOOKMARK [3][-]{subsubsection.4.3.1}{The Root Issuer}{subsection.4.3}% 16
+\BOOKMARK [3][-]{subsubsection.4.3.2}{The Controller}{subsection.4.3}% 17
+\BOOKMARK [3][-]{subsubsection.4.3.3}{The User/IoT device}{subsection.4.3}% 18
+\BOOKMARK [3][-]{subsubsection.4.3.4}{The Service}{subsection.4.3}% 19
+\BOOKMARK [3][-]{subsubsection.4.3.5}{Message Model}{subsection.4.3}% 20
+\BOOKMARK [1][-]{section.5}{Security Evaluation}{}% 21
+\BOOKMARK [2][-]{subsubsection.5.0.1}{Nonlinkability}{section.5}% 22
+\BOOKMARK [3][-]{subsubsection.5.0.2}{Device/User Privacy}{subsubsection.5.0.1}% 23
+\BOOKMARK [3][-]{subsubsection.5.0.3}{Credential Revocation}{subsubsection.5.0.1}% 24
+\BOOKMARK [3][-]{subsubsection.5.0.4}{Key Establishment}{subsubsection.5.0.1}% 25
+\BOOKMARK [3][-]{subsubsection.5.0.5}{Credential Delegation}{subsubsection.5.0.1}% 26
+\BOOKMARK [1][-]{section.6}{Implementation and Simulation Results}{}% 27
+\BOOKMARK [2][-]{subsubsection.6.0.1}{Home Automation}{section.6}% 28
+\BOOKMARK [3][-]{subsubsection.6.0.2}{Nuclear/Thermal Power Plant}{subsubsection.6.0.1}% 29
+\BOOKMARK [1][-]{section.7}{Conclusion}{}% 30
