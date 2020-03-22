@@ -32,20 +32,6 @@ David Chaum.
 \newblock In D.~Chaum, R.L. Rivest, and A.T. Sherman, editors, {\em Advances in
   Cryptology Proceedings of Crypto 82}, pages 199--203, 1983.
 
-\bibitem{CamenischH02}
-Jan Camenisch and Els~Van Herreweghen.
-\newblock Design and implementation of the idemix anonymous credential system.
-\newblock In Vijayalakshmi Atluri, editor, {\em ACM Conference on Computer and
-  Communications Security}, pages 21--30. ACM, 2002.
-
-\bibitem{uprove}
-Greg~Zaverucha Christian~Paquin.
-\newblock U-prove cryptographic specification v1.1, revision 3.
-\newblock December 2013.
-\newblock
-  \url{https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/U-Prove20Cryptographic20Specification20V1.1.pdf},
-  last accessed on 01/01/20.
-
 \bibitem{delegatabledac}
 Mira Belenkiy, Jan Camenisch, Melissa Chase, Markulf Kohlweiss, Anna
   Lysyanskaya, and Hovav Shacham.
@@ -65,6 +51,71 @@ Jan Camenisch, Manu Drijvers, and Maria Dubovitskaya.
 {Ben Lynn}.
 \newblock The {P}airing-{B}ased {C}ryptography {L}ibrary.
 \newblock \url{https://crypto.stanford.edu/pbc/}.
+
+\bibitem{CamenischH02}
+Jan Camenisch and Els~Van Herreweghen.
+\newblock Design and implementation of the idemix anonymous credential system.
+\newblock In Vijayalakshmi Atluri, editor, {\em ACM Conference on Computer and
+  Communications Security}, pages 21--30. ACM, 2002.
+
+\bibitem{uprove}
+Greg~Zaverucha Christian~Paquin.
+\newblock U-prove cryptographic specification v1.1, revision 3.
+\newblock December 2013.
+\newblock
+  \url{https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/U-Prove20Cryptographic20Specification20V1.1.pdf},
+  last accessed on 01/01/20.
+
+\bibitem{idemix-iot}
+Jose~Luis Canovas~Sanchez, Jorge Bernal~Bernabe, and Antonio Skarmeta.
+\newblock Integration of anonymous credential systems in iot constrained
+  environments.
+\newblock {\em IEEE Access}, PP:1--1, 01 2018.
+
+\bibitem{idemix-iot-keyrock}
+Jorge Bernal~Bernabe, José Hernández-Ramos, and Antonio Skarmeta.
+\newblock Holistic privacy-preserving identity management system for the
+  internet of things.
+\newblock {\em Mobile Information Systems}, 2017:20 pages, 08 2017.
+
+\bibitem{AlcaidePMR13}
+Almudena Alcaide, Esther Palomar, José Montero-Castillo, and Arturo Ribagorda.
+\newblock Anonymous authentication for privacy-preserving iot target-driven
+  applications.
+\newblock {\em Comput. Secur.}, 37:111--123, 2013.
+
+\bibitem{epass}
+Jinshu Su, Dan Cao, Baokang Zhao, Xiaofeng Wang, and Ilsun You.
+\newblock Epass: An expressive attribute-based signature scheme with privacy
+  and an unforgeability guarantee for the internet of things.
+\newblock {\em Future Generation Computer Systems}, 33:11–18, 04 2014.
+
+\bibitem{abc-iot}
+Gergely Alpar, Lejla Batina, and Wouter Lueks.
+\newblock Designated attribute-based proofs for rfid applications.
+\newblock pages 59--75, 07 2012.
+
+\bibitem{rahulamathavan2017privacy}
+Yogachandran Rahulamathavan, Raphael C-W Phan, Muttukrishnan Rajarajan, Sudip
+  Misra, and Ahmet Kondoz.
+\newblock Privacy-preserving blockchain based iot ecosystem using
+  attribute-based encryption.
+\newblock In {\em 2017 IEEE International Conference on Advanced Networks and
+  Telecommunications Systems (ANTS)}, pages 1--6. IEEE, 2017.
+
+\bibitem{abc-iot-1}
+José~María De~Fuentes, Lorena González-Manzano, Fatbardh Veseli, and Agusti
+  Solanas.
+\newblock Attribute-based credentials for privacy-aware smart health services
+  in iot-based smart cities.
+\newblock {\em Computer}, 51, 07 2018.
+
+\bibitem{gritti2019privacy}
+Cl{\'e}mentine Gritti, Melek {\"O}nen, and Refik Molva.
+\newblock Privacy-preserving delegable authentication in the internet of
+  things.
+\newblock In {\em Proceedings of the 34th ACM/SIGAPP Symposium on Applied
+  Computing}, pages 861--869, 2019.
 
 \bibitem{zkp}
 Shafi Goldwasser, Silvio Micali, and Charles Rackoff.

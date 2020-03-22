@@ -21,8 +21,9 @@
 \BOOKMARK [2][-]{subsubsection.6.0.1}{Nonlinkability}{section.6}% 21
 \BOOKMARK [3][-]{subsubsection.6.0.2}{Device/User Privacy}{subsubsection.6.0.1}% 22
 \BOOKMARK [3][-]{subsubsection.6.0.3}{Credential Revocation}{subsubsection.6.0.1}% 23
-\BOOKMARK [3][-]{subsubsection.6.0.4}{Centralized Controller}{subsubsection.6.0.1}% 24
-\BOOKMARK [1][-]{section.7}{Implementation and Simulation Results}{}% 25
-\BOOKMARK [2][-]{subsubsection.7.0.1}{Home Automation}{section.7}% 26
-\BOOKMARK [3][-]{subsubsection.7.0.2}{Nuclear/Thermal Power Plant}{subsubsection.7.0.1}% 27
-\BOOKMARK [1][-]{section.8}{Conclusion}{}% 28
+\BOOKMARK [3][-]{subsubsection.6.0.4}{Key Establishment}{subsubsection.6.0.1}% 24
+\BOOKMARK [3][-]{subsubsection.6.0.5}{Credential Delegation}{subsubsection.6.0.1}% 25
+\BOOKMARK [1][-]{section.7}{Implementation and Simulation Results}{}% 26
+\BOOKMARK [2][-]{subsubsection.7.0.1}{Home Automation}{section.7}% 27
+\BOOKMARK [3][-]{subsubsection.7.0.2}{Nuclear/Thermal Power Plant}{subsubsection.7.0.1}% 28
+\BOOKMARK [1][-]{section.8}{Conclusion}{}% 29
