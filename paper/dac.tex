@@ -338,7 +338,7 @@ Figure. \ref{fig:cont_home} shows the total time taken for each of the Controlle
 \end{figure}
 
 \subsubsection{Nuclear/Thermal Power Plant}
-There have been an increasing number of attacks against connected CPS deployed in Industrial IoT. With applications like BigData and the related analytics, protecting the privacy of the users and the CPS devices becomes very important. Privacy information such as the "device manufacturer", "softer version", "location" etc are very sensitive and always need to be protected. Leaking of such information can result in mounting attacks against them thereby disrupting the production process.
+There have been an increasing number of attacks against connected CPS deployed in Industrial IoT. With applications like BigData and the related analytics, protecting the privacy of the users and the CPS devices becomes very important. Privacy information such as the "device manufacturer", "softer version", "location" etc are very sensitive and always need to be protected. Leaking of such information can result in mounting attacks against them, thereby disrupting the production process.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=3.5in]{power.png}}
@@ -346,9 +346,9 @@ There have been an increasing number of attacks against connected CPS deployed i
 \label{fig:power_plant}
 \end{figure}
 
-Figure. \ref{fig:power_plant} shows the typical service chain in a Thermal power plant. Chains usually start with big controllers, like the Boiler Management System (BMS) and propagate to various sub-components. If the pressure sensor mounted on a boiler detects an abnormal steam pressure, that event in conveyed to the Controller, which in turn invokes the complete chain of services.
+Figure. \ref{fig:power_plant} shows a service chain in a Thermal power plant. If the pressure sensor mounted on a boiler detects an abnormal steam pressure, the event in conveyed to the Controller, which in turn invokes the complete chain of services. Chains usually start with big controllers like the Boiler Management System (BMS), Turbine, Generator systems and propagate to various sub-components.
 
-A power generation plant will typically have thousands of constrained and less constrained IoT devices and services running. These devices monitor, report and control various critical parameters of the plant. In case of a critical event, for example bearing temperature going high, a series of services have to be deployed within no time. The chain of services that get invoked can run into hundreds in some cases. For such critical events, latency and reliability in terms of service invocations are crucial parameters which the system has to ensure. We ran simulations to capture the time and resources it takes to invoke a service chain of length 400 that we typically see in power plants. The Centralized mode took around 100 milliseconds to complete and is not shown in the graph.
+A power generation plant will typically have thousands of constrained and less constrained IoT devices and services running. These devices monitor, report and control various critical parameters of the plant. In case of a critical event, for example bearing temperature going high, a series of services have to be deployed within no time. The chain of services that get invoked can run into hundreds in some cases. For such critical events, latency and reliability in terms of service invocations are crucial parameters which the system has to ensure. We ran simulations to capture the time and resources it takes to invoke a service chain of length 400 that we normally see in power plants. The Centralized mode took around 100 milliseconds to complete and is not shown in the graph.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=3.5in]{500services.pdf}}
@@ -378,7 +378,7 @@ The time it takes for attribute token verification depends on the resources that
 
 In our environment we run services within Docker containers. We use the official Docker Ubuntu image \cite{docker} for running DISC services. Docker commands allow us to specify the maximum limits on CPU and Memory that the processes within the container can use \cite{cpu}. By varying these limits, we were able to simulate various types of constrained and resourceful services. As we can see in Figure. \ref{fig:token_ver}, the more constrained the service is, the more time it takes to verify the attribute token. CPUS in the figure indicate how much of the CPU resources a container can use. With CPUS=0.2, the container is guaranteed at most one-fifth of a single CPU.
 
-The RI periodically publishes a list of all BlackListed (BL) Credentials. Services should verify if a credential is BlackListed before granting the service. Entries in the BL reveal nothing about the user whose credential is black listed. An entry in BL is a hash of the credential attributes issued to the user. The hash is then encode in Base64 format and stored in BL. Number of entries in the BL can be huge for domains consisting of huge number of devices and users, for example a shop floor in a manufacturing industry.
+The RI periodically publishes a list of all BlackListed (BL) Credentials. Services should verify if a credential is BlackListed before granting the service. Entries in the BL reveal nothing about the user whose credential is black listed. An entry in BL is a hash of the credential attributes issued to the user. Number of entries in the BL can be huge for domains consisting of huge number of devices and users, for example a shop floor in a manufacturing industry.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=3.5in]{blacklist.pdf}}
@@ -388,11 +388,11 @@ The RI periodically publishes a list of all BlackListed (BL) Credentials. Servic
 
 Figure. \ref{fig:blacklist} shows the time taken by a service to validate an attribute token against the BL. Although the number of attributes in an attribute token doesn't matter (credential hash is compared against the BL), the token used for experiment had 20 attributes. The experiment was conducted with a BL containing 100,000 entries. A point to note is that, the RI sorts the entries in the BL whenever it updates the BL. The service would use the Binary Search algorithm to quickly find out if the credential hash is present in the list or not. This saves time and resources when compared to a linear search. As the results show, BL validation for an unconstrained service takes much lesser time compared to a constrained service.
 
-The Type A Curve \cite{curve} has a base field size of 512 bits with a Discrete log security of 1024 bits  therefore providing an overall security of 80 bits. In Figure. \ref{fig:security} we determine the time taken by each of the DISC operations for a device with 20 attributes with varying Base field sizes. As the field size increases, resulting in increased security, the underlying cryptographic operations take more time to complete.
+For pairing based cryptography implementation, we use the Type A Curve from \cite{curve}. It has a base field size of 512 bits with a Discrete log security of 1024 bits  therefore providing an overall security of 80 bits. In Figure. \ref{fig:security} we determine the time taken by each of the DISC operations for a device with 20 attributes with varying Base field sizes. As the field size increases, resulting in increased security, the underlying cryptographic operations take more time to complete.
 
 \begin{figure}[htbp]
 \centerline{\includegraphics[width=3.5in]{security.pdf}}
-\caption{Time taken for different Base Field sizes}
+\caption{Time taken for different Base Field sizes for Type A curve}
 \label{fig:security}
 \end{figure}
 
