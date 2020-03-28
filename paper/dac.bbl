@@ -26,6 +26,17 @@ Jan~Henrik Ziegeldorf, {\'O}scar Garc{\'i}a-Morch{\'o}n, and Klaus Wehrle.
 \newblock Privacy in the internet of things: threats and challenges.
 \newblock {\em Security and Communication Networks}, 7:2728--2742, 2014.
 
+\bibitem{sadeghi2015security}
+Ahmad-Reza Sadeghi, Christian Wachsmann, and Michael Waidner.
+\newblock Security and privacy challenges in industrial internet of things.
+\newblock In {\em 2015 52nd ACM/EDAC/IEEE Design Automation Conference (DAC)},
+  pages 1--6. IEEE, 2015.
+
+\bibitem{stuxnet}
+J.~Vijayan.
+\newblock Stuxnet renews power grid security concerns.
+\newblock 2010.
+
 \bibitem{chaum83blindsign}
 David Chaum.
 \newblock Blind signatures for untraceable payments.
