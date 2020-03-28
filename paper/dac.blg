@@ -2,12 +2,14 @@ This is BibTeX, Version 0.99dThe top-level auxiliary file: dac.aux
 The style file: unsrt.bst
 Database file #1: mybib.bib
 Warning--entry type for "pbc" isn't style-file defined
---line 133 of file mybib.bib
+--line 240 of file mybib.bib
 Warning--entry type for "gmp" isn't style-file defined
---line 141 of file mybib.bib
+--line 248 of file mybib.bib
 Warning--entry type for "docker" isn't style-file defined
---line 148 of file mybib.bib
+--line 255 of file mybib.bib
 Warning--empty journal in Evans
 Warning--empty booktitle in iot-sec
+Warning--empty journal in stuxnet
 Warning--empty journal in uprove
-(There were 6 warnings)
+Warning--empty booktitle in abc-iot
+(There were 8 warnings)
