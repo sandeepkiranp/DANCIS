@@ -11,15 +11,25 @@ void send_data(int length, char *data, int sock, struct sockaddr_in *servaddr, c
     mysend(sock, data, length, 0, sid, fp);
 }
 
-void send_element(element_t e, int sock, struct sockaddr_in *servaddr, char *sid, FILE *fp)
+void send_element(element_t e, char compress, int sock, struct sockaddr_in *servaddr, char *sid, FILE *fp)
 {
     unsigned char len;
     unsigned char *buffer;
 
-    len = element_length_in_bytes(e);
-    buffer =  (unsigned char *)malloc(len);
+    if(compress)
+    {
+        len = element_length_in_bytes_compressed(e);
+        buffer =  (unsigned char *)malloc(len);
 
-    element_to_bytes(buffer, e);
+        element_to_bytes_compressed(buffer, e);
+    }
+    else
+    {
+        len = element_length_in_bytes(e);
+        buffer =  (unsigned char *)malloc(len);
+
+        element_to_bytes(buffer, e);
+    }
 
     //first send length
     send_data(sizeof(len), (char *)&len, sock, servaddr, sid, fp);
@@ -38,33 +48,31 @@ void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr, char *sid,
     send_data(1, &tok->levels, sock, servaddr, sid, fp);
 
     // send c
-    send_element(tok->c, sock, servaddr, sid, fp);
+    send_element(tok->c, 0, sock, servaddr, sid, fp);
 
     for(l=0; l<tok->levels; l++)
     {
         te = &tok->te[l];
 
 	//send r1
-	printf("r1 length compressed %d\n",element_length_in_bytes_compressed(te->r1));
-	printf("r1 length %d\n",element_length_in_bytes(te->r1));
-	send_element(te->r1, sock, servaddr, sid, fp);
+	send_element(te->r1, 1, sock, servaddr, sid, fp);
 
 	//send ress
-	send_element(te->ress, sock, servaddr, sid, fp);
+	send_element(te->ress, 1, sock, servaddr, sid, fp);
 
 	if(l == tok->levels - 1)
 	{
             //send rescsk
-            send_element(te->rescsk, sock, servaddr, sid, fp); 
+            send_element(te->rescsk, 0, sock, servaddr, sid, fp); 
 	}
 	else
 	{
             //send rescpk
-            send_element(te->rescpk, sock, servaddr, sid, fp); 
+            send_element(te->rescpk, 1, sock, servaddr, sid, fp); 
 	}
 
         //send credhash
-        send_element(te->credhash, sock, servaddr, sid, fp);
+        send_element(te->credhash, 1, sock, servaddr, sid, fp);
 
 	//send num_attrs
 	send_data(1, &te->num_attrs, sock, servaddr, sid, fp);
@@ -72,7 +80,7 @@ void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr, char *sid,
 	for(i=0; i < te->num_attrs; i++)
 	{
             //send rest
-            send_element(te->rest[i], sock, servaddr, sid, fp);            
+            send_element(te->rest[i], 1, sock, servaddr, sid, fp);            
 	}
 
 	//send revealed
@@ -83,12 +91,12 @@ void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr, char *sid,
 	    if(te->revealed[i])
 	    {
                 //send attributes
-                send_element(te->attributes[j++], sock, servaddr, sid, fp);
+                send_element(te->attributes[j++], 1, sock, servaddr, sid, fp);
 	    }
 	    else
             {
                 //send resa
-                send_element(te->resa[k++], sock, servaddr, sid, fp);
+                send_element(te->resa[k++], 1, sock, servaddr, sid, fp);
 	    }
 
         }
@@ -109,18 +117,26 @@ void receive_data(int length, char *data, int sock)
     }
 }
 
-void receive_element(element_t e, int sock)
+void receive_element(element_t e, char compressed, int sock)
 {
     unsigned char len;
     unsigned char *buffer;
 
     //first receive length
     receive_data(1, &len, sock);
+
     //receive the data
     buffer =  (unsigned char *)malloc(len);
     receive_data(len, buffer, sock);
 
-    element_from_bytes(e, buffer);
+    if(compressed)
+    {
+        element_from_bytes_compressed(e, buffer);
+    }
+    else
+    {
+        element_from_bytes(e, buffer);
+    }
     free(buffer);
 }
 
@@ -135,7 +151,7 @@ void token_receive(token_t *tok, int sock)
 
     // receive c
     element_init_Zr(tok->c, pairing);
-    receive_element(tok->c, sock);
+    receive_element(tok->c, 0, sock);
     //element_printf("tok->c = %B\n", tok->c);
 
     tok->te = (token_element_t *)malloc(tok->levels * sizeof(token_element_t));
@@ -159,24 +175,24 @@ void token_receive(token_t *tok, int sock)
 	}
 
 	//receive r1
-	receive_element(te->r1, sock);
+	receive_element(te->r1, 1, sock);
 	//receive ress
-	receive_element(te->ress, sock);
+	receive_element(te->ress, 1, sock);
 
 	if(l == tok->levels - 1)
 	{
             //receive rescsk
 	    element_init_Zr(te->rescsk, pairing);
-            receive_element(te->rescsk, sock);
+            receive_element(te->rescsk, 0, sock);
 	}
 	else
 	{
             //receive rescpk
-            receive_element(te->rescpk, sock);
+            receive_element(te->rescpk, 1, sock);
 	}
 
         //receive credhash
-        receive_element(te->credhash, sock);
+        receive_element(te->credhash, 1, sock);
 
 	//receive num_attrs
 	receive_data(1, &te->num_attrs, sock);
@@ -189,7 +205,7 @@ void token_receive(token_t *tok, int sock)
             else
                 element_init_G2(te->rest[i], pairing);
             //receive rest
-            receive_element(te->rest[i], sock);
+            receive_element(te->rest[i], 1, sock);
 	}
 
 	//receive revealed
@@ -217,7 +233,7 @@ void token_receive(token_t *tok, int sock)
 		else
                     element_init_G2(te->attributes[j], pairing);
                 //receive attributes
-                receive_element(te->attributes[j++], sock);
+                receive_element(te->attributes[j++], 1, sock);
 	    }
 	    else
             {
@@ -227,7 +243,7 @@ void token_receive(token_t *tok, int sock)
                     element_init_G2(te->resa[k], pairing);
 
     		    //receive resa
-                receive_element(te->resa[k++], sock);
+                receive_element(te->resa[k++], 1, sock);
 	    }
         }
     }
