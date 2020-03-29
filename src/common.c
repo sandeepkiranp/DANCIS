@@ -420,10 +420,10 @@ void setup_credentials_from_file(FILE *fp, credential_t *c)
 
         fscanf(fp,"num_attrs = %d\n", &attcount);
 
-        ce->T = (element_t *) malloc((attcount + 2) * sizeof(element_t));
+        ce->T = (element_t *) malloc((attcount) * sizeof(element_t));
 	ce->ca = (credential_attributes *) malloc (sizeof(credential_attributes));
-	ce->ca->attributes = (element_t *) malloc((attcount + 2) * sizeof(element_t));
-	ce->ca->num_of_attributes = attcount + 2;
+	ce->ca->attributes = (element_t *) malloc((attcount) * sizeof(element_t));
+	ce->ca->num_of_attributes = attcount;
 
         for(j=0; j<ce->ca->num_of_attributes; j++)
         {
