@@ -16,7 +16,7 @@
 
 #define CONTROLLER_SVC "controller"
 
-#define SID_LENGTH 20
+#define SID_LENGTH 10
 #define SERVICE_LENGTH 15
 #define USER_LENGTH 10
 

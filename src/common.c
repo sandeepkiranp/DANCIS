@@ -558,13 +558,11 @@ int load_policy(char *svc, service_policy *svcplcy)
 void mysend(int sockfd, const char *msg, int length, int flags, char *sid, FILE *logfp)
 {
     int n = send(sockfd, msg, length, flags);
-/*
+
     if(n < 0)
     {
 	mylog(logfp, "send failed for socket %d, session %s\n", sockfd, sid);
 	return;
     }
     mylog(logfp, "sent %d bytes for session %s\n", n, sid);
-    */
 }
-

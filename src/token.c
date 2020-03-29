@@ -45,6 +45,8 @@ void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr, char *sid,
         te = &tok->te[l];
 
 	//send r1
+	printf("r1 length compressed %d\n",element_length_in_bytes_compressed(te->r1));
+	printf("r1 length %d\n",element_length_in_bytes(te->r1));
 	send_element(te->r1, sock, servaddr, sid, fp);
 
 	//send ress

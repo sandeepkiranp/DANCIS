@@ -64,9 +64,10 @@ int invoke_service(char *sid, char *service)
 
     mysend(sockfd, (const char *)&mtype, sizeof(messagetype), 0, sid, logfp);
 
+    mysend(sockfd, (const char *)sid, SID_LENGTH, 0, sid, logfp);
+
     mysend(sockfd, (const char *)service_name, sizeof(service_name),0, sid, logfp);
 
-    mysend(sockfd, (const char *)sid, SID_LENGTH, 0, sid, logfp);
 
     close(sockfd);
 }
@@ -211,12 +212,6 @@ int process_service_chain_request(int sock)
     char service[SERVICE_LENGTH] = {0};
 
     len = sizeof(cliaddr);
-    n = recv(sock, service, sizeof(service), 0);
-    if (n == -1)
-    {
-        mylog(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
-        return FAILURE;
-    }
 
     n = recv(sock, sid, sizeof(sid), 0);
     if (n == -1)
@@ -224,19 +219,27 @@ int process_service_chain_request(int sock)
         mylog(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
         return FAILURE;
     }
-    mylog(logfp, "Received service chain request from %s for session ID %s\n", service, sid);
 
     pthread_mutex_lock(&lock);
-
     for (i = 0; i < MAX_SESSIONS; i++)
     {
-	if (session_list[i] && !strcmp(session_list[i], sid))
-	{
+        if (session_list[i] && !strcmp(session_list[i], sid))
+        {
             mylog(logfp, "Session %s already encountered for this service \n", sid);
+            mylog(logfp, "Discarding %d bytes received for Session %s \n", n, sid);
             pthread_mutex_unlock(&lock);
-	    return SUCCESS;
-	}
+            return SUCCESS;
+        }
     }
+
+    n = recv(sock, service, sizeof(service), 0);
+    if (n == -1)
+    {
+        mylog(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
+        return FAILURE;
+    }
+
+    mylog(logfp, "Received service chain request from %s for session ID %s\n", service, sid);
 
     //make a request to controller for attribute token for this sid and service
     int sockfd;
