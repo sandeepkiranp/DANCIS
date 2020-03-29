@@ -524,7 +524,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 		element_pow_zn(temp2, ey1g2, negrhocpk);
 		element_mul(com[l][i+3], com[l][i+3], temp2);
 	    }
-	    element_printf("com[%d][%d] = %B\n", l, i+3, com[l][i+3]);
+	    //element_printf("com[%d][%d] = %B\n", l, i+3, com[l][i+3]);
         }
     }
     //printf("Done!\n");
@@ -881,7 +881,7 @@ int verify_attribute_token(token_t *tk)
                 if(tok->revealed[i])
          	{
                     //com[i+3] = e(rest[i+1], r1) * (e(attributes[i+2],g2) * e(y1[i+2],root_public_key)) ^ (-c)
-    	            pairing_apply(temp2, system_attributes_g2[tok->revealed[i]-1], g2, pairing);
+    	            pairing_apply(temp2, system_attributes_g1[tok->revealed[i]-1], g2, pairing);
 		    if (l == 0)
                     {
                         pairing_apply(temp3, Y1[i+2],root_public_key, pairing);
@@ -923,7 +923,7 @@ int verify_attribute_token(token_t *tk)
                         element_mul(comt[l][i+3], comt[l][i+3], temp3);
 		    }
 	        }
-	        element_printf("comt[%d][%d] = %B\n", l, i+3,comt[l][i+3]);
+	        //element_printf("comt[%d][%d] = %B\n", l, i+3,comt[l][i+3]);
             }
         }
 	else
@@ -994,7 +994,7 @@ int verify_attribute_token(token_t *tk)
                 if(tok->revealed[i])
          	{
                     //com[i+3] = e(rest[i+1], r1) * (e(attributes[i+1],g2) * e(y1[i+1],root_public_key)) ^ (-c)
-    	            pairing_apply(temp2, g1,system_attributes_g1[tok->revealed[i] -1], pairing);
+    	            pairing_apply(temp2, g1,system_attributes_g2[tok->revealed[i] -1], pairing);
 	            element_neg(temp1, tk->c);
 	            element_pow_zn(temp2, temp2, temp1);
 
@@ -1009,7 +1009,7 @@ int verify_attribute_token(token_t *tk)
     	            element_pow_zn(temp2, temp2, temp1);
                     element_mul(comt[l][i+3], comt[l][i+3], temp2);
 	        }
-	        element_printf("comt[%d][%d] = %B\n", l, i+3,comt[l][i+3]);
+	        //element_printf("comt[%d][%d] = %B\n", l, i+3,comt[l][i+3]);
             }
         }
     }
