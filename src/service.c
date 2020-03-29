@@ -75,19 +75,12 @@ int invoke_service(char *sid, char *service)
 void evaluate_policy(char *sid, token_t *tok)
 {
     int i, j = 0;
-    int num_revealed = 0;
     int attributes[MAX_NUM_ATTRIBUTES] = {0};
 
     for(i=0; i<tok->te[1].num_attrs-2; i++) //attributes[0] represents CPK
     {
         if(tok->te[1].revealed[i])
-            num_revealed++;
-    }
-
-    for (j = 0; j < num_revealed; j++)
-    {
-        int attr_indx = attribute_element_to_index(tok->te[1].attributes[j], 1);
-	attributes[attr_indx] = 1;
+	    attributes[tok->te[1].revealed[i] -1] = 1;
     }
 
     for (i = 0; i < num_policies; i++)
