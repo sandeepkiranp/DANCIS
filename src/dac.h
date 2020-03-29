@@ -141,7 +141,7 @@ extern void dac_generate_parameters();
 
 extern int initialize_system_params(FILE *fp);
 
-extern void setup_credentials_from_file(FILE *fp, int attrcount, credential_t *c);
+extern void setup_credentials_from_file(FILE *fp, credential_t *c);
 
 extern credential_attributes *set_credential_attributes(int level, element_t pub, int num_attr, int *attr);
 

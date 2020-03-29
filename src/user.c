@@ -83,7 +83,7 @@ int read_user_params(char *user)
     read_element_from_file(fp, "private_key", user_private_key, 0);
     read_element_from_file(fp, "public_key", user_public_key, 0);
 
-    setup_credentials_from_file(fp, attcount, &ic);
+    setup_credentials_from_file(fp, &ic);
 
     fclose(fp);
     return SUCCESS;
@@ -224,6 +224,11 @@ int delegate_credential(char *duser, char *attributes)
 
         fclose(fp);
 
+        i = 1;     
+	a[0] = 1;  // Delegate a dummy attribute A1
+
+        ca = set_credential_attributes(user_level + 1, duser_public_key, i, a);
+	
         if (!strcasecmp(attributes, "ALL"))
         {
             memcpy(attr, user_attributes, strlen(user_attributes));
@@ -240,8 +245,6 @@ int delegate_credential(char *duser, char *attributes)
             a[i++] = attrindx;
             token = strtok(NULL, ",");
         }
-
-        ca = set_credential_attributes(user_level + 1, duser_public_key, i, a);
     
         memset(&dic, 0, sizeof(dic));
         //initialize dic with ic so that we can add the next level credential to dic
@@ -270,6 +273,7 @@ int delegate_credential(char *duser, char *attributes)
             credential_element_t *ce = dic.cred[i];
             write_element_to_file(fp, "R", ce->R);
             write_element_to_file(fp, "S", ce->S);
+	    fprintf(fp, "num_attrs = %d\n", ce->ca->num_of_attributes);
             for(j=0; j<ce->ca->num_of_attributes; j++)
             {
                 char s[10];

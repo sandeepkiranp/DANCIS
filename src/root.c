@@ -196,6 +196,7 @@ static int issue_user_credential(char *user, char *attributes)
             credential_element_t *ce = ic.cred[i];
 	    write_element_to_file(fp, "R", ce->R);
 	    write_element_to_file(fp, "S", ce->S);
+	    fprintf(fp, "num_attrs = %d\n",ce->ca->num_of_attributes);
 	    for(j=0; j<ce->ca->num_of_attributes; j++)
 	    {
 		char s[10];

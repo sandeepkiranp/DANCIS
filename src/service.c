@@ -77,10 +77,11 @@ void evaluate_policy(char *sid, token_t *tok)
     int i, j = 0;
     int attributes[MAX_NUM_ATTRIBUTES] = {0};
 
-    for(i=0; i<tok->te[1].num_attrs-2; i++) //attributes[0] represents CPK
+    //get attributes revealed from level 0. level 1 holds a single dummy attribute
+    for(i=0; i<tok->te[0].num_attrs-2; i++) //attributes[0] represents CPK
     {
-        if(tok->te[1].revealed[i])
-	    attributes[tok->te[1].revealed[i] -1] = 1;
+        if(tok->te[0].revealed[i])
+	    attributes[tok->te[0].revealed[i] -1] = 1;
     }
 
     for (i = 0; i < num_policies; i++)
