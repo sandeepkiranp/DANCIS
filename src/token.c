@@ -72,7 +72,7 @@ void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr, char *sid,
 	}
 
         //send credhash
-        send_element(te->credhash, 1, sock, servaddr, sid, fp);
+        send_element(te->resh, 1, sock, servaddr, sid, fp);
 
 	//send num_attrs
 	send_data(1, &te->num_attrs, sock, servaddr, sid, fp);
@@ -163,14 +163,14 @@ void token_receive(token_t *tok, int sock)
             element_init_G2(te->r1, pairing);
             element_init_G1(te->ress, pairing);
             element_init_G1(te->rescpk, pairing);            
-            element_init_G1(te->credhash, pairing);            
+            element_init_G1(te->resh, pairing);            
 	}
 	else
         {
             element_init_G1(te->r1, pairing);
             element_init_G2(te->ress, pairing);
             element_init_G2(te->rescpk, pairing);
-            element_init_G2(te->credhash, pairing);            
+            element_init_G2(te->resh, pairing);            
 	}
 
 	//receive r1
@@ -190,8 +190,8 @@ void token_receive(token_t *tok, int sock)
             receive_element(te->rescpk, 1, sock);
 	}
 
-        //receive credhash
-        receive_element(te->credhash, 1, sock);
+        //receive resh
+        receive_element(te->resh, 1, sock);
 
 	//receive num_attrs
 	receive_data(1, &te->num_attrs, sock);
@@ -253,7 +253,7 @@ void token_free(token_t *tok)
         te = &tok->te[l];
 	element_clear(te->r1);
 	element_clear(te->ress);
-	element_clear(te->credhash);
+	element_clear(te->resh);
 	element_clear(te->rescpk);
 
         if(l == tok->levels - 1)
@@ -884,14 +884,17 @@ int verify_attribute_token(token_t *tk)
                 element_mul(comt[l][2], comt[l][2], temp3);
 	    }
 
-	    pairing_apply(temp3, tok->credhash, g2, pairing);
+            pairing_apply(temp2, tok->resh,g2, pairing);
+            element_neg(temp1, one);
+            element_pow_zn(temp2, temp2, temp1);
+            element_mul(comt[l][2], comt[l][2], temp2);
+
             if(l == 0)
             {
-                pairing_apply(temp4, Y1[1], root_public_key, pairing);
-                element_mul(temp3, temp3, temp4);
+                pairing_apply(temp3, Y1[1], root_public_key, pairing);
+                element_neg(temp1, tk->c);
+                element_pow_zn(temp3, temp3, temp1);
             }
-            element_neg(temp1, tk->c);
-            element_pow_zn(temp3, temp3, temp1);
 
             element_mul(comt[l][2], comt[l][2], temp3);
             //element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
@@ -997,11 +1000,11 @@ int verify_attribute_token(token_t *tk)
             element_pow_zn(temp3, temp3, temp1);
             element_mul(comt[l][2], comt[l][2], temp3);
 
-            pairing_apply(temp2, g1, tok->credhash, pairing);
-            element_neg(temp1, tk->c);
+            pairing_apply(temp2, g1, tok->resh, pairing);
+            element_neg(temp1, one);
             element_pow_zn(temp2, temp2, temp1);
-
             element_mul(comt[l][2], comt[l][2], temp2);
+
             //element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
    
             for(i=0,j=0,k=0; i<num_attrs - 2; i++)
