@@ -290,7 +290,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
     int i, j, k, l;
     element_t *r1, *rhosig, *s1, **t1;
     element_t one_by_r, one;
-    element_t *rhos, **rhot, **rhoa, *rhocpk, rhocsk;
+    element_t *rhos, **rhot, **rhoa, *rhocpk, *rhoh, rhocsk;
     element_t **com;
     credential_element_t *ic;
     int num_attrs;
@@ -308,6 +308,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
     com     = (element_t **)malloc(ci->levels * sizeof(element_t *));
     rhos    = (element_t *)malloc(ci->levels * sizeof(element_t));
     rhocpk  = (element_t *)malloc(ci->levels * sizeof(element_t));
+    rhoh    = (element_t *)malloc(ci->levels * sizeof(element_t));
     rhot    = (element_t **)malloc(ci->levels * sizeof(element_t *));
     rhoa    = (element_t **)malloc(ci->levels * sizeof(element_t *));
 
@@ -378,6 +379,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
     element_t temp1, temp2, temp5;
     element_t negrhocsk;
     element_t negrhocpk;
+    element_t negrhoh;
     element_t negrhoa;
 
     element_init_Zr(temp1, pairing);
@@ -387,6 +389,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
     element_init_GT(ey1g2, pairing);
     element_init_Zr(negrhocsk, pairing);
     element_init_Zr(negrhocpk, pairing);
+    element_init_Zr(negrhoh, pairing);
     element_init_Zr(negrhoa, pairing);
 
     element_init_Zr(rhocsk, pairing);
@@ -404,6 +407,9 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 
         element_init_Zr(rhocpk[l], pairing);
         element_random(rhocpk[l]);
+
+        element_init_Zr(rhoh[l], pairing);
+        element_random(rhoh[l]);
 
         for(i=0; i<num_attrs; i++)
         {
@@ -483,6 +489,11 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 
 	element_mul(temp1, rhosig[l], rhot[l][1]);
         element_pow_zn(com[l][2], eg1R, temp1);
+
+        element_neg(negrhoh, rhoh[l]);
+        element_pow_zn(temp2, eg1g2, negrhoh);
+        element_mul(com[l][2], com[l][2], temp2);
+
         if (l != 0)
         {
             //com[2] = com[2] * e(Y1[1],g2) ^ (-rhocpk[l-1])
@@ -574,23 +585,29 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
         {
             element_init_G1(te->ress, pairing);
             element_init_G1(te->rescpk, pairing);
+            element_init_G1(te->resh, pairing);
             element_init_G1(temp5, pairing);
 
             //ress = g1^rhos * s1^c
             element_pow_zn(te->ress, g1, rhos[l]); 
             //rescpk = g1^rhocpk * cpk^c
             element_pow_zn(te->rescpk, g1, rhocpk[l]); 
+            //resh = g1^rhoh * h^c
+            element_pow_zn(te->resh, g1, rhoh[l]); 
 	}
 	else
         {
             element_init_G2(te->ress, pairing);
             element_init_G2(te->rescpk, pairing);
+            element_init_G2(te->resh, pairing);
             element_init_G2(temp5, pairing);
 
             //ress = g2^rhos * s1^c
             element_pow_zn(te->ress, g2, rhos[l]); 
             //rescpk = g2^rhocpk * cpk^c
             element_pow_zn(te->rescpk, g2, rhocpk[l]);
+            //rescpk = g2^rhoh * h^c
+            element_pow_zn(te->resh, g2, rhoh[l]);
         }
 
         element_pow_zn(temp5, s1[l], tok->c);
@@ -614,9 +631,10 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
             //element_printf("rescpk[%d] = %B\n", l, te->rescpk);
 	}
 
-	// reveal credential hash
-        element_init_same_as(te->credhash, ic->ca->attributes[1]);
-        element_set(te->credhash, ic->ca->attributes[1]);
+	// credential hash
+        element_pow_zn(temp5, ic->ca->attributes[1], tok->c);
+        element_mul(te->resh, te->resh, temp5);
+        //element_printf("resh[%d] = %B\n", l, te->resh);
 
 	te->rest = (element_t *)malloc(num_attrs * sizeof(element_t));
 
@@ -704,6 +722,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
     element_clear(ey1g2);
     element_clear(negrhocsk);
     element_clear(negrhocpk);
+    element_clear(negrhoh);
     element_clear(negrhoa);
     element_clear(rhocsk);
 
@@ -714,6 +733,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 
 	element_clear(rhos[l]);
 	element_clear(rhocpk[l]);
+	element_clear(rhoh[l]);
         for(i=0; i<num_attrs; i++)
         {
 	    element_clear(rhot[l][i]);
@@ -743,6 +763,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
     free(com);
     free(rhos);
     free(rhocpk);
+    free(rhoh);
     free(rhot);
     free(rhoa);
 
