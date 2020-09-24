@@ -179,6 +179,7 @@ int process_service_request(int sock)
 
     gettimeofday(&start, NULL);
 
+/*
     // check for blacklist credential hash
     if(is_credential_valid(tok.te[0].credhash) == FAILURE)
     {
@@ -188,6 +189,7 @@ int process_service_request(int sock)
     }
     gettimeofday(&end, NULL);
     calculate_time_diff("credential blacklist checking", &start, &end);
+*/
 
     // Evaluate policy
     gettimeofday(&start, NULL);
