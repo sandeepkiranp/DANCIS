@@ -47,7 +47,27 @@ main()
 
     element_random(a);
     element_random(b);
-    
+
+    pairing_apply(temp1, a, b, pairing);
+    element_printf("temp1 = %B\n", temp1);
+
+    element_set1(b);
+
+    pairing_apply(temp1, a, b, pairing);
+    element_printf("temp1 = %B\n", temp1);
+
+    element_set1(a);
+    element_random(b);
+
+    pairing_apply(temp1, a, b, pairing);
+    element_printf("temp1 = %B\n", temp1);
+
+    element_random(a);
+    element_random(b);
+
+    pairing_apply(temp1, a, b, pairing);
+    element_printf("temp1 = %B\n", temp1);
+/*    
     printf("Length = %d, Compressed Length = %d\n", element_length_in_bytes(a), element_length_in_bytes_compressed(a));
 
     element_to_bytes_compressed(buffer, a);
@@ -62,7 +82,7 @@ main()
     } else {
         printf("signature does not verify\n");
     }
-
+*/
 /*
     element_snprintf(buffer,size,"%B",a);
     printf("A = %s, len = %d\n", buffer, size);
