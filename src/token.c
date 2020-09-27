@@ -389,7 +389,15 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
         element_init_GT(te->rev_proof, pairing); 
 	if ((l+1) % 2)
         {
+	    // K = e(h_it1, r_i') e((h_i)^ (-1), r_i't1')
+            element_mul(temp1, ic->ca->attributes[1], T);
+            pairing_apply(te->rev_proof, temp1, r1[l], pairing);
 
+            element_mul(temp2, r1[l], T1);
+            pairing_apply(temp3, ic->ca->attributes[1], temp2, pairing);
+            element_neg(negone, one);
+            element_pow_zn(temp3, temp3, negone);
+            element_mul(te->rev_proof, te->rev_proof, temp3);
 	}
 	else
 	{

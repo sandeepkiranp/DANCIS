@@ -572,8 +572,9 @@ void generate_credential_token(char *session_id, char *user, char *service, int 
 	    }
 
 	    token_t tok;
+	    element_t T, T1;
 	    gettimeofday(&start, NULL);
-            generate_attribute_token(&tok, c, revealed);    
+            generate_attribute_token(&tok, c, revealed, T, T1);    
 	    gettimeofday(&end, NULL);
 	    calculate_time_diff("generate attribute token", &start, &end);
 
