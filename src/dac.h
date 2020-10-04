@@ -49,6 +49,7 @@ typedef struct token_element
     element_t rescpk;
     element_t rescsk;
     element_t resh;
+    element_t rev_proof;
     char num_attrs; //cpk + cred_hash + all attributes
     element_t *rest;
     char *revealed;
@@ -155,7 +156,7 @@ extern void get_root_public_key(element_t x);
 
 extern void credential_set_private_key(element_t secret_key, credential_t *ic);
 
-extern void generate_attribute_token(token_t *tok, credential_t *ic, char **revealed);
+extern void generate_attribute_token(token_t *tok, credential_t *ic, char **revealed, element_t T, element_t T1);
 
 extern int verify_attribute_token(token_t *tok);
 

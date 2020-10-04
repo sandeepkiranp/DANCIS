@@ -16,10 +16,10 @@ credential_attributes * set_credential_attributes(int level, element_t pub, int 
 
     ca = (credential_attributes *) malloc(sizeof(credential_attributes));
 
-    //total attrs = num_attr + 2 (one for cpk, one for cred hash)
-    ca->attributes = (element_t *) malloc((num_attr + 2)* sizeof(element_t));
+    //total attrs = num_attr + 1 (one for cpk)
+    ca->attributes = (element_t *) malloc((num_attr + 1)* sizeof(element_t));
 
-    for(i=0; i<num_attr + 2; i++)
+    for(i=0; i<num_attr + 1; i++)
     {
         if (level % 2)
 	{
@@ -33,26 +33,16 @@ credential_attributes * set_credential_attributes(int level, element_t pub, int 
 
     element_set(ca->attributes[0],pub);
 
-    element_snprintf(buffer,size,"%B",ca->attributes[0]);
-    SHA1(hash, buffer);
-
-    for(i=2; i<num_attr + 2; i++)
+    for(i=1; i<num_attr + 1; i++)
     {
         element_random(ca->attributes[i]);
 	if (level % 2)
 	    element_set(ca->attributes[i], system_attributes_g1[attr[j++]]);
 	else
 	    element_set(ca->attributes[i], system_attributes_g2[attr[j++]]);
-
-        element_snprintf(buffer,size,"%B",ca->attributes[i]);
-        strcat(buffer, hash);
-        SHA1(hash, buffer);
     }
 
-    //attributes[1] is the hash of all the attributes including public key
-    element_from_hash(ca->attributes[1], hash, strlen(hash));
-
-    ca->num_of_attributes = num_attr + 2;
+    ca->num_of_attributes = num_attr + 1;
 
     printf("Done!\n\n");
     return ca;
