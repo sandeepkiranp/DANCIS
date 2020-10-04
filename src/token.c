@@ -524,7 +524,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
 
 	//com]l][2] for revocation
 
-        for(i=0; i< num_attrs - 2; i++)
+        for(i=0; i< num_attrs - 1; i++)
         {
             //com[i+3] = e(g1,r) ^ (rhosig * rhot[i+1])
             element_mul(temp1, rhosig[l], rhot[l][i+1]);
@@ -666,14 +666,14 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
                 num_revealed++;
         }	    
 
-        te->resa = (element_t *) malloc((num_attrs - num_revealed - 2) * sizeof(element_t)); 
-	                                 //2 attributes have (cpk,credhash) already been accounted for
+        te->resa = (element_t *) malloc((num_attrs - num_revealed - 1) * sizeof(element_t)); 
+	                                 //1 attribute has (cpk) already been accounted for
 
-	te->revealed = (char *)calloc(num_attrs-2,1);
+	te->revealed = (char *)calloc(num_attrs-1,1);
 
-        for(i=0,j=0,k=0; i<num_attrs - 2; i++) //attributes[0] represents CPK, attr[1] represents cred hash
+        for(i=0,j=0,k=0; i<num_attrs - 1; i++) //attributes[0] represents CPK
         {
-            if (!revealed[l][i+2]) //not revealed
+            if (!revealed[l][i+1]) //not revealed
             {
                 if ((l+1) % 2)
                 {
@@ -685,7 +685,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
                     element_init_G2(te->resa[j], pairing);
                     element_pow_zn(te->resa[j], g2, rhoa[l][i]);
                 }
-                element_pow_zn(temp5, ic->ca->attributes[i+2], tok->c);
+                element_pow_zn(temp5, ic->ca->attributes[i+1], tok->c);
                 element_mul(te->resa[j], te->resa[j], temp5);
        	        //element_printf("resa[%d][%d] = %B\n", l, j, te->resa[j]);
 	        te->revealed[i] = 0;
@@ -693,7 +693,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
 	    }
 	    else //revealed
             {
-    	        te->revealed[i] = attribute_element_to_index(ic->ca->attributes[i+2], l) + 1; //add 1 to account for A0
+    	        te->revealed[i] = attribute_element_to_index(ic->ca->attributes[i+1], l) + 1; //add 1 to account for A0
 	    }
         }
 	element_clear(temp5);
@@ -741,11 +741,11 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
         {
 	    element_clear(rhot[l][i]);
 	}
-        for(i=0; i<num_attrs - 2; i++)
+        for(i=0; i<num_attrs - 1; i++)
         {
             element_clear(rhoa[l][i]);
 	}
-	for(i=0; i<num_attrs + 1; i++)
+	for(i=0; i<num_attrs + 2; i++)
 	{
 	    element_clear(com[l][i]);
 	}
@@ -813,7 +813,7 @@ int verify_attribute_token(token_t *tk)
 	}
 
         comt[l]  = (element_t *)malloc((num_attrs+1) * sizeof(element_t));
-        for(i=0; i<num_attrs+1; i++) //for s, cpk, credential hash and all attributes
+        for(i=0; i<num_attrs+2; i++) //for s, cpk and all attributes
         {
             element_init_GT(comt[l][i], pairing);
         }
@@ -1053,7 +1053,7 @@ int verify_attribute_token(token_t *tk)
             element_clear(prevrescpk);
 	}
 
-        for(i=0; i<num_attrs+1; i++) //for s, cpk, credential hash and all attributes
+        for(i=0; i<num_attrs+2; i++) //for s, cpk, and all attributes
         {
             element_clear(comt[l][i]);
 	}

@@ -554,17 +554,15 @@ void generate_credential_token(char *session_id, char *user, char *service, int 
             // attribute 0 is pub key1. Dont reveal
             // attribute 1 is cred hash. reveal it
 	    revealed[1][0] = 0;
-            revealed[1][1] = 1;
-            for (j = 2; j < c->cred[1]->ca->num_of_attributes; j++)
+            for (j = 1; j < c->cred[1]->ca->num_of_attributes; j++)
             {
-		revealed[0][j] = 1; //just a hack. level 1 contains a single dummy attribute. reveal it
+		revealed[1][j] = 1; //just a hack. level 1 contains a single dummy attribute. reveal it
 	    }
 
             // attribute 0 is pub key1. Dont reveal
             // attribute 1 is cred hash. reveal it
 	    revealed[0][0] = 0;
-	    revealed[0][1] = 1;
-	    for (j = 2; j < c->cred[0]->ca->num_of_attributes; j++)
+	    for (j = 1; j < c->cred[0]->ca->num_of_attributes; j++)
 	    {
                 int attr_indx = attribute_element_to_index(c->cred[0]->ca->attributes[j], 1); 
 		if(svc_attrs[i].attributes[attr_indx])
