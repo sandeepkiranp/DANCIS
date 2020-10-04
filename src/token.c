@@ -81,9 +81,9 @@ void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr, char *sid,
 	}
 
 	//send revealed
-	send_data(te->num_attrs - 2, te->revealed, sock, servaddr, sid, fp);
+	send_data(te->num_attrs - 1, te->revealed, sock, servaddr, sid, fp);
 
-        for(i=0,j=0,k=0; i < te->num_attrs - 2; i++)
+        for(i=0,j=0,k=0; i < te->num_attrs - 1; i++)
         {
 	    if(te->revealed[i])
 	    {
@@ -200,11 +200,11 @@ void token_receive(token_t *tok, int sock)
 	}
 
 	//receive revealed
-	te->revealed = (char *) malloc(te->num_attrs - 2);
-	receive_data(te->num_attrs - 2, te->revealed, sock);
+	te->revealed = (char *) malloc(te->num_attrs - 1);
+	receive_data(te->num_attrs - 1, te->revealed, sock);
 
         int num_revealed = 0;
-        for(i=0; i<te->num_attrs-2; i++) //attributes[0] represents CPK
+        for(i=0; i<te->num_attrs-1; i++) //attributes[0] represents CPK
         {
             if(te->revealed[i])
                 num_revealed++;
@@ -212,9 +212,9 @@ void token_receive(token_t *tok, int sock)
 
 	//printf("Num revealed %d, Num hidden %d\n", num_revealed, (te->num_attrs - num_revealed - 2));
 
-        te->resa = (element_t *) malloc((te->num_attrs - num_revealed - 2) * sizeof(element_t));
-                                         //2 attributes have (cpk,credhash) already been accounted for
-        for(i=0,j=0,k=0; i < te->num_attrs - 2; i++)
+        te->resa = (element_t *) malloc((te->num_attrs - num_revealed - 1) * sizeof(element_t));
+                                         //1 attribute have (cpk) already been accounted for
+        for(i=0,j=0,k=0; i < te->num_attrs - 1; i++)
         {
 	    if(te->revealed[i])
 	    {
@@ -312,7 +312,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
 	num_attrs = ci->cred[i]->ca->num_of_attributes;
         t1[i]   = (element_t *)malloc(num_attrs * sizeof(element_t));
         rhot[i] = (element_t *)malloc(num_attrs * sizeof(element_t));
-        rhoa[i] = (element_t *)malloc((num_attrs - 2)   * sizeof(element_t));
+        rhoa[i] = (element_t *)malloc((num_attrs - 1)   * sizeof(element_t));
         com[i]  = (element_t *)malloc((num_attrs + 2) * sizeof(element_t)); //num_attrs + com_s + com_revocation
     }
 
@@ -452,7 +452,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
 	    element_random(rhot[l][i]);
         }
 	// total attrs - 1 (one for CPK)
-        for(i=0; i<num_attrs - 2; i++)
+        for(i=0; i<num_attrs - 1; i++)
         {
             element_init_Zr(rhoa[l][i], pairing);
 	    element_random(rhoa[l][i]);
@@ -485,7 +485,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
 	    element_pow_zn(temp2, eg1g2, negrhocpk);     
 	    element_mul(com[l][0], com[l][0], temp2);
 	}
-        //element_printf("com[%d][0] = %B\n", l, com[l][0]);
+        element_printf("com[%d][0] = %B\n", l, com[l][0]);
 
         //com[1] = e(g1,ic->R)^(rhosig*rhot[0])
         element_mul(temp1, rhosig[l], rhot[l][0]);
@@ -520,7 +520,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
             element_mul(com[l][1], com[l][1], temp2);
 	}
 
-        //element_printf("com[%d][1] = %B\n", l, com[l][1]);
+        element_printf("com[%d][1] = %B\n", l, com[l][1]);
 
 	//com]l][2] for revocation
 
@@ -551,7 +551,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
 		element_pow_zn(temp2, ey1g2, negrhocpk);
 		element_mul(com[l][i+3], com[l][i+3], temp2);
 	    }
-	    //element_printf("com[%d][%d] = %B\n", l, i+3, com[l][i+3]);
+	    element_printf("com[%d][%d] = %B\n", l, i+3, com[l][i+3]);
         }
     }
     //printf("Done!\n");
@@ -812,7 +812,7 @@ int verify_attribute_token(token_t *tk)
             element_set(prevrescpk, tk->te[l-1].rescpk);
 	}
 
-        comt[l]  = (element_t *)malloc((num_attrs+1) * sizeof(element_t));
+        comt[l]  = (element_t *)malloc((num_attrs+2) * sizeof(element_t));
         for(i=0; i<num_attrs+2; i++) //for s, cpk and all attributes
         {
             element_init_GT(comt[l][i], pairing);
@@ -840,7 +840,7 @@ int verify_attribute_token(token_t *tk)
             element_neg(temp1, tk->c);
             element_pow_zn(temp3, temp3, temp1); 
             element_mul(comt[l][0], comt[l][0], temp3);
-            //element_printf("comt[%d][0] = %B\n", l, comt[l][0]);
+            element_printf("comt[%d][0] = %B\n", l, comt[l][0]);
 
             //comt[1] = e(rest[0],r1) * e(g1,g2)^(-rescsk) * (e(y1[0],root_public_key))^(-c)
             pairing_apply(comt[l][1], tok->rest[0], tok->r1, pairing);
@@ -875,10 +875,10 @@ int verify_attribute_token(token_t *tk)
                 element_mul(comt[l][1], comt[l][1], temp3);
 	    }
 
-            //element_printf("comt[%d][1] = %B\n", l, comt[l][1]);
+            element_printf("comt[%d][1] = %B\n", l, comt[l][1]);
 
             // compute comt[l][2]
-            //element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
+            element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
    
             for(i=0,j=0,k=0; i<num_attrs - 1; i++)
             {
@@ -928,7 +928,7 @@ int verify_attribute_token(token_t *tk)
                         element_mul(comt[l][i+3], comt[l][i+3], temp3);
 		    }
 	        }
-	        //element_printf("comt[%d][%d] = %B\n", l, i+3,comt[l][i+3]);
+	        element_printf("comt[%d][%d] = %B\n", l, i+3,comt[l][i+3]);
             }
         }
 	else
@@ -946,7 +946,7 @@ int verify_attribute_token(token_t *tk)
             element_neg(temp1, tk->c);
             element_pow_zn(temp3, temp3, temp1); 
             element_mul(comt[l][0], comt[l][0], temp3);
-            //element_printf("comt[%d][0] = %B\n", l, comt[l][0]);
+            element_printf("comt[%d][0] = %B\n", l, comt[l][0]);
 
             //comt[1] = e(rest[0],r1) * e(g1,g2)^(-rescsk) * (e(y1[0],root_public_key))^(-c)
             pairing_apply(comt[l][1], tok->r1, tok->rest[0], pairing);
@@ -972,11 +972,11 @@ int verify_attribute_token(token_t *tk)
                 element_mul(comt[l][1], comt[l][1], temp3);
 	    }
 
-            //element_printf("comt[%d][1] = %B\n", l, comt[l][1]);
+            element_printf("comt[%d][1] = %B\n", l, comt[l][1]);
 
             //element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
    
-            for(i=0,j=0,k=0; i<num_attrs - 2; i++)
+            for(i=0,j=0,k=0; i<num_attrs - 1; i++)
             {
                 pairing_apply(comt[l][i+3], tok->r1, tok->rest[i+1], pairing);
                 pairing_apply(temp3, prevrescpk, Y2[i+1], pairing);
@@ -1002,7 +1002,7 @@ int verify_attribute_token(token_t *tk)
     	            element_pow_zn(temp2, temp2, temp1);
                     element_mul(comt[l][i+3], comt[l][i+3], temp2);
 	        }
-	        //element_printf("comt[%d][%d] = %B\n", l, i+3,comt[l][i+3]);
+	        element_printf("comt[%d][%d] = %B\n", l, i+3,comt[l][i+3]);
             }
         }
     }
@@ -1017,7 +1017,7 @@ int verify_attribute_token(token_t *tk)
 
     for (l=0; l< tk->levels; l++)
     {
-        for(i=0; i<tk->te[l].num_attrs + 1; i++)
+        for(i=0; i<tk->te[l].num_attrs + 2; i++)
         {
             element_snprintf(buffer,size,"%B",comt[l][i]);
             strcat(buffer, hash);
