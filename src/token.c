@@ -71,6 +71,12 @@ void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr, char *sid,
             send_element(te->rescpk, 1, sock, servaddr, sid, fp); 
 	}
 
+	//send rev_g1t_r
+	send_element(te->rev_g1t_r, 1, sock, servaddr, sid, fp);
+
+	//send rev_cpk_r
+	send_element(te->rev_cpk_r, 1, sock, servaddr, sid, fp);
+
 	//send num_attrs
 	send_data(1, &te->num_attrs, sock, servaddr, sid, fp);
 
@@ -185,6 +191,12 @@ void token_receive(token_t *tok, int sock)
             receive_element(te->rescpk, 1, sock);
 	}
 
+        //receive rev_g1t_r
+        receive_element(te->rev_g1t_r, 1, sock);
+
+        //receive rev_cpk_r
+        receive_element(te->rev_cpk_r, 1, sock);
+
 	//receive num_attrs
 	receive_data(1, &te->num_attrs, sock);
 
@@ -246,6 +258,8 @@ void token_free(token_t *tok)
 	element_clear(te->r1);
 	element_clear(te->ress);
 	element_clear(te->rescpk);
+	element_clear(te->rev_g1t_r);
+	element_clear(te->rev_cpk_r);
 
         if(l == tok->levels - 1)
 	{
@@ -276,7 +290,7 @@ void token_free(token_t *tok)
 }
 
 
-void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, element_t T, element_t T1)
+void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, element_t G1T, element_t G2T)
 {
     int i, j, k, l;
     element_t *r1, *rhosig, *s1, **t1;
@@ -365,46 +379,6 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
 
     //printf("Done!\n");
 
-    //printf(" Compute revocation proof for each level\n");
-/*
-    for (l=0; l< ci->levels; l++)
-    {
-	element_t temp1, temp2, temp3, negone;
-	element_init_G2(temp2, pairing);
-	element_init_G1(temp1, pairing);
-	element_init_GT(temp3, pairing);
-	element_init_Zr(negone, pairing);
-
-	te = &tok->te[l];
-	ic = ci->cred[l];
-	//ic->ca->attributes[1]
-        element_init_GT(te->rev_proof, pairing); 
-	if ((l+1) % 2)
-        {
-	    // K = e(h_it1, r_i') e((h_i)^ (-1), r_i't1')
-            element_mul(temp1, ic->ca->attributes[1], T);
-            pairing_apply(te->rev_proof, temp1, r1[l], pairing);
-
-            element_mul(temp2, r1[l], T1);
-            pairing_apply(temp3, ic->ca->attributes[1], temp2, pairing);
-            element_neg(negone, one);
-            element_pow_zn(temp3, temp3, negone);
-            element_mul(te->rev_proof, te->rev_proof, temp3);
-	}
-	else
-	{
-	    // K = e(r_i', h_it1') e(r_i't1, (h_i)^ (-1))
-            element_mul(temp2, ic->ca->attributes[1], T1);
-            pairing_apply(te->rev_proof, r1[l], temp2, pairing);
-
-            element_mul(temp1, r1[l], T);
-            pairing_apply(temp3, temp1, ic->ca->attributes[1], pairing);
-            element_neg(negone, one);
-            element_pow_zn(temp3, temp3, negone);
-            element_mul(te->rev_proof, te->rev_proof, temp3);
-	}
-    }
-*/  
     //printf("\t2. Compute com-values...");
 
     element_t eg1R;
@@ -435,6 +409,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
     {
 
         ic = ci->cred[l];
+        te = &tok->te[l];
 	num_attrs = ic->ca->num_of_attributes;
 
         element_init_Zr(rhos[l], pairing);
@@ -474,6 +449,22 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
             //compute e(ic->R,g2)
             pairing_apply(eg1R, ic->R, g2, pairing);
         }
+
+	/* compute revocation values for the level */
+        if ((l+1) % 2)
+        {
+            element_init_G1(te->rev_g1t_r, pairing);
+            element_init_G1(te->rev_cpk_r, pairing);
+            element_pow_zn(te->rev_g1t_r, G1T, rhocpk[i]);
+        }
+        else
+        {
+            element_init_G2(te->rev_g1t_r, pairing);
+            element_init_G2(te->rev_cpk_r, pairing);
+            element_pow_zn(te->rev_g1t_r, G2T, rhocpk[i]);
+        }
+        element_pow_zn(te->rev_cpk_r, ic->ca->attributes[0], rhocpk[i]);
+
 
         //com[0] = e(g1,ic->R)^(rhosig*rhos)
         element_mul(temp1, rhosig[l], rhos[l]);
