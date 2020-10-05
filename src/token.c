@@ -454,13 +454,13 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
         if ((l+1) % 2)
         {
             element_init_G1(te->rev_g1t_r, pairing);
-            element_init_G1(te->rev_cpk_r, pairing);
+            element_init_G2(te->rev_cpk_r, pairing);
             element_pow_zn(te->rev_g1t_r, G1T, rhocpk[i]);
         }
         else
         {
             element_init_G2(te->rev_g1t_r, pairing);
-            element_init_G2(te->rev_cpk_r, pairing);
+            element_init_G1(te->rev_cpk_r, pairing);
             element_pow_zn(te->rev_g1t_r, G2T, rhocpk[i]);
         }
         element_pow_zn(te->rev_cpk_r, ic->ca->attributes[0], rhocpk[i]);
@@ -514,6 +514,21 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
         element_printf("com[%d][1] = %B\n", l, com[l][1]);
 
 	//com]l][2] for revocation
+	if((l+1) % 2)
+	{
+	    element_t temp6;
+            element_pow_zn(temp6, g2, rhocpk[l]);
+            pairing_apply(com[l][2], te->rev_g1t_r, temp6, pairing); 
+	    element_clear(temp6);
+	}
+	else
+	{
+	    element_t temp6;
+            element_pow_zn(temp6, g1, rhocpk[l]);
+            pairing_apply(com[l][2], temp6, te->rev_g1t_r, pairing); 
+	    element_clear(temp6);
+	}
+        element_printf("com[%d][2] = %B\n", l, com[l][2]);
 
         for(i=0; i< num_attrs - 1; i++)
         {
@@ -764,7 +779,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
     //printf("Done!\n");
 }
 
-int verify_attribute_token(token_t *tk)
+int verify_attribute_token(token_t *tk, element_t GT1, element_t G2T)
 {
     //printf("\t5. Testing if everything is fine...");
 
@@ -869,8 +884,12 @@ int verify_attribute_token(token_t *tk)
             element_printf("comt[%d][1] = %B\n", l, comt[l][1]);
 
             // compute comt[l][2]
+            //TODO : what about level l? use rescsk instead of resspk
+            pairing_apply(comt[l][2], tok->rescpk, tok->rev_g1t_r, pairing);
+            pairing_apply(temp3, tok->rev_cpk_r, G2T, pairing);
+            element_mul(comt[l][1], comt[l][1], temp3);
             element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
-   
+
             for(i=0,j=0,k=0; i<num_attrs - 1; i++)
             {
                 pairing_apply(comt[l][i+3], tok->rest[i+1], tok->r1, pairing);
@@ -965,7 +984,11 @@ int verify_attribute_token(token_t *tk)
 
             element_printf("comt[%d][1] = %B\n", l, comt[l][1]);
 
-            //element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
+	    //TODO : what about level l? use rescsk instead of resspk
+	    pairing_apply(comt[l][2], tok->rev_g1t_r, tok->rescpk, pairing);
+	    pairing_apply(temp3, G1T, tok->rev_cpk_r, pairing);
+	    element_mul(comt[l][1], comt[l][1], temp3);
+            element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
    
             for(i=0,j=0,k=0; i<num_attrs - 1; i++)
             {
