@@ -9,10 +9,6 @@
 #include <stdarg.h>
 #include <pthread.h>
 
-#define PARAM_FILE HOME_DIR "/root/params.txt"
-#define SERVICES_FILE HOME_DIR "/root/services.txt"
-#define REVOKED_FILE HOME_DIR "/root/revoked.txt"
-
 element_t g1, g2;
 pairing_t pairing;
 element_t root_secret_key;

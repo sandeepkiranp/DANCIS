@@ -10,6 +10,10 @@
 #define N 3
 
 #define HOME_DIR "/home/users/sandeep/dac/dac"
+#define PARAM_FILE HOME_DIR "/root/params.txt"
+#define SERVICES_FILE HOME_DIR "/root/services.txt"
+#define REVOKED_FILE HOME_DIR "/root/revoked.txt"
+
 //#define HOME_DIR "/root/dac"
 #define MAX_NUM_ATTRIBUTES 50
 #define TOTAL_ATTRIBUTES (MAX_NUM_ATTRIBUTES + 2) //cpk(i-1) + credential hash + MAX_NUM_ATTRIBUTES attributes
@@ -156,7 +160,7 @@ extern void get_root_public_key(element_t x);
 
 extern void credential_set_private_key(element_t secret_key, credential_t *ic);
 
-extern void generate_attribute_token(token_t *tok, credential_t *ic, char **revealed, element_t T, element_t T1);
+extern void generate_attribute_token(token_t *tok, credential_t *ic, char **revealed);
 
 extern int verify_attribute_token(token_t *tok);
 

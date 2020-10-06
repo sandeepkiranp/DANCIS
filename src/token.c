@@ -65,7 +65,6 @@ void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr, char *sid,
             //send rescsk
             send_element(te->rescsk, 0, sock, servaddr, sid, fp); 
 	}
-	else
 	{
             //send rescpk
             send_element(te->rescpk, 1, sock, servaddr, sid, fp); 
@@ -185,7 +184,6 @@ void token_receive(token_t *tok, int sock)
 	    element_init_Zr(te->rescsk, pairing);
             receive_element(te->rescsk, 0, sock);
 	}
-	else
 	{
             //receive rescpk
             receive_element(te->rescpk, 1, sock);
@@ -289,8 +287,26 @@ void token_free(token_t *tok)
     free(tok->te);
 }
 
+int read_revoked_G1T_G2T(element_t g1t, element_t g2t)
+{
+    FILE *fp = NULL;
 
-void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, element_t G1T, element_t G2T)
+    element_init_G1(g1t, pairing);
+    element_init_G2(g2t, pairing);
+
+    fp = fopen(REVOKED_FILE, "r");
+    if (fp == NULL)
+    {
+        printf("Error opening %s\n", REVOKED_FILE);
+        return FAILURE;
+    }
+    read_element_from_file(fp, "G1T", g1t, 0);
+    read_element_from_file(fp, "G2T", g2t, 0);
+
+    fclose(fp);
+}
+
+void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 {
     int i, j, k, l;
     element_t *r1, *rhosig, *s1, **t1;
@@ -299,6 +315,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
     element_t **com;
     credential_element_t *ic;
     int num_attrs;
+    element_t G1T, G2T;
 
     token_element_t *te;
     tok->te = (token_element_t *)malloc(ci->levels * sizeof(token_element_t));
@@ -404,6 +421,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
     element_random(rhocsk);
 
     pairing_apply(eg1g2, g1, g2, pairing);
+    read_revoked_G1T_G2T(G1T, G2T);
 
     for (l=0; l< ci->levels; l++)
     {
@@ -637,7 +655,6 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
             element_mul(temp1, tok->c, ci->secret_key);
             element_add(te->rescsk, te->rescsk, temp1);
 	}
-	else
 	{
             //cpk[l] ^ c
             element_pow_zn(temp5, ic->ca->attributes[0], tok->c);
@@ -708,6 +725,8 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
     //clear of everything used in this function
     element_clear(one_by_r);
     element_clear(one);
+    element_clear(G1T);
+    element_clear(G2T);
 
     for (l=0; l< ci->levels; l++)
     {
@@ -779,7 +798,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, e
     //printf("Done!\n");
 }
 
-int verify_attribute_token(token_t *tk, element_t GT1, element_t G2T)
+int verify_attribute_token(token_t *tk)
 {
     //printf("\t5. Testing if everything is fine...");
 
@@ -793,6 +812,7 @@ int verify_attribute_token(token_t *tk, element_t GT1, element_t G2T)
     token_element_t *tok;
     element_t prevrescpk;
     int num_attrs;
+    element_t G1T, G2T;
 
     element_init_Zr(temp1, pairing);
     element_init_GT(temp2, pairing);
@@ -804,6 +824,8 @@ int verify_attribute_token(token_t *tk, element_t GT1, element_t G2T)
 
     element_set1(one);
     pairing_apply(eg1g2, g1, g2, pairing);    
+
+    read_revoked_G1T_G2T(G1T, G2T);
 
     comt = (element_t **)malloc(tk->levels * sizeof(element_t *));
 
@@ -884,7 +906,6 @@ int verify_attribute_token(token_t *tk, element_t GT1, element_t G2T)
             element_printf("comt[%d][1] = %B\n", l, comt[l][1]);
 
             // compute comt[l][2]
-            //TODO : what about level l? use rescsk instead of resspk
             pairing_apply(comt[l][2], tok->rescpk, tok->rev_g1t_r, pairing);
             pairing_apply(temp3, tok->rev_cpk_r, G2T, pairing);
             element_mul(comt[l][1], comt[l][1], temp3);
@@ -984,7 +1005,6 @@ int verify_attribute_token(token_t *tk, element_t GT1, element_t G2T)
 
             element_printf("comt[%d][1] = %B\n", l, comt[l][1]);
 
-	    //TODO : what about level l? use rescsk instead of resspk
 	    pairing_apply(comt[l][2], tok->rev_g1t_r, tok->rescpk, pairing);
 	    pairing_apply(temp3, G1T, tok->rev_cpk_r, pairing);
 	    element_mul(comt[l][1], comt[l][1], temp3);
@@ -1056,6 +1076,9 @@ int verify_attribute_token(token_t *tk, element_t GT1, element_t G2T)
     element_clear(temp5);
     element_clear(one);
     element_clear(eg1g2);
+
+    element_clear(G1T);
+    element_clear(G2T);
 
     for(l=0; l<tk->levels; l++) 
     {
