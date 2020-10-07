@@ -11,11 +11,6 @@
 
 #define USER_DIR HOME_DIR "/users"
 
-#define PARAM_FILE HOME_DIR "/root/params.txt"
-
-
-#define REVOKED_FILE HOME_DIR "/root/revoked.txt"
-
 void calculate_time_diff(char *prefix, struct timeval *start, struct timeval *end)
 {
     double time_taken;
@@ -84,9 +79,42 @@ void dac_generate_parameters()
     printf("Done!\n\n");
 }
 
+void write_revoked_G1T_G2T()
+{
+    FILE *revfp = NULL;
+
+    if( access( REVOKED_FILE, F_OK ) == -1 )
+    {
+        element_t g1t, g2t, t;
+        // file does not exist. Write G1T and G2T
+        printf("Revoked file does not exist. Writing G1T and G2T to it\n");
+        element_init_G1(g1t, pairing);
+        element_init_G2(g2t, pairing);
+        element_init_Zr(t, pairing);
+        element_random(t);
+
+        element_pow_zn(g1t, g1, t);
+        element_pow_zn(g2t, g2, t);
+
+        revfp = fopen(REVOKED_FILE, "w");
+        if (revfp == NULL)
+        {
+            printf("Error opening %s\n", REVOKED_FILE);
+            return;
+        }
+        write_element_to_file(revfp, "G1T", g1t);
+        write_element_to_file(revfp, "G2T", g2t);
+
+        element_clear(g1t);
+        element_clear(g2t);
+        element_clear(t);
+        fclose(revfp);
+    }
+}
+
 int revoke_user_credential(char *user)
 {
-    //read attribute[1] from user's param.txt and publish it in revoked.txt
+    //read attribute[0] from user's param.txt and publish it in revoked.txt
     FILE *fp, *revfp;
     char str[100];
     char *line = NULL;
@@ -103,10 +131,10 @@ int revoke_user_credential(char *user)
 
     while ((read = getline(&line, &len, fp)) != -1)
     {
-	char *credhashattr = "attr[1] = ";
+	char *cpkattr = "attr[0] = ";
         line[read - 1] = 0; //trim the new line character
 
-	if (!strncmp(line, credhashattr, strlen(credhashattr)))
+	if (!strncmp(line, cpkattr, strlen(cpkattr)))
 	{
 	    revfp = fopen(REVOKED_FILE, "a");
 	    if (revfp == NULL)
@@ -114,7 +142,7 @@ int revoke_user_credential(char *user)
 		printf("Error opening %s\n", REVOKED_FILE);
 		return FAILURE;
 	    }
-	    fprintf(revfp, "%s\n", line + strlen(credhashattr));
+	    fprintf(revfp, "%s\n", line + strlen(cpkattr));
 	    fclose(revfp);
 	}
     }
@@ -230,6 +258,8 @@ int main(int argc, char *argv[])
         printf("Check Usage\n");
         exit(-1);
     }
+
+    write_revoked_G1T_G2T();
 
     // ./root ISSUE user1 A1,A3,A4
     if (!strcasecmp(argv[1], "ISSUE"))
