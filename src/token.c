@@ -165,12 +165,16 @@ void token_receive(token_t *tok, int sock)
             element_init_G2(te->r1, pairing);
             element_init_G1(te->ress, pairing);
             element_init_G1(te->rescpk, pairing);            
+            element_init_G1(te->rev_g1t_r, pairing);
+            element_init_G2(te->rev_cpk_r, pairing);
 	}
 	else
         {
             element_init_G1(te->r1, pairing);
             element_init_G2(te->ress, pairing);
             element_init_G2(te->rescpk, pairing);
+            element_init_G2(te->rev_g1t_r, pairing);
+            element_init_G1(te->rev_cpk_r, pairing);
 	}
 
 	//receive r1
@@ -422,6 +426,8 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 
     pairing_apply(eg1g2, g1, g2, pairing);
     read_revoked_G1T_G2T(G1T, G2T);
+    element_printf("G1T = %B\n", G2T);
+    element_printf("G2T = %B\n", G1T);
 
     for (l=0; l< ci->levels; l++)
     {
@@ -473,15 +479,15 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
         {
             element_init_G1(te->rev_g1t_r, pairing);
             element_init_G2(te->rev_cpk_r, pairing);
-            element_pow_zn(te->rev_g1t_r, G1T, rhocpk[i]);
+            element_pow_zn(te->rev_g1t_r, G1T, rhocpk[l]);
         }
         else
         {
             element_init_G2(te->rev_g1t_r, pairing);
             element_init_G1(te->rev_cpk_r, pairing);
-            element_pow_zn(te->rev_g1t_r, G2T, rhocpk[i]);
+            element_pow_zn(te->rev_g1t_r, G2T, rhocpk[l]);
         }
-        element_pow_zn(te->rev_cpk_r, ic->ca->attributes[0], rhocpk[i]);
+        element_pow_zn(te->rev_cpk_r, ic->ca->attributes[0], rhocpk[l]);
 
 
         //com[0] = e(g1,ic->R)^(rhosig*rhos)
@@ -535,6 +541,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 	if((l+1) % 2)
 	{
 	    element_t temp6;
+	    element_init_G2(temp6, pairing);
             element_pow_zn(temp6, g2, rhocpk[l]);
             pairing_apply(com[l][2], te->rev_g1t_r, temp6, pairing); 
 	    element_clear(temp6);
@@ -542,6 +549,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 	else
 	{
 	    element_t temp6;
+	    element_init_G1(temp6, pairing);
             element_pow_zn(temp6, g1, rhocpk[l]);
             pairing_apply(com[l][2], temp6, te->rev_g1t_r, pairing); 
 	    element_clear(temp6);
