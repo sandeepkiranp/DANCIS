@@ -477,15 +477,15 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 	/* compute revocation values for the level */
         if ((l+1) % 2)
         {
-            element_init_G1(te->rev_g1t_r, pairing);
-            element_init_G2(te->rev_cpk_r, pairing);
-            element_pow_zn(te->rev_g1t_r, G1T, rhocpk[l]);
+            element_init_G2(te->rev_g1t_r, pairing);
+            element_init_G1(te->rev_cpk_r, pairing);
+            element_pow_zn(te->rev_g1t_r, G2T, rhocpk[l]);
         }
         else
         {
             element_init_G2(te->rev_g1t_r, pairing);
             element_init_G1(te->rev_cpk_r, pairing);
-            element_pow_zn(te->rev_g1t_r, G2T, rhocpk[l]);
+            element_pow_zn(te->rev_g1t_r, G1T, rhocpk[l]);
         }
         element_pow_zn(te->rev_cpk_r, ic->ca->attributes[0], rhocpk[l]);
 
@@ -537,21 +537,21 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 
         element_printf("com[%d][1] = %B\n", l, com[l][1]);
 
-	//com]l][2] for revocation
+	//com[l][2] for revocation
 	if((l+1) % 2)
-	{
-	    element_t temp6;
-	    element_init_G2(temp6, pairing);
-            element_pow_zn(temp6, g2, rhocpk[l]);
-            pairing_apply(com[l][2], te->rev_g1t_r, temp6, pairing); 
-	    element_clear(temp6);
-	}
-	else
 	{
 	    element_t temp6;
 	    element_init_G1(temp6, pairing);
             element_pow_zn(temp6, g1, rhocpk[l]);
             pairing_apply(com[l][2], temp6, te->rev_g1t_r, pairing); 
+	    element_clear(temp6);
+	}
+	else
+	{
+	    element_t temp6;
+	    element_init_G2(temp6, pairing);
+            element_pow_zn(temp6, g2, rhocpk[l]);
+            pairing_apply(com[l][2], te->rev_g1t_r, temp6, pairing); 
 	    element_clear(temp6);
 	}
         element_printf("com[%d][2] = %B\n", l, com[l][2]);
@@ -834,6 +834,8 @@ int verify_attribute_token(token_t *tk)
     pairing_apply(eg1g2, g1, g2, pairing);    
 
     read_revoked_G1T_G2T(G1T, G2T);
+    element_printf("G1T = %B\n", G2T);
+    element_printf("G2T = %B\n", G1T);
 
     comt = (element_t **)malloc(tk->levels * sizeof(element_t *));
 
@@ -915,8 +917,11 @@ int verify_attribute_token(token_t *tk)
 
             // compute comt[l][2]
             pairing_apply(comt[l][2], tok->rescpk, tok->rev_g1t_r, pairing);
+            element_neg(temp1, one);
+            element_pow_zn(tok->rev_cpk_r, tok->rev_cpk_r, tk->c);
+            element_pow_zn(tok->rev_cpk_r, tok->rev_cpk_r, temp1);
             pairing_apply(temp3, tok->rev_cpk_r, G2T, pairing);
-            element_mul(comt[l][1], comt[l][1], temp3);
+            element_mul(comt[l][2], comt[l][2], temp3);
             element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
 
             for(i=0,j=0,k=0; i<num_attrs - 1; i++)
@@ -1013,9 +1018,15 @@ int verify_attribute_token(token_t *tk)
 
             element_printf("comt[%d][1] = %B\n", l, comt[l][1]);
 
+
+            // compute comt[l][2]
 	    pairing_apply(comt[l][2], tok->rev_g1t_r, tok->rescpk, pairing);
+            element_neg(temp1, one);
+            element_pow_zn(tok->rev_cpk_r, tok->rev_cpk_r, tk->c);
+            element_pow_zn(tok->rev_cpk_r, tok->rev_cpk_r, temp1);
+
 	    pairing_apply(temp3, G1T, tok->rev_cpk_r, pairing);
-	    element_mul(comt[l][1], comt[l][1], temp3);
+	    element_mul(comt[l][2], comt[l][2], temp3);
             element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
    
             for(i=0,j=0,k=0; i<num_attrs - 1; i++)
