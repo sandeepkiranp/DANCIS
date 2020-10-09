@@ -415,11 +415,16 @@ int handle_constrained_service(credential_t *c, char *service, char *sid, int so
     int i,j;
     int attributes[MAX_NUM_ATTRIBUTES] = {0};
     int found = 0, fndindx = -1;
+    static int read_G1T_G2T = 0;
+    static element_t g1t, g2t;
 
     // verify only c->cred[0]. Thats the user's credential
+    if (read_G1T_G2T == 0)
+	read_revoked_G1T_G2T(g1t, g2t);
 
-    // check for blacklist credential hash
-    if(is_credential_valid(c->cred[0]->ca->attributes[1]) == FAILURE)
+
+    // check for blacklist credential
+    if(is_credential_valid(c->cred[0]->ca->attributes[0], g2t) == FAILURE)
     {
         mylog(logfp, "handle_constrained_service failed as credential is blacklisted. \
 			service %s, sid %s\n", service, sid);

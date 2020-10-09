@@ -164,7 +164,9 @@ extern void generate_attribute_token(token_t *tok, credential_t *ic, char **reve
 
 extern int verify_attribute_token(token_t *tok);
 
-extern int is_credential_valid(element_t credhash);
+extern int is_credential_valid(element_t user_cpk_r, element_t user_g2t_r);
+
+extern void read_revoked_G1T_G2T(element_t g1t, element_t g2t);
 
 extern void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr, char *sid, FILE *fp);
 

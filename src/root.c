@@ -120,7 +120,7 @@ int revoke_user_credential(char *user)
     char *line = NULL;
     size_t len = 0;
     ssize_t read;
-    element_t dummy, r, g1t, g2t;
+    element_t dummy, r, g1t, g2t, user_public_key;
 
     element_init_G1(g1t, pairing);
     element_init_G2(g2t, pairing);
@@ -153,8 +153,7 @@ int revoke_user_credential(char *user)
     element_init_G1(user_public_key, pairing);
     read_element_from_file(fp, "public_key", user_public_key, 0);
 
-    element_t r;
-    lement_init_Zr(r);
+    element_init_Zr(r, pairing);
     element_random(r);
     element_pow_zn(user_public_key, user_public_key, r);
     element_pow_zn(g2t, g2t, r);

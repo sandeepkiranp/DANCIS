@@ -133,7 +133,7 @@ void read_element_from_file(FILE *fp, char *param, element_t e, int skipline)
     //printf("Done\n");
 }
 
-int is_credential_valid(element_t credhash, element_t user_cpk_r, element_t user_g2t_r)
+int is_credential_valid(element_t user_cpk_r, element_t user_g2t_r)
 {
     size_t len;
     size_t outlen;
@@ -144,7 +144,7 @@ int is_credential_valid(element_t credhash, element_t user_cpk_r, element_t user
     int pos, ret = SUCCESS;
     int end, start=0, found=0;
     FILE *fp = NULL;
-    element_t dummy, cpk_r, g2t_ri, temp1, temp2;
+    element_t dummy, cpk_r, g2t_r, temp1, temp2;
 
     element_init_G1(cpk_r, pairing);
     element_init_G2(g2t_r, pairing);
@@ -162,12 +162,14 @@ int is_credential_valid(element_t credhash, element_t user_cpk_r, element_t user
     read_element_from_file(fp, "dummy", dummy, 1);
     read_element_from_file(fp, "dummy", dummy, 1);
 
+    fgetc(fp); //dummy read for "\n"
+
     while(!feof(fp))
     {
         read_element_from_file(fp, "CPK_r", cpk_r, 0); 
         read_element_from_file(fp, "G2T_r", g2t_r, 0); 
         pairing_apply(temp1, user_cpk_r, g2t_r,pairing);
-	pairing_apply(temp2, cpk_t, user_g2t_r, pairing);
+	pairing_apply(temp2, cpk_r, user_g2t_r, pairing);
 
 	if (!element_cmp(temp1, temp2)) {
 	    ret = FAILURE;
