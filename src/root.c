@@ -120,34 +120,57 @@ int revoke_user_credential(char *user)
     char *line = NULL;
     size_t len = 0;
     ssize_t read;
+    element_t dummy, r, g1t, g2t;
+
+    element_init_G1(g1t, pairing);
+    element_init_G2(g2t, pairing);
+
+    fp = fopen(REVOKED_FILE, "r");
+    if (fp == NULL)
+    {
+        printf("Error opening %s\n", REVOKED_FILE);
+        return FAILURE;
+    }
+    read_element_from_file(fp, "G1T", g1t, 0);
+    read_element_from_file(fp, "G2T", g2t, 0);
+
+    fclose(fp);
 
     sprintf(str, "%s/%s/params.txt", USER_DIR, user);
     fp = fopen(str, "r");
     if (fp == NULL)
     {
         printf("Error opening params.txt for %s\n", user);
-	return FAILURE;
+        return FAILURE;
     }
 
-    while ((read = getline(&line, &len, fp)) != -1)
-    {
-	char *cpkattr = "attr[0] = ";
-        line[read - 1] = 0; //trim the new line character
+    //skip first 4 lines
+    read_element_from_file(fp, "dummy", dummy, 1);
+    read_element_from_file(fp, "dummy", dummy, 1);
+    read_element_from_file(fp, "dummy", dummy, 1);
+    read_element_from_file(fp, "dummy", dummy, 1);
 
-	if (!strncmp(line, cpkattr, strlen(cpkattr)))
-	{
-	    revfp = fopen(REVOKED_FILE, "a");
-	    if (revfp == NULL)
-	    {
-		printf("Error opening %s\n", REVOKED_FILE);
-		return FAILURE;
-	    }
-	    fprintf(revfp, "%s\n", line + strlen(cpkattr));
-	    fclose(revfp);
-	}
-    }
-    free(line);
+    element_init_G1(user_public_key, pairing);
+    read_element_from_file(fp, "public_key", user_public_key, 0);
+
+    element_t r;
+    lement_init_Zr(r);
+    element_random(r);
+    element_pow_zn(user_public_key, user_public_key, r);
+    element_pow_zn(g2t, g2t, r);
+
     fclose(fp);
+
+    //append to revoked file
+    revfp = fopen(REVOKED_FILE, "a");
+    if (revfp == NULL)
+    {
+        printf("Error opening %s\n", REVOKED_FILE);
+        return FAILURE;
+    }
+    write_element_to_file(fp, "CPK_r", user_public_key);
+    write_element_to_file(fp, "G2T_r", g2t);
+    fclose(revfp);
 }
 
 static int issue_user_credential(char *user, char *attributes)

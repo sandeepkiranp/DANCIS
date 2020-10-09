@@ -179,9 +179,8 @@ int process_service_request(int sock)
 
     gettimeofday(&start, NULL);
 
-/*
     // check for blacklist credential hash
-    if(is_credential_valid(tok.te[0].credhash) == FAILURE)
+    if(is_credential_valid(tok.te[0].rev_cpk_r, tok.te[0].rev_g1t_r) == FAILURE)
     {
 	mylog(logfp, "process_service_request failed as credential is blacklisted\n");
         token_free(&tok);
@@ -189,7 +188,6 @@ int process_service_request(int sock)
     }
     gettimeofday(&end, NULL);
     calculate_time_diff("credential blacklist checking", &start, &end);
-*/
 
     // Evaluate policy
     gettimeofday(&start, NULL);

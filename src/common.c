@@ -133,7 +133,7 @@ void read_element_from_file(FILE *fp, char *param, element_t e, int skipline)
     //printf("Done\n");
 }
 
-int is_credential_valid(element_t credhash)
+int is_credential_valid(element_t credhash, element_t user_cpk_r, element_t user_g2t_r)
 {
     size_t len;
     size_t outlen;
@@ -141,15 +141,15 @@ int is_credential_valid(element_t credhash)
     unsigned char *buffer;
     char *line = NULL;
     ssize_t read;
-    int pos, ret;
+    int pos, ret = SUCCESS;
     int end, start=0, found=0;
     FILE *fp = NULL;
+    element_t dummy, cpk_r, g2t_ri, temp1, temp2;
 
-    len = element_length_in_bytes(credhash);
-    buffer =  (unsigned char *)malloc(len);
-
-    element_to_bytes(buffer, credhash);
-    base64e = base64_encode(buffer, len, &outlen);
+    element_init_G1(cpk_r, pairing);
+    element_init_G2(g2t_r, pairing);
+    element_init_GT(temp1, pairing);
+    element_init_GT(temp2, pairing);
 
     fp = fopen(REVOKED_FILE, "r");
     if (fp == NULL)
@@ -158,60 +158,30 @@ int is_credential_valid(element_t credhash)
         return FAILURE;
     }
 
-    fseek(fp, 0, SEEK_END);
-    end = pos = ftell(fp);
+    //skip first two lines
+    read_element_from_file(fp, "dummy", dummy, 1);
+    read_element_from_file(fp, "dummy", dummy, 1);
 
-    while(1)
+    while(!feof(fp))
     {
-        if(start >= end)
-        {
-            break;
-        }
+        read_element_from_file(fp, "CPK_r", cpk_r, 0); 
+        read_element_from_file(fp, "G2T_r", g2t_r, 0); 
+        pairing_apply(temp1, user_cpk_r, g2t_r,pairing);
+	pairing_apply(temp2, cpk_t, user_g2t_r, pairing);
 
-        pos = (start + end)/2;
-
-        if(pos)
-        {
-            fseek(fp, pos -1, SEEK_SET);
-
-            if (fgetc(fp) == '\n')
-            {
-            }
-            else
-            {
-                while(1)
-                {
-                    if(fgetc(fp) == '\n')
-                        break;
-                }
-            }
-        }
-        else //first line
-            fseek(fp, 0, SEEK_SET);
-
-        read = getline(&line, &len, fp);
-        line[read - 1] = 0;
-        ret = strcmp(base64e, line);
-        if (ret == 0)
-        {
-            found = 1;
-            break;
-        }
-        if (ret > 0)
-            start = ftell(fp);
-        else
-            end = pos;
+	if (!element_cmp(temp1, temp2)) {
+	    ret = FAILURE;
+	    break;
+	}
     }
-    free(line);
-    free(base64e);
-    free(buffer);
 
     fclose(fp);
+    element_clear(cpk_r);
+    element_clear(g2t_r);
+    element_clear(temp1);
+    element_clear(temp2);
 
-    if(found)
-	return FAILURE;
-    else
-	return SUCCESS;
+    return ret;
 }
 
 servicemode convert_service_mode(char mode)
