@@ -165,16 +165,16 @@ void token_receive(token_t *tok, int sock)
             element_init_G2(te->r1, pairing);
             element_init_G1(te->ress, pairing);
             element_init_G1(te->rescpk, pairing);            
-            element_init_G1(te->rev_g1t_r, pairing);
-            element_init_G2(te->rev_cpk_r, pairing);
+            element_init_G2(te->rev_g1t_r, pairing);
+            element_init_G1(te->rev_cpk_r, pairing);
 	}
 	else
         {
             element_init_G1(te->r1, pairing);
             element_init_G2(te->ress, pairing);
             element_init_G2(te->rescpk, pairing);
-            element_init_G2(te->rev_g1t_r, pairing);
-            element_init_G1(te->rev_cpk_r, pairing);
+            element_init_G1(te->rev_g1t_r, pairing);
+            element_init_G2(te->rev_cpk_r, pairing);
 	}
 
 	//receive r1
@@ -826,7 +826,6 @@ int verify_attribute_token(token_t *tk)
     element_init_GT(temp2, pairing);
     element_init_GT(temp3, pairing);
     element_init_GT(temp4, pairing);
-    element_init_G1(temp5, pairing);
     element_init_Zr(one, pairing);    
     element_init_GT(eg1g2, pairing);
 
@@ -858,6 +857,7 @@ int verify_attribute_token(token_t *tk)
 
         if ((l+1) % 2)
         {
+            element_init_G1(temp5, pairing);
             //comt[0] = t(ress,r1) (e(y1[0],g2) * (e(g1,root_public_key))^(-c)
             pairing_apply(comt[l][0], tok->ress, tok->r1, pairing);
 	    if(l != 0)
@@ -917,10 +917,9 @@ int verify_attribute_token(token_t *tk)
 
             // compute comt[l][2]
             pairing_apply(comt[l][2], tok->rescpk, tok->rev_g1t_r, pairing);
-            element_neg(temp1, one);
-            element_pow_zn(tok->rev_cpk_r, tok->rev_cpk_r, tk->c);
-            element_pow_zn(tok->rev_cpk_r, tok->rev_cpk_r, temp1);
-            pairing_apply(temp3, tok->rev_cpk_r, G2T, pairing);
+	    element_neg(temp1, tk->c);
+	    element_pow_zn(temp5, tok->rev_cpk_r, temp1);
+            pairing_apply(temp3, temp5, G2T, pairing);
             element_mul(comt[l][2], comt[l][2], temp3);
             //element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
 
@@ -977,6 +976,7 @@ int verify_attribute_token(token_t *tk)
         }
 	else
         {
+            element_init_G2(temp5, pairing);
             //comt[0] = t(r1,ress) (e(y1[0],g2) * (e(g1,root_public_key))^(-c)
             pairing_apply(comt[l][0], tok->r1, tok->ress, pairing);
 
@@ -1021,11 +1021,10 @@ int verify_attribute_token(token_t *tk)
 
             // compute comt[l][2]
 	    pairing_apply(comt[l][2], tok->rev_g1t_r, tok->rescpk, pairing);
-            element_neg(temp1, one);
-            element_pow_zn(tok->rev_cpk_r, tok->rev_cpk_r, tk->c);
-            element_pow_zn(tok->rev_cpk_r, tok->rev_cpk_r, temp1);
+            element_neg(temp1, tk->c);
+            element_pow_zn(temp5, tok->rev_cpk_r, temp1);
+            pairing_apply(temp3, G1T, temp5, pairing);
 
-	    pairing_apply(temp3, G1T, tok->rev_cpk_r, pairing);
 	    element_mul(comt[l][2], comt[l][2], temp3);
             //element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
    

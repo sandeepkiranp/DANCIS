@@ -111,7 +111,7 @@ void read_element_from_file(FILE *fp, char *param, element_t e, int skipline)
     size_t outlen;
     char *base64e;
     unsigned char *buffer;
-    char c[400] = {0};
+    char c[500] = {0};
     char str1[20];
     char str2[400] = {0};
 
@@ -146,6 +146,8 @@ int is_credential_valid(element_t user_cpk_r, element_t user_g2t_r)
     FILE *fp = NULL;
     element_t dummy, cpk_r, g2t_r, temp1, temp2;
 
+    //element_printf("User data cpk_r %B, g2t_r %B\n", user_cpk_r,user_g2t_r);
+
     element_init_G1(cpk_r, pairing);
     element_init_G2(g2t_r, pairing);
     element_init_GT(temp1, pairing);
@@ -164,17 +166,27 @@ int is_credential_valid(element_t user_cpk_r, element_t user_g2t_r)
 
     fgetc(fp); //dummy read for "\n"
 
+    //char c[500] = {0};
     while(!feof(fp))
     {
+
+        //fgets(c, sizeof(c), fp);
+	//printf("next line =====%s\n", c);
+
         read_element_from_file(fp, "CPK_r", cpk_r, 0); 
+	//element_printf("CPK_r %B\n", cpk_r);
         read_element_from_file(fp, "G2T_r", g2t_r, 0); 
+	//element_printf("g2t_r %B\n", g2t_r);
         pairing_apply(temp1, user_cpk_r, g2t_r,pairing);
 	pairing_apply(temp2, cpk_r, user_g2t_r, pairing);
+	//element_printf("temp1 %B, temp2 %B\n", temp1, temp2);
 
 	if (!element_cmp(temp1, temp2)) {
 	    ret = FAILURE;
 	    break;
 	}
+        fgetc(fp); //dummy read for "\n"
+	
     }
 
     fclose(fp);

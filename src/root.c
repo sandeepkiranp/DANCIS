@@ -167,8 +167,8 @@ int revoke_user_credential(char *user)
         printf("Error opening %s\n", REVOKED_FILE);
         return FAILURE;
     }
-    write_element_to_file(fp, "CPK_r", user_public_key);
-    write_element_to_file(fp, "G2T_r", g2t);
+    write_element_to_file(revfp, "CPK_r", user_public_key);
+    write_element_to_file(revfp, "G2T_r", g2t);
     fclose(revfp);
 }
 
