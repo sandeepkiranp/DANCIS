@@ -24,6 +24,14 @@
 #define SERVICE_LENGTH 15
 #define USER_LENGTH 10
 
+typedef element
+{
+    ELEMENT_FR = 1,
+    ELEMENT_G1,
+    ELEMENT_G2,
+    ELEMENT_GT
+}element_type;
+
 typedef struct attributes
 {
     element_t *attributes;     //attributes[0] represents the public key
