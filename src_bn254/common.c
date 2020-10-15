@@ -9,14 +9,16 @@
 #include <stdarg.h>
 #include <pthread.h>
 
-element_t g1, g2;
-pairing_t pairing;
-element_t root_secret_key;
-element_t root_public_key;
-element_t system_attributes_g1[MAX_NUM_ATTRIBUTES];
-element_t system_attributes_g2[MAX_NUM_ATTRIBUTES];
-element_t Y1[TOTAL_ATTRIBUTES];
-element_t Y2[TOTAL_ATTRIBUTES];
+mclBnG1 g1;
+mclBnG2 g2;
+mclBnG1 system_attributes_g1[MAX_NUM_ATTRIBUTES];
+mclBnG2 system_attributes_g2[MAX_NUM_ATTRIBUTES];
+mclBnG1 Y1[TOTAL_ATTRIBUTES];
+mclBnG2 Y2[TOTAL_ATTRIBUTES];
+mclBnG2 root_public_key;
+mclBnFr root_secret_key;
+
+#if 0
 
 typedef struct service_location
 {
@@ -79,7 +81,7 @@ void mylog(FILE *logfp, char *fmt, ...)
     fprintf(logfp, "%s", buffer);
     fflush(logfp);
 }
-
+#endif
 
 void write_element_to_file(FILE *fp, char *param, void *e, element_type t)
 {
@@ -128,19 +130,19 @@ void read_element_from_file(FILE *fp, char *param, void *e, element_type t, int 
                 mclBnFr_setStr((mclBnFr *)e, str2, strlen(str2),16);
                 break;
         case ELEMENT_G2:
-                mclBnG2_getStr((mclBnG2 *)e,  str2, strlen(str2), 16);
+                mclBnG2_setStr((mclBnG2 *)e,  str2, strlen(str2), 16);
                 break;
         case ELEMENT_G1:
-                mclBnG1_getStr((mclBnG1 *)e,  str2, strlen(str2),16);
+                mclBnG1_setStr((mclBnG1 *)e,  str2, strlen(str2),16);
                 break;
         case ELEMENT_GT:
-                mclBnGT_getStr((mclBnGT *)e,  str2, strlen(str2), 16);
+                mclBnGT_setStr((mclBnGT *)e,  str2, strlen(str2), 16);
                 break;
     }
 
     //printf("Done\n");
 }
-
+#if 0
 int is_credential_valid(element_t user_cpk_r, element_t user_g2t_r)
 {
     size_t len;
@@ -290,14 +292,13 @@ servicemode get_service_mode(char *service)
         }
     }
 }
+#endif
 
 #define SYSTEM_CURVE HOME_DIR "/root/a.param"
 
 int initialize_system_params(FILE *logfp)
 {
-    char param[2048];
     int i;
-    element_t dummy;
     FILE *fp = NULL;
 
     int ret = mclBn_init(MCL_BN254, MCLBN_COMPILED_TIME_VAR);
@@ -353,7 +354,7 @@ int initialize_system_params(FILE *logfp)
     fprintf(logfp, "Done!\n");
     return SUCCESS;
 }
-
+#if 0
 void setup_credentials_from_file(FILE *fp, credential_t *c)
 {
     credential_element_t *ce;
@@ -521,3 +522,4 @@ void mysend(int sockfd, const char *msg, int length, int flags, char *sid, FILE 
     mylog(logfp, "sent %d bytes for session %s\n", n, sid);
  */  
 }
+#endif

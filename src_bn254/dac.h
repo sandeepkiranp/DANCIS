@@ -3,7 +3,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include <pbc/pbc.h>
+#include <mcl/bn_c384_256.h>
 
 #define SUCCESS 0
 #define FAILURE 1
@@ -24,14 +24,27 @@
 #define SERVICE_LENGTH 15
 #define USER_LENGTH 10
 
-typedef element
+extern mclBnG1 g1;
+extern mclBnG2 g2;
+extern mclBnG1 system_attributes_g1[MAX_NUM_ATTRIBUTES];
+extern mclBnG2 system_attributes_g2[MAX_NUM_ATTRIBUTES];
+extern mclBnG1 Y1[TOTAL_ATTRIBUTES];
+extern mclBnG2 Y2[TOTAL_ATTRIBUTES];
+extern mclBnG2 root_public_key;
+extern mclBnFr root_secret_key;
+
+
+typedef enum element
 {
     ELEMENT_FR = 1,
     ELEMENT_G1,
     ELEMENT_G2,
     ELEMENT_GT
 }element_type;
-
+extern int initialize_system_params(FILE *fp);
+extern void read_element_from_file(FILE *fp, char *param, void *e, element_type t, int skipline);
+extern void write_element_to_file(FILE *fp, char *param, void *e, element_type t);
+#if 0
 typedef struct attributes
 {
     element_t *attributes;     //attributes[0] represents the public key
@@ -100,14 +113,6 @@ typedef enum servicemode
     CONSTRINED = 1,
     UNCONSTRAINED
 }servicemode;
-
-extern element_t g1, g2;
-extern element_t system_attributes_g1[MAX_NUM_ATTRIBUTES];
-extern element_t system_attributes_g2[MAX_NUM_ATTRIBUTES];
-extern element_t Y1[TOTAL_ATTRIBUTES], Y2[TOTAL_ATTRIBUTES];
-extern pairing_t pairing;
-extern element_t root_public_key;
-extern element_t root_secret_key;
 
 typedef struct policy
 {
@@ -194,3 +199,4 @@ extern void SHA1(char *hash, unsigned char * str1);
 
 extern void mylog(FILE *logfp, char *fmt, ...);
 extern void mysend(int sockfd, const char *msg, int length, int flags, char *sid, FILE *logfp);
+#endif
