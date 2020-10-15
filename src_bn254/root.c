@@ -40,8 +40,8 @@ void dac_generate_parameters()
 
         mclBnG1_hashAndMapTo(&g1, "g1", 2);
 	write_element_to_file(fp, "g1", (void *)&g1, ELEMENT_G1);
-        mclBnG1_hashAndMapTo(&g1, "g2", 2);
-	write_element_to_file(fp, "g2", (void *)&g1, ELEMENT_G2);
+        mclBnG2_hashAndMapTo(&g2, "g2", 2);
+	write_element_to_file(fp, "g2", (void *)&g2, ELEMENT_G2);
 
         mclBnFr_setByCSPRNG(&root_secret_key);
 	write_element_to_file(fp, "private_key", (void *)&root_secret_key, ELEMENT_FR);

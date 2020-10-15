@@ -106,6 +106,7 @@ void write_element_to_file(FILE *fp, char *param, void *e, element_type t)
     }
 
     printf("%s = %s\n", param, buf);
+    fprintf(fp, "%s = %s\n", param, buf);
 
     fflush(fp);
     //printf("Done\n");
@@ -122,7 +123,7 @@ void read_element_from_file(FILE *fp, char *param, void *e, element_type t, int 
 
     if (skipline)
         return;
-    sscanf(c, "%s = %s", str1, str2);
+    sscanf(c, "%s = %[^\n]s", str1, str2);
 
     switch (t)
     {
@@ -300,6 +301,7 @@ int initialize_system_params(FILE *logfp)
 {
     int i;
     FILE *fp = NULL;
+    char buf[1600];
 
     int ret = mclBn_init(MCL_BN254, MCLBN_COMPILED_TIME_VAR);
     if (ret != 0) {
