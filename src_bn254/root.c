@@ -175,7 +175,7 @@ int revoke_user_credential(char *user)
     write_element_to_file(revfp, "G2T_r", g2t);
     fclose(revfp);
 }
-
+#endif
 static int issue_user_credential(char *user, char *attributes)
 {
     char str[100] = {0};
@@ -201,15 +201,13 @@ static int issue_user_credential(char *user, char *attributes)
         printf("Issuing credentials to %s with attributes %s\n", user, attributes);
 
         /* Directory does not exist. */
-        element_t priv, pub;
+	mclBnFr priv;
+	mclBnG1 publ
 	mkdir(str, 0766);
 
 	// Generate Pub/Priv Key pair
-        element_init_Zr(priv, pairing);
-        element_random(priv);
-
-        element_init_G1(pub, pairing);
-        element_pow_zn(pub, g1, priv);
+        mclBnFr_setByCSPRNG(&priv);
+        mclBnG1_mul(&pub, &g1, &priv);
 
         char* token = strtok(attributes, ","); 
   
@@ -271,21 +269,21 @@ static int issue_user_credential(char *user, char *attributes)
     }
 
 }
-#endif
+
 int main(int argc, char *argv[])
 {
     int i;
     int ret = FAILURE;
 
     dac_generate_parameters();
-/*
+
     if(argc < 2)
     {
         printf("Check Usage\n");
         exit(-1);
     }
 
-    write_revoked_G1T_G2T();
+//    write_revoked_G1T_G2T();
 
     // ./root ISSUE user1 A1,A3,A4
     if (!strcasecmp(argv[1], "ISSUE"))
@@ -293,12 +291,14 @@ int main(int argc, char *argv[])
         ret = issue_user_credential(argv[2], argv[3]);
     }
 
+    /*
     // ./root REVOKE user1
     if (!strcasecmp(argv[1], "REVOKE"))
     {
         ret = revoke_user_credential(argv[2]);
     }    
     */
+
     printf("Exit from main\n");
     return 0;
 }
