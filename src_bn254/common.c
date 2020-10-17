@@ -283,6 +283,21 @@ servicemode get_service_mode(char *service)
     }
 }
 
+char *rand_string(char *str, size_t size)
+{
+    size_t n = 0;
+    const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890+-*%$#@!";
+    srand(get_time());
+    if (size) {
+        --size;
+        for (n = 0; n < size; n++) {
+            int key = rand() % (int) (sizeof charset - 1);
+            str[n] = charset[key];
+        }
+        str[size] = '\0';
+    }
+}
+
 element_init_G1(element_t a)
 {
     a[0].t = ELEMENT_G1;
@@ -299,6 +314,27 @@ element_init_GT(element_t a)
 element_init_Fr(element_t a)
 {
     a[0].t = ELEMENT_FR;
+}
+element_random(element_t a)
+{
+    char str[20] = {0};
+    rand_string(str, sizeof(str));
+
+    switch(a[0].t)
+    {
+	case ELEMENT_FR:
+            mclBnFr_setByCSPRNG(&a[0].e.fr);
+	    break;
+	case ELEMENT_G1:
+	    mclBnG1_hashAndMapTo(&a[0].e.g1, str, sizeof(str));
+	    break;
+	case ELEMENT_G2:
+	    mclBnG2_hashAndMapTo(&a[0].e.g2, str, sizeof(str));
+	    break;
+	case ELEMENT_GT:
+	    mclBnG1_hashAndMapTo(&a[0].e.gt, str, sizeof(str));
+	    break;
+    }
 }
 
 #define SYSTEM_CURVE HOME_DIR "/root/a.param"

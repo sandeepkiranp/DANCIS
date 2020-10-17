@@ -366,21 +366,6 @@ unsigned long get_time()
         return ret;
 }
 
-static char *rand_string(char *str, size_t size)
-{
-    size_t n = 0;
-    const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890+-*%$#@!";
-    srand(get_time());
-    if (size) {
-        --size;
-        for (n = 0; n < size; n++) {
-            int key = rand() % (int) (sizeof charset - 1);
-            str[n] = charset[key];
-        }
-        str[size] = '\0';
-    }
-}
-
 void add_service_to_session(char *sid, char *service)
 {
     int i, j;
