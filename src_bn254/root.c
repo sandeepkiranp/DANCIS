@@ -38,51 +38,47 @@ void dac_generate_parameters()
 	    return;
 	}
 
-        mclBnG1_hashAndMapTo(&g1, "g1", 2);
-	write_element_to_file(fp, "g1", (void *)&g1, ELEMENT_G1);
-        mclBnG2_hashAndMapTo(&g2, "g2", 2);
-	write_element_to_file(fp, "g2", (void *)&g2, ELEMENT_G2);
+        element_random(g1);
+	write_element_to_file(fp, "g1", g1);
+        element_random(g2);
+	write_element_to_file(fp, "g2", g2);
 
-        mclBnFr_setByCSPRNG(&root_secret_key);
-	write_element_to_file(fp, "private_key", (void *)&root_secret_key, ELEMENT_FR);
-
-        mclBnG2_mul(&root_public_key, &g2, &root_secret_key);
-	write_element_to_file(fp, "public_key", (void *)&root_public_key, ELEMENT_G2);
-
+        element_random(root_secret_key);
+	write_element_to_file(fp, "private_key", root_secret_key);
+        element_pow_zn(root_public_key, g2, root_secret_key);
+	write_element_to_file(fp, "public_key", root_public_key);
 
         //Generate system attributes
         for(i=0; i<MAX_NUM_ATTRIBUTES; i++)
         {
+            element_random(system_attributes_g1[i]);
+            element_random(system_attributes_g2[i]);
             sprintf(str, "att_g1[%d]", i);
-	    mclBnG1_hashAndMapTo(&system_attributes_g1[i], str, strlen(str));
-	    write_element_to_file(fp, str,(void *)&system_attributes_g1[i],ELEMENT_G1);
-
+            write_element_to_file(fp, str, system_attributes_g1[i]);
             sprintf(str, "att_g2[%d]", i);
-            mclBnG2_hashAndMapTo(&system_attributes_g2[i], str, strlen(str));
-            write_element_to_file(fp, str,(void *)&system_attributes_g2[i],ELEMENT_G2);
+            write_element_to_file(fp, str, system_attributes_g2[i]);
         }
 
         //Generate y1[n] and y2[n]
         for(i=0; i<TOTAL_ATTRIBUTES; i++)
         {
+            element_random(Y1[i]);
 	    sprintf(str, "Y1[%d]", i);
-            mclBnG1_hashAndMapTo(&Y1[i], str, strlen(str));
-            write_element_to_file(fp, str,(void *)&system_attributes_g1[i],ELEMENT_G1);
+	    write_element_to_file(fp, str, Y1[i]);
         }
 
         for(i=0; i<TOTAL_ATTRIBUTES; i++)
         {
+            element_random(Y2[i]);
 	    sprintf(str, "Y2[%d]", i);
-            mclBnG2_hashAndMapTo(&Y2[i], str, strlen(str));
-            write_element_to_file(fp, str,(void *)&system_attributes_g1[i],ELEMENT_G2);
-
+	    write_element_to_file(fp, str, Y2[i]);
         }
 	fclose(fp);
     }
 
     printf("Done!\n\n");
 }
-#if 0
+
 void write_revoked_G1T_G2T()
 {
     FILE *revfp = NULL;
@@ -175,7 +171,7 @@ int revoke_user_credential(char *user)
     write_element_to_file(revfp, "G2T_r", g2t);
     fclose(revfp);
 }
-#endif
+
 static int issue_user_credential(char *user, char *attributes)
 {
     char str[100] = {0};
@@ -201,13 +197,15 @@ static int issue_user_credential(char *user, char *attributes)
         printf("Issuing credentials to %s with attributes %s\n", user, attributes);
 
         /* Directory does not exist. */
-	mclBnFr priv;
-	mclBnG1 publ
+        element_t priv, pub;
 	mkdir(str, 0766);
 
 	// Generate Pub/Priv Key pair
-        mclBnFr_setByCSPRNG(&priv);
-        mclBnG1_mul(&pub, &g1, &priv);
+        element_init_Zr(priv, pairing);
+        element_random(priv);
+
+        element_init_G1(pub, pairing);
+        element_pow_zn(pub, g1, priv);
 
         char* token = strtok(attributes, ","); 
   
@@ -283,7 +281,7 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
-//    write_revoked_G1T_G2T();
+    write_revoked_G1T_G2T();
 
     // ./root ISSUE user1 A1,A3,A4
     if (!strcasecmp(argv[1], "ISSUE"))
@@ -291,14 +289,11 @@ int main(int argc, char *argv[])
         ret = issue_user_credential(argv[2], argv[3]);
     }
 
-    /*
     // ./root REVOKE user1
     if (!strcasecmp(argv[1], "REVOKE"))
     {
         ret = revoke_user_credential(argv[2]);
     }    
-    */
-
     printf("Exit from main\n");
     return 0;
 }

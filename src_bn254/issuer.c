@@ -16,21 +16,22 @@ credential_attributes * set_credential_attributes(int level, element_t pub, int 
 
     ca = (credential_attributes *) malloc(sizeof(credential_attributes));
 
+    //total attrs = num_attr + 1 (one for cpk)
+    ca->attributes = (element_t *) malloc((num_attr + 1)* sizeof(element_t));
 
     for(i=0; i<num_attr + 1; i++)
     {
         if (level % 2)
 	{
-            //total attrs = num_attr + 1 (one for cpk)
-            ca->attributes = (mclBnG1 *) malloc((num_attr + 1)* sizeof(mclBnG1));
+            element_init_G1(ca->attributes[i], pairing);
 	}
         else
 	{
-            ca->attributes = (mclBnG2 *) malloc((num_attr + 1)* sizeof(mclBnG2));
+            element_init_G2(ca->attributes[i], pairing);
 	}
     }
 
-    ca->attributes[0] = pub;
+    element_set(ca->attributes[0],pub);
 
     for(i=1; i<num_attr + 1; i++)
     {

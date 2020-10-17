@@ -16,7 +16,7 @@
 
 //#define HOME_DIR "/root/dac"
 #define MAX_NUM_ATTRIBUTES 50
-#define TOTAL_ATTRIBUTES (MAX_NUM_ATTRIBUTES + 2) //cpk(i-1) + credential hash + MAX_NUM_ATTRIBUTES attributes
+#define TOTAL_ATTRIBUTES (MAX_NUM_ATTRIBUTES + 1) //cpk(i-1) + MAX_NUM_ATTRIBUTES attributes
 
 #define CONTROLLER_SVC "controller"
 
@@ -24,15 +24,10 @@
 #define SERVICE_LENGTH 15
 #define USER_LENGTH 10
 
-extern mclBnG1 g1;
-extern mclBnG2 g2;
-extern mclBnG1 system_attributes_g1[MAX_NUM_ATTRIBUTES];
-extern mclBnG2 system_attributes_g2[MAX_NUM_ATTRIBUTES];
-extern mclBnG1 Y1[TOTAL_ATTRIBUTES];
-extern mclBnG2 Y2[TOTAL_ATTRIBUTES];
-extern mclBnG2 root_public_key;
-extern mclBnFr root_secret_key;
-
+#define element_init_G1(x,y) element_init_G1(x)
+#define element_init_G2(x,y) element_init_G2(x)
+#define element_init_GT(x,y) element_init_GT(x)
+#define element_init_Zr(x,y) element_init_Zr(x)
 
 typedef enum element
 {
@@ -41,14 +36,23 @@ typedef enum element
     ELEMENT_G2,
     ELEMENT_GT
 }element_type;
-extern int initialize_system_params(FILE *fp);
-extern void read_element_from_file(FILE *fp, char *param, void *e, element_type t, int skipline);
-extern void write_element_to_file(FILE *fp, char *param, void *e, element_type t);
-#if 0
+
+typedef struct element
+{
+    element_type t;
+    typedef union e
+    {
+        mclBnG1 e_g1;
+	mclBnG2 e_g2;
+	mclBnGT e_gt;
+	mclBnFr e_fr;
+    }e;
+}element_s
+typedef struct element_s element_t[1];
+
 typedef struct attributes
 {
     element_t *attributes;     //attributes[0] represents the public key
-                               //attribute[1] represents the hashed credential
     int num_of_attributes;
 }credential_attributes;
 
@@ -113,6 +117,14 @@ typedef enum servicemode
     CONSTRINED = 1,
     UNCONSTRAINED
 }servicemode;
+
+extern element_t g1, g2;
+extern element_t system_attributes_g1[MAX_NUM_ATTRIBUTES];
+extern element_t system_attributes_g2[MAX_NUM_ATTRIBUTES];
+extern element_t Y1[TOTAL_ATTRIBUTES], Y2[TOTAL_ATTRIBUTES];
+extern pairing_t pairing;
+extern element_t root_public_key;
+extern element_t root_secret_key;
 
 typedef struct policy
 {
@@ -199,4 +211,3 @@ extern void SHA1(char *hash, unsigned char * str1);
 
 extern void mylog(FILE *logfp, char *fmt, ...);
 extern void mysend(int sockfd, const char *msg, int length, int flags, char *sid, FILE *logfp);
-#endif
