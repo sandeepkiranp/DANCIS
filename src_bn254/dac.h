@@ -28,6 +28,7 @@
 #define element_init_G2(x,y) huremi_element_init_G2(x)
 #define element_init_GT(x,y) huremi_element_init_GT(x)
 #define element_init_Zr(x,y) huremi_element_init_Zr(x)
+#define pairing_apply(w,x,y,z) huremi_pairing_apply(w,x,y)
 
 typedef enum element
 {
@@ -217,6 +218,8 @@ extern void huremi_element_init_G1(element_t e);
 extern void huremi_element_init_G2(element_t e);
 extern void huremi_element_init_GT(element_t e);
 extern void huremi_element_init_Zr(element_t e);
+extern void huremi_pairing_apply(element_t res, element_t a, element_t b);
 extern void element_random(element_t e);
 extern void element_pow_zn(element_t res, element_t a, element_t b);
 extern void element_clear(element_t a);
+extern int element_cmp(element_t a, element_t b);

@@ -141,7 +141,6 @@ void read_element_from_file(FILE *fp, char *param, element_t e, int skipline)
     //printf("Done\n");
 }
 
-#if 0
 
 int is_credential_valid(element_t user_cpk_r, element_t user_g2t_r)
 {
@@ -292,7 +291,6 @@ servicemode get_service_mode(char *service)
         }
     }
 }
-#endif
 
 unsigned long get_time()
 {
@@ -322,19 +320,23 @@ char *rand_string(char *str, size_t size)
 
 void huremi_element_init_G1(element_t a)
 {
+    memset(&a[0], 0, sizeof(a[0]));
     a[0].t = ELEMENT_G1;
 }
 
 void huremi_element_init_G2(element_t a)
 {
+    memset(&a[0], 0, sizeof(a[0]));
     a[0].t = ELEMENT_G2;
 }
 void huremi_element_init_GT(element_t a)
 {
+    memset(&a[0], 0, sizeof(a[0]));
     a[0].t = ELEMENT_GT;
 }
 void huremi_element_init_Zr(element_t a)
 {
+    memset(&a[0], 0, sizeof(a[0]));
     a[0].t = ELEMENT_FR;
 }
 void element_random(element_t a)
@@ -375,6 +377,16 @@ void element_clear(element_t e)
 {
 
 // nothing for now
+}
+
+void huremi_pairing_apply(element_t res, element_t a, element_t b)
+{
+    mclBn_pairing(&res[0].e.gt, &a[0].e.g1, &b[0].e.g2);
+}
+
+int element_cmp(element_t a, element_t b)
+{
+    return memcmp(&a[0].e, &b[0].e, sizeof(b[0].e));
 }
 
 #define SYSTEM_CURVE HOME_DIR "/root/a.param"
@@ -462,7 +474,6 @@ int initialize_system_params(FILE *logfp)
     return SUCCESS;
 }
 
-#if 0
 void setup_credentials_from_file(FILE *fp, credential_t *c)
 {
     credential_element_t *ce;
@@ -630,4 +641,3 @@ void mysend(int sockfd, const char *msg, int length, int flags, char *sid, FILE 
     mylog(logfp, "sent %d bytes for session %s\n", n, sid);
  */  
 }
-#endif
