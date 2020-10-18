@@ -309,6 +309,7 @@ char *rand_string(char *str, size_t size)
     size_t n = 0;
     const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890+-*%$#@!";
     srand(get_time());
+
     if (size) {
         --size;
         for (n = 0; n < size; n++) {
@@ -340,7 +341,6 @@ void element_random(element_t a)
 {
     char str[20] = {0};
     rand_string(str, sizeof(str));
-
     switch(a[0].t)
     {
 	case ELEMENT_FR:
@@ -360,13 +360,13 @@ void element_pow_zn(element_t res, element_t a, element_t b)
     switch(res[0].t)
     {
         case ELEMENT_G1:
-	    mclBnG1_mul(&a[0].e.g1, &a[0].e.g1, &b[0].e.fr);
+	    mclBnG1_mul(&res[0].e.g1, &a[0].e.g1, &b[0].e.fr);
             break;
         case ELEMENT_G2:
-	    mclBnG2_mul(&a[0].e.g2, &a[0].e.g2, &b[0].e.fr);
+	    mclBnG2_mul(&res[0].e.g2, &a[0].e.g2, &b[0].e.fr);
             break;
         case ELEMENT_GT:
-	    mclBnGT_pow(&a[0].e.gt, &a[0].e.gt, &b[0].e.fr);
+	    mclBnGT_pow(&res[0].e.gt, &a[0].e.gt, &b[0].e.fr);
             break;
     }
 }

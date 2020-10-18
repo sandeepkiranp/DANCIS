@@ -51,10 +51,15 @@ void dac_generate_parameters()
         //Generate system attributes
         for(i=0; i<MAX_NUM_ATTRIBUTES; i++)
         {
-            element_random(system_attributes_g1[i]);
-            element_random(system_attributes_g2[i]);
+	    element_t r;
+	    element_init_Zr(r, pairing);
+	    element_random(r);
+
+            element_pow_zn(system_attributes_g1[i], g1, r);
             sprintf(str, "att_g1[%d]", i);
             write_element_to_file(fp, str, system_attributes_g1[i]);
+
+            element_pow_zn(system_attributes_g2[i], g2, r);
             sprintf(str, "att_g2[%d]", i);
             write_element_to_file(fp, str, system_attributes_g2[i]);
         }
@@ -62,17 +67,25 @@ void dac_generate_parameters()
         //Generate y1[n] and y2[n]
         for(i=0; i<TOTAL_ATTRIBUTES; i++)
         {
-            element_random(Y1[i]);
+	    element_t r;
+	    element_init_Zr(r, pairing);
+	    element_random(r);
+
+            element_pow_zn(Y1[i], g1, r);
 	    sprintf(str, "Y1[%d]", i);
 	    write_element_to_file(fp, str, Y1[i]);
         }
-
         for(i=0; i<TOTAL_ATTRIBUTES; i++)
         {
-            element_random(Y2[i]);
-	    sprintf(str, "Y2[%d]", i);
-	    write_element_to_file(fp, str, Y2[i]);
+            element_t r;
+            element_init_Zr(r, pairing);
+            element_random(r);
+
+            element_pow_zn(Y2[i], g2, r);
+            sprintf(str, "Y2[%d]", i);
+            write_element_to_file(fp, str, Y2[i]);
         }
+
 	fclose(fp);
     }
 
