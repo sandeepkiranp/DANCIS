@@ -24,10 +24,10 @@
 #define SERVICE_LENGTH 15
 #define USER_LENGTH 10
 
-#define element_init_G1(x,y) element_init_G1(x)
-#define element_init_G2(x,y) element_init_G2(x)
-#define element_init_GT(x,y) element_init_GT(x)
-#define element_init_Zr(x,y) element_init_Zr(x)
+#define element_init_G1(x,y) huremi_element_init_G1(x)
+#define element_init_G2(x,y) huremi_element_init_G2(x)
+#define element_init_GT(x,y) huremi_element_init_GT(x)
+#define element_init_Zr(x,y) huremi_element_init_Zr(x)
 
 typedef enum element
 {
@@ -37,17 +37,17 @@ typedef enum element
     ELEMENT_GT
 }element_type;
 
-typedef struct element
+typedef struct element_s
 {
     element_type t;
-    typedef union e
+    union 
     {
-        mclBnG1 e_g1;
-	mclBnG2 e_g2;
-	mclBnGT e_gt;
-	mclBnFr e_fr;
+        mclBnG1 g1;
+	mclBnG2 g2;
+	mclBnGT gt;
+	mclBnFr fr;
     }e;
-}element_s
+}element_s;
 typedef struct element_s element_t[1];
 
 typedef struct attributes
@@ -122,7 +122,6 @@ extern element_t g1, g2;
 extern element_t system_attributes_g1[MAX_NUM_ATTRIBUTES];
 extern element_t system_attributes_g2[MAX_NUM_ATTRIBUTES];
 extern element_t Y1[TOTAL_ATTRIBUTES], Y2[TOTAL_ATTRIBUTES];
-extern pairing_t pairing;
 extern element_t root_public_key;
 extern element_t root_secret_key;
 
@@ -211,3 +210,13 @@ extern void SHA1(char *hash, unsigned char * str1);
 
 extern void mylog(FILE *logfp, char *fmt, ...);
 extern void mysend(int sockfd, const char *msg, int length, int flags, char *sid, FILE *logfp);
+
+extern char *rand_string(char *str, size_t size);
+
+extern void huremi_element_init_G1(element_t e);
+extern void huremi_element_init_G2(element_t e);
+extern void huremi_element_init_GT(element_t e);
+extern void huremi_element_init_Zr(element_t e);
+extern void element_random(element_t e);
+extern void element_pow_zn(element_t res, element_t a, element_t b);
+extern void element_clear(element_t a);

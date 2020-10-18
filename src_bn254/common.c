@@ -10,7 +10,6 @@
 #include <pthread.h>
 
 element_t g1, g2;
-pairing_t pairing;
 element_t root_secret_key;
 element_t root_public_key;
 element_t system_attributes_g1[MAX_NUM_ATTRIBUTES];
@@ -83,55 +82,66 @@ void mylog(FILE *logfp, char *fmt, ...)
 
 void write_element_to_file(FILE *fp, char *param, element_t e)
 {
-    int len;
-    size_t outlen;
-    char *base64e;
-    unsigned char *buffer;
+    char buf[1600] = {0};
 
     printf("Writing %s to param.txt...", param);
 
-    element_printf("%s = %B\n", param, e);
+    switch (e[0].t)
+    {
+        case ELEMENT_FR:
+                mclBnFr_getStr(buf, sizeof(buf), &e[0].e.fr, 16);
+                break;
+        case ELEMENT_G2:
+                mclBnG2_getStr(buf, sizeof(buf),&e[0].e.g2, 16);
+                break;
+        case ELEMENT_G1:
+                mclBnG1_getStr(buf, sizeof(buf),&e[0].e.g1, 16);
+                break;
+        case ELEMENT_GT:
+                mclBnGT_getStr(buf, sizeof(buf),&e[0].e.gt, 16);
+                break;
+    }
 
-    len = element_length_in_bytes(e);
-    buffer =  (unsigned char *)malloc(len);
+    printf("%s = %s\n", param, buf);
+    fprintf(fp, "%s = %s\n", param, buf);
 
-    element_to_bytes(buffer, e);
-    base64e = base64_encode(buffer, len, &outlen);
-    fprintf(fp, "%s = %s\n", param, base64e);
-
-    free(base64e);
-    free(buffer);
     fflush(fp);
     //printf("Done\n");
 }
 
 void read_element_from_file(FILE *fp, char *param, element_t e, int skipline)
 {
-    int len;
-    size_t outlen;
-    char *base64e;
-    unsigned char *buffer;
     char c[500] = {0};
     char str1[20];
     char str2[400] = {0};
-
-    //printf("Reading %s from param.txt...", param);
+    char buf[1600] = {0};
 
     fgets(c, sizeof(c), fp);
 
     if (skipline)
         return;
+    sscanf(c, "%s = %[^\n]s", str1, str2);
 
-    sscanf(c, "%s = %s", str1, str2);
-    //printf("%s--->%s\n", str1, str2);
-
-    buffer = base64_decode(str2, strlen(str2), &outlen);
-    element_from_bytes(e, buffer);
-    //element_printf("%s = %B\n", param, e);
-    free(buffer);
+    switch (e[0].t)
+    {
+        case ELEMENT_FR:
+                mclBnFr_setStr(&e[0].e.fr, str2, strlen(str2),16);
+                break;
+        case ELEMENT_G2:
+                mclBnG2_setStr(&e[0].e.g2,  str2, strlen(str2), 16);
+                break;
+        case ELEMENT_G1:
+                mclBnG1_setStr(&e[0].e.g1,  str2, strlen(str2),16);
+                break;
+        case ELEMENT_GT:
+                mclBnGT_setStr(&e[0].e.gt,  str2, strlen(str2), 16);
+                break;
+    }
 
     //printf("Done\n");
 }
+
+#if 0
 
 int is_credential_valid(element_t user_cpk_r, element_t user_g2t_r)
 {
@@ -282,6 +292,17 @@ servicemode get_service_mode(char *service)
         }
     }
 }
+#endif
+
+unsigned long get_time()
+{
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        unsigned long ret = tv.tv_usec;
+        ret /= 1000;
+        ret += (tv.tv_sec * 1000);
+        return ret;
+}
 
 char *rand_string(char *str, size_t size)
 {
@@ -298,24 +319,24 @@ char *rand_string(char *str, size_t size)
     }
 }
 
-element_init_G1(element_t a)
+void huremi_element_init_G1(element_t a)
 {
     a[0].t = ELEMENT_G1;
 }
 
-element_init_G2(element_t a)
+void huremi_element_init_G2(element_t a)
 {
     a[0].t = ELEMENT_G2;
 }
-element_init_GT(element_t a)
+void huremi_element_init_GT(element_t a)
 {
     a[0].t = ELEMENT_GT;
 }
-element_init_Fr(element_t a)
+void huremi_element_init_Zr(element_t a)
 {
     a[0].t = ELEMENT_FR;
 }
-element_random(element_t a)
+void element_random(element_t a)
 {
     char str[20] = {0};
     rand_string(str, sizeof(str));
@@ -331,10 +352,29 @@ element_random(element_t a)
 	case ELEMENT_G2:
 	    mclBnG2_hashAndMapTo(&a[0].e.g2, str, sizeof(str));
 	    break;
-	case ELEMENT_GT:
-	    mclBnG1_hashAndMapTo(&a[0].e.gt, str, sizeof(str));
-	    break;
     }
+}
+
+void element_pow_zn(element_t res, element_t a, element_t b)
+{
+    switch(res[0].t)
+    {
+        case ELEMENT_G1:
+	    mclBnG1_mul(&a[0].e.g1, &a[0].e.g1, &b[0].e.fr);
+            break;
+        case ELEMENT_G2:
+	    mclBnG2_mul(&a[0].e.g2, &a[0].e.g2, &b[0].e.fr);
+            break;
+        case ELEMENT_GT:
+	    mclBnGT_pow(&a[0].e.gt, &a[0].e.gt, &b[0].e.fr);
+            break;
+    }
+}
+
+void element_clear(element_t e)
+{
+
+// nothing for now
 }
 
 #define SYSTEM_CURVE HOME_DIR "/root/a.param"
@@ -422,6 +462,7 @@ int initialize_system_params(FILE *logfp)
     return SUCCESS;
 }
 
+#if 0
 void setup_credentials_from_file(FILE *fp, credential_t *c)
 {
     credential_element_t *ce;
@@ -589,3 +630,4 @@ void mysend(int sockfd, const char *msg, int length, int flags, char *sid, FILE 
     mylog(logfp, "sent %d bytes for session %s\n", n, sid);
  */  
 }
+#endif

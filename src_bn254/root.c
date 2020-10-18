@@ -78,7 +78,7 @@ void dac_generate_parameters()
 
     printf("Done!\n\n");
 }
-
+#if 0
 void write_revoked_G1T_G2T()
 {
     FILE *revfp = NULL;
@@ -267,14 +267,14 @@ static int issue_user_credential(char *user, char *attributes)
     }
 
 }
-
+#endif
 int main(int argc, char *argv[])
 {
     int i;
     int ret = FAILURE;
 
     dac_generate_parameters();
-
+/*
     if(argc < 2)
     {
         printf("Check Usage\n");
@@ -294,6 +294,7 @@ int main(int argc, char *argv[])
     {
         ret = revoke_user_credential(argv[2]);
     }    
+*/
     printf("Exit from main\n");
     return 0;
 }

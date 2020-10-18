@@ -356,16 +356,6 @@ next services %s\n", service, session_id, dest_services);
     mysend(sockfd, (const char *)dest_services, strlen(dest_services), 0, session_id, logfp);
 }
 
-unsigned long get_time()
-{
-        struct timeval tv;
-        gettimeofday(&tv, NULL);
-        unsigned long ret = tv.tv_usec;
-        ret /= 1000;
-        ret += (tv.tv_sec * 1000);
-        return ret;
-}
-
 void add_service_to_session(char *sid, char *service)
 {
     int i, j;
