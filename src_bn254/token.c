@@ -314,7 +314,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 {
     int i, j, k, l;
     element_t *r1, *rhosig, *s1, **t1;
-    element_t one_by_r, one;
+    element_t one_by_r;
     element_t *rhos, **rhot, **rhoa, *rhocpk, *rhoh, rhocsk;
     element_t **com;
     credential_element_t *ic;
@@ -352,9 +352,6 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
     }
 
     element_init_Zr(one_by_r, pairing);
-    element_init_Zr(one, pairing);
-    // 1/r
-    element_set1(one);
 
     for (l=0; l< ci->levels; l++)
     {
@@ -732,7 +729,6 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 
     //clear of everything used in this function
     element_clear(one_by_r);
-    element_clear(one);
     element_clear(G1T);
     element_clear(G2T);
 
@@ -816,7 +812,6 @@ int verify_attribute_token(token_t *tk)
     element_t temp3, temp4;
     element_t ct;
     element_t eg1g2;
-    element_t one;
     token_element_t *tok;
     element_t prevrescpk;
     int num_attrs;
@@ -826,10 +821,8 @@ int verify_attribute_token(token_t *tk)
     element_init_GT(temp2, pairing);
     element_init_GT(temp3, pairing);
     element_init_GT(temp4, pairing);
-    element_init_Zr(one, pairing);    
     element_init_GT(eg1g2, pairing);
 
-    element_set1(one);
     pairing_apply(eg1g2, g1, g2, pairing);    
 
     read_revoked_G1T_G2T(G1T, G2T);
@@ -863,9 +856,8 @@ int verify_attribute_token(token_t *tk)
 	    if(l != 0)
 	    {
                 //e(g1^(-1), rescpk[i-1])
-		element_neg(temp1, one);
 		pairing_apply(temp3, g1, prevrescpk, pairing);
-		element_pow_zn(temp3, temp3, temp1);
+		element_invert(temp3,temp3);
 		element_mul(comt[l][0], comt[l][0], temp3);
 	    }
 
@@ -891,9 +883,8 @@ int verify_attribute_token(token_t *tk)
 	    else
 	    {
                 //e(rescpk[i],g2^(-1))
-                element_neg(temp1, one);
                 pairing_apply(temp3, tok->rescpk, g2, pairing);
-                element_pow_zn(temp3, temp3, temp1);
+		element_invert(temp3, temp3);
                 element_mul(comt[l][1], comt[l][1], temp3);
 	    }
 
@@ -908,8 +899,7 @@ int verify_attribute_token(token_t *tk)
 	    {
                 //e(Y1[0],rescpk[l-1]) 
                 pairing_apply(temp3, Y1[0], prevrescpk, pairing);
-                element_neg(temp1, one);
-                element_pow_zn(temp3, temp3, temp1);
+		element_invert(temp3, temp3);
                 element_mul(comt[l][1], comt[l][1], temp3);
 	    }
 
@@ -943,8 +933,7 @@ int verify_attribute_token(token_t *tk)
 		    {
                         //e(Y1[0],rescpk[l-1]) 
                         pairing_apply(temp3, Y1[i+1], prevrescpk, pairing);
-			element_neg(temp1, one);
-                        element_pow_zn(temp3, temp3, temp1);
+			element_invert(temp3, temp3);
 	                element_mul(comt[l][i+3], comt[l][i+3], temp3);
 		    }
 	        }
@@ -952,8 +941,7 @@ int verify_attribute_token(token_t *tk)
 	        {
                     //com[i+3] = e(rest[i+1], r1) * (e(resa[i],g2)^(-1)) * (e(y1[i+2],root_public_key)) ^ (-c)
                     pairing_apply(temp2, tok->resa[k++],g2, pairing);
-	            element_neg(temp1, one);
-    	            element_pow_zn(temp2, temp2, temp1);
+		    element_invert(temp2, temp2);
                     element_mul(comt[l][i+3], comt[l][i+3], temp2);
                     if (l == 0)
                     {
@@ -966,8 +954,7 @@ int verify_attribute_token(token_t *tk)
 		    {
                         //e(Y1[0],rescpk[l-1])
                         pairing_apply(temp3, Y1[i+1], prevrescpk, pairing);
-			element_neg(temp1, one);
-                        element_pow_zn(temp3, temp3, temp1);
+			element_invert(temp3, temp3);
                         element_mul(comt[l][i+3], comt[l][i+3], temp3);
 		    }
 	        }
@@ -981,9 +968,8 @@ int verify_attribute_token(token_t *tk)
             pairing_apply(comt[l][0], tok->r1, tok->ress, pairing);
 
             //e(rescpk[i-1], g2^(-1))
-            element_neg(temp1, one);
             pairing_apply(temp3, prevrescpk, g2, pairing);
-            element_pow_zn(temp3, temp3, temp1);
+	    element_invert(temp3, temp3);
             element_mul(comt[l][0], comt[l][0], temp3);
 
             pairing_apply(temp3, g1, Y2[0], pairing);
@@ -997,8 +983,7 @@ int verify_attribute_token(token_t *tk)
 
             //e(rescpk[l-1],Y2[0]) 
             pairing_apply(temp3, prevrescpk, Y2[0], pairing);
-	    element_neg(temp1, one);
-	    element_pow_zn(temp3, temp3, temp1);
+	    element_invert(temp3, temp3);
             element_mul(comt[l][1], comt[l][1], temp3);
 
 	    if(l == (tk->levels -1))
@@ -1010,9 +995,8 @@ int verify_attribute_token(token_t *tk)
 	    else
 	    {
                 //e(g1, rescpk[i]i)^(-1))
-                element_neg(temp1, one);
                 pairing_apply(temp3, g1, tok->rescpk, pairing);
-                element_pow_zn(temp3, temp3, temp1);
+		element_invert(temp3, temp3);
                 element_mul(comt[l][1], comt[l][1], temp3);
 	    }
 
@@ -1032,8 +1016,7 @@ int verify_attribute_token(token_t *tk)
             {
                 pairing_apply(comt[l][i+3], tok->r1, tok->rest[i+1], pairing);
                 pairing_apply(temp3, prevrescpk, Y2[i+1], pairing);
-		element_neg(temp1, one);
-                element_pow_zn(temp3, temp3, temp1);
+		element_invert(temp3, temp3);
     	        element_mul(comt[l][i+3], comt[l][i+3], temp3);
 
                 if(tok->revealed[i])
@@ -1050,8 +1033,7 @@ int verify_attribute_token(token_t *tk)
 	        {
                     //com[i+3] = e(rest[i+1], r1) * (e(resa[i],g2)^(-1)) * (e(y1[i+1],root_public_key)) ^ (-c)
                     pairing_apply(temp2, g1, tok->resa[k++], pairing);
-	            element_neg(temp1, one);
-    	            element_pow_zn(temp2, temp2, temp1);
+		    element_invert(temp2, temp2);
                     element_mul(comt[l][i+3], comt[l][i+3], temp2);
 	        }
 	        //element_printf("comt[%d][%d] = %B\n", l, i+3,comt[l][i+3]);
@@ -1092,7 +1074,6 @@ int verify_attribute_token(token_t *tk)
     element_clear(temp3);
     element_clear(temp4);
     element_clear(temp5);
-    element_clear(one);
     element_clear(eg1g2);
 
     element_clear(G1T);
