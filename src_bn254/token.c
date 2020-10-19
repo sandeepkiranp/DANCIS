@@ -384,7 +384,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
         }
 
         element_random(rhosig[l]);
-        element_div(one_by_r, one, rhosig[l]);
+        element_invert(one_by_r, rhosig[l]);
 
         element_pow_zn(r1[l], ic->R, rhosig[l]);
 

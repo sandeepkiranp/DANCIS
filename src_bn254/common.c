@@ -389,6 +389,38 @@ int element_cmp(element_t a, element_t b)
     return memcmp(&a[0].e, &b[0].e, sizeof(b[0].e));
 }
 
+void element_mul(element_t res, element_t a, element_t b)
+{
+    switch(res[0].t)
+    {
+        case ELEMENT_G1:
+            mclBnG1_add(&res[0].e.g1, &a[0].e.g1, &b[0].e.g1);
+            break;
+        case ELEMENT_G2:
+            mclBnG2_add(&res[0].e.g2, &a[0].e.g2, &b[0].e.g2);
+            break;
+        case ELEMENT_GT:
+            mclBnGT_mul(&res[0].e.gt, &a[0].e.gt, &b[0].e.gt);
+            break;
+        case ELEMENT_FR:
+            mclBnFr_mul(&res[0].e.fr, &a[0].e.fr, &b[0].e.fr);
+            break;
+    }
+}
+
+void element_invert(element_t res, element_t a)
+{
+    switch(res[0].t)
+    {
+        case ELEMENT_GT:
+            mclBnGT_inv(&res[0].e.gt, &a[0].e.gt);
+            break;
+        case ELEMENT_FR:
+            mclBnFr_inv(&res[0].e.fr, &a[0].e.fr);
+            break;
+    }
+}
+
 #define SYSTEM_CURVE HOME_DIR "/root/a.param"
 
 int initialize_system_params(FILE *logfp)

@@ -223,3 +223,5 @@ extern void element_random(element_t e);
 extern void element_pow_zn(element_t res, element_t a, element_t b);
 extern void element_clear(element_t a);
 extern int element_cmp(element_t a, element_t b);
+extern void element_mul(element_t res, element_t a, element_t b);
+extern void element_invert(element_t res, element_t a);

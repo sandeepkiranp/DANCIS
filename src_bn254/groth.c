@@ -30,7 +30,7 @@ void groth_generate_signature_2(element_t secret_key, credential_attributes *ca,
 
     // 1/r
     element_set1(one);
-    element_div(one_by_r, one, r); 
+    element_invert(one_by_r, r); 
 
     //S = S^(1/r). Therefore S = (y * g2^sk)^(1/r)
     element_pow_zn(ic->S, ic->S, one_by_r);
@@ -126,7 +126,7 @@ void groth_generate_signature_1(element_t secret_key, credential_attributes *ca,
 
     // 1/r
     element_set1(one);
-    element_div(one_by_r, one, r); 
+    element_invert(one_by_r, r); 
 
     //S = S^(1/r). Therefore S = (y * g2^sk)^(1/r)
     element_pow_zn(ic->S, ic->S, one_by_r);
