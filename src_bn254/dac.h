@@ -227,3 +227,4 @@ extern void element_mul(element_t res, element_t a, element_t b);
 extern void element_invert(element_t res, element_t a);
 extern void element_set(element_t dest, element_t src);
 extern void element_init_same_as(element_t dest, element_t src);
+extern void element_neg(element_t dest, element_t src);

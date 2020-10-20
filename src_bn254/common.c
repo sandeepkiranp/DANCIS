@@ -430,7 +430,26 @@ void element_init_same_as(element_t dest, element_t src)
 {
     memset(&dest[0], 0, sizeof(dest[0]));
     dest[0].t = src[0].t;
-}    
+}
+
+void element_neg(element_t des, element_t src)
+{
+    switch(des[0].t)
+    {
+        case ELEMENT_G1:
+            mclBnG1_neg(&des[0].e.g1, &src[0].e.g1);
+            break;
+        case ELEMENT_G2:
+            mclBnG2_neg(&des[0].e.g2, &src[0].e.g2);
+            break;
+        case ELEMENT_GT:
+            mclBnGT_neg(&des[0].e.gt, &src[0].e.gt);
+            break;
+        case ELEMENT_FR:
+            mclBnFr_neg(&des[0].e.fr, &src[0].e.fr);
+            break;
+    }
+}
 
 #define SYSTEM_CURVE HOME_DIR "/root/a.param"
 
