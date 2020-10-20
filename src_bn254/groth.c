@@ -4,7 +4,7 @@ void groth_generate_signature_2(element_t secret_key, credential_attributes *ca,
 {
     int i;
     element_t r;
-    element_t one_by_r, one;
+    element_t one_by_r;
 
     printf("Generating Groth2 Signature\n");	
 
@@ -18,7 +18,6 @@ void groth_generate_signature_2(element_t secret_key, credential_attributes *ca,
         element_init_G2(ic->T[i], pairing);
 
     element_init_Zr(one_by_r, pairing);
-    element_init_Zr(one, pairing);
 
     //R = g1^r
     element_random(r);
@@ -29,7 +28,6 @@ void groth_generate_signature_2(element_t secret_key, credential_attributes *ca,
     element_mul(ic->S, Y2[0], ic->S);
 
     // 1/r
-    element_set1(one);
     element_invert(one_by_r, r); 
 
     //S = S^(1/r). Therefore S = (y * g2^sk)^(1/r)
@@ -100,7 +98,7 @@ void groth_generate_signature_1(element_t secret_key, credential_attributes *ca,
 {
     int i;
     element_t r;
-    element_t one_by_r, one;
+    element_t one_by_r;
 
     printf("Generating Groth1 Signature...");	
 
@@ -114,7 +112,6 @@ void groth_generate_signature_1(element_t secret_key, credential_attributes *ca,
         element_init_G1(ic->T[i], pairing);
 
     element_init_Zr(one_by_r, pairing);
-    element_init_Zr(one, pairing);
 
     //R = g2^r
     element_random(r);
@@ -125,7 +122,6 @@ void groth_generate_signature_1(element_t secret_key, credential_attributes *ca,
     element_mul(ic->S, Y1[0], ic->S);
 
     // 1/r
-    element_set1(one);
     element_invert(one_by_r, r); 
 
     //S = S^(1/r). Therefore S = (y * g2^sk)^(1/r)

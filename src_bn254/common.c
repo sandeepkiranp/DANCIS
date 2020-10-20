@@ -421,6 +421,17 @@ void element_invert(element_t res, element_t a)
     }
 }
 
+void element_set(element_t dest, element_t src)
+{
+    memcpy(&dest[0].e, &src[0].e, sizeof(dest[0].e));
+}
+
+void element_init_same_as(element_t dest, element_t src)
+{
+    memset(&dest[0], 0, sizeof(dest[0]));
+    dest[0].t = src[0].t;
+}    
+
 #define SYSTEM_CURVE HOME_DIR "/root/a.param"
 
 int initialize_system_params(FILE *logfp)
