@@ -22,8 +22,6 @@ void send_element(element_t e, char compress, int sock, struct sockaddr_in *serv
     send_data(sizeof(len), (char *)&len, sock, servaddr, sid, fp);
     //send the data
     send_data(len, buffer, sock, servaddr, sid, fp); 
-
-    free(buffer);
 }
 
 void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr, char *sid, FILE *fp)
@@ -579,7 +577,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
     {
         for(i=0; i<ci->cred[l]->ca->num_of_attributes+2; i++)
         {
-            element_snprintf(buffer,size,"%B",com[l][i]);
+            element_getstr(buffer,size,com[l][i]);
 	    strcat(buffer, hash);
 	    SHA1(hash, buffer);
 	    //printf("Buffer = %s, Hash = %s\n", buffer, hash);
@@ -1034,7 +1032,7 @@ int verify_attribute_token(token_t *tk)
     {
         for(i=0; i<tk->te[l].num_attrs + 2; i++)
         {
-            element_snprintf(buffer,size,"%B",comt[l][i]);
+	    element_getstr(buffer,size,comt[l][i]);
             strcat(buffer, hash);
             SHA1(hash, buffer);
 	    //printf("Buffer = %s, Hash = %s\n", buffer, hash);
@@ -1045,7 +1043,7 @@ int verify_attribute_token(token_t *tk)
     if (element_cmp(tk->c, ct))
     {
         printf("c values comparison Failed!\n\n");
-	element_printf("c = %B\nct = %B\n", tk->c, ct); 
+	//element_printf("c = %B\nct = %B\n", tk->c, ct); 
 	return FAILURE;
     }
 

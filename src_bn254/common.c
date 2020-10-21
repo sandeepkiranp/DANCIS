@@ -497,6 +497,60 @@ void element_deserialize(element_t a, char *buf, int buf_size)
     }
 }
 
+void element_add(element_t res, element_t a, element_t b)
+{
+    switch(res[0].t)
+    {
+        case ELEMENT_G1:
+            mclBnG1_add(&res[0].e.g1, &a[0].e.g1, &b[0].e.g1);
+            break;
+        case ELEMENT_G2:
+            mclBnG2_add(&res[0].e.g2, &a[0].e.g2, &b[0].e.g2);
+            break;
+        case ELEMENT_GT:
+            mclBnGT_add(&res[0].e.gt, &a[0].e.gt, &b[0].e.gt);
+            break;
+        case ELEMENT_FR:
+            mclBnFr_add(&res[0].e.fr, &a[0].e.fr, &b[0].e.fr);
+            break;
+    }
+}
+
+void element_getstr(char *buf, int size, element_t e)
+{
+    switch(e[0].t)
+    {
+        case ELEMENT_G1:
+            mclBnG1_getStr(buf, size, &e[0].e.g1, 16);
+            break;
+        case ELEMENT_G2:
+            mclBnG2_getStr(buf, size, &e[0].e.g2, 16);
+            break;
+        case ELEMENT_GT:
+            mclBnGT_getStr(buf, size, &e[0].e.gt, 16);
+            break;
+        case ELEMENT_FR:
+            mclBnFr_getStr(buf, size, &e[0].e.fr, 16);
+            break;
+    }
+}
+
+void element_from_hash(element_t e, char *buf, int len)
+{
+    switch(e[0].t)
+    {
+        case ELEMENT_G1:
+            mclBnG1_hashAndMapTo(&e[0].e.g1, buf, len);
+            break;
+        case ELEMENT_G2:
+            mclBnG2_hashAndMapTo(&e[0].e.g2, buf, len);
+            break;
+        case ELEMENT_FR:
+            mclBnFr_setHashOf(&e[0].e.fr, buf, len);
+            break;
+    }
+}
+
 #define SYSTEM_CURVE HOME_DIR "/root/a.param"
 
 int initialize_system_params(FILE *logfp)
