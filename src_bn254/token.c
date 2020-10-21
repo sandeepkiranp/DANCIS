@@ -14,22 +14,9 @@ void send_data(int length, char *data, int sock, struct sockaddr_in *servaddr, c
 void send_element(element_t e, char compress, int sock, struct sockaddr_in *servaddr, char *sid, FILE *fp)
 {
     unsigned char len;
-    unsigned char *buffer;
+    unsigned char buffer[1024] = {0};
 
-    if(compress)
-    {
-        len = element_length_in_bytes_compressed(e);
-        buffer =  (unsigned char *)malloc(len);
-
-        element_to_bytes_compressed(buffer, e);
-    }
-    else
-    {
-        len = element_length_in_bytes(e);
-        buffer =  (unsigned char *)malloc(len);
-
-        element_to_bytes(buffer, e);
-    }
+    len = element_serialize(e, buffer, sizeof(buffer));
 
     //first send length
     send_data(sizeof(len), (char *)&len, sock, servaddr, sid, fp);
@@ -130,14 +117,8 @@ void receive_element(element_t e, char compressed, int sock)
     buffer =  (unsigned char *)malloc(len);
     receive_data(len, buffer, sock);
 
-    if(compressed)
-    {
-        element_from_bytes_compressed(e, buffer);
-    }
-    else
-    {
-        element_from_bytes(e, buffer);
-    }
+    element_deserialize(e, buffer, len);
+
     free(buffer);
 }
 

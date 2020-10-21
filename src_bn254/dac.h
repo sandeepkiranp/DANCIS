@@ -228,3 +228,5 @@ extern void element_invert(element_t res, element_t a);
 extern void element_set(element_t dest, element_t src);
 extern void element_init_same_as(element_t dest, element_t src);
 extern void element_neg(element_t dest, element_t src);
+extern int element_serialize(element_t a, char *buf, int buf_size);
+extern void element_deserialize(element_t a, char *buf, int len);

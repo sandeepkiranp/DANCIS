@@ -386,7 +386,23 @@ void huremi_pairing_apply(element_t res, element_t a, element_t b)
 
 int element_cmp(element_t a, element_t b)
 {
-    return memcmp(&a[0].e, &b[0].e, sizeof(b[0].e));
+    int ret = 0;
+    switch(a[0].t)
+    {
+        case ELEMENT_G1:
+            ret = mclBnG1_isEqual(&a[0].e.g1, &b[0].e.g1);
+            break;
+        case ELEMENT_G2:
+            ret = mclBnG2_isEqual(&a[0].e.g2, &b[0].e.g2);
+            break;
+        case ELEMENT_GT:
+            ret = mclBnGT_isEqual(&a[0].e.gt, &b[0].e.gt);
+            break;
+        case ELEMENT_FR:
+            ret = mclBnFr_isEqual(&a[0].e.fr, &b[0].e.fr);
+            break;
+    }
+    return !ret;
 }
 
 void element_mul(element_t res, element_t a, element_t b)
@@ -448,6 +464,36 @@ void element_neg(element_t des, element_t src)
         case ELEMENT_FR:
             mclBnFr_neg(&des[0].e.fr, &src[0].e.fr);
             break;
+    }
+}
+
+int element_serialize(element_t a, char *buf, int buf_size)
+{
+    switch(a[0].t)
+    {
+        case ELEMENT_G1:
+            return mclBnG1_serialize(buf, buf_size, &a[0].e.g1);
+        case ELEMENT_G2:
+            return mclBnG2_serialize(buf, buf_size, &a[0].e.g2);
+        case ELEMENT_GT:
+            return mclBnGT_serialize(buf, buf_size, &a[0].e.gt);
+        case ELEMENT_FR:
+            return mclBnFr_serialize(buf, buf_size, &a[0].e.fr);
+    }
+}
+
+void element_deserialize(element_t a, char *buf, int buf_size)
+{
+    switch(a[0].t)
+    {
+        case ELEMENT_G1:
+            mclBnG1_deserialize(&a[0].e.g1, buf, buf_size);
+        case ELEMENT_G2:
+            mclBnG2_deserialize(&a[0].e.g2, buf, buf_size);
+        case ELEMENT_GT:
+            mclBnGT_deserialize(&a[0].e.gt, buf, buf_size);
+        case ELEMENT_FR:
+            mclBnFr_deserialize(&a[0].e.fr, buf, buf_size);
     }
 }
 
