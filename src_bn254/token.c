@@ -476,7 +476,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 	    element_pow_zn(temp2, eg1g2, negrhocpk);     
 	    element_mul(com[l][0], com[l][0], temp2);
 	}
-        //element_printf("com[%d][0] = %B\n", l, com[l][0]);
+        element_printf("com[%d][0] = %B\n", l, com[l][0]);
 
         //com[1] = e(g1,ic->R)^(rhosig*rhot[0])
         element_mul(temp1, rhosig[l], rhot[l][0]);
@@ -511,7 +511,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
             element_mul(com[l][1], com[l][1], temp2);
 	}
 
-        //element_printf("com[%d][1] = %B\n", l, com[l][1]);
+        element_printf("com[%d][1] = %B\n", l, com[l][1]);
 
 	//com[l][2] for revocation
 	if((l+1) % 2)
@@ -530,7 +530,8 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
             pairing_apply(com[l][2], te->rev_g1t_r, temp6, pairing); 
 	    element_clear(temp6);
 	}
-        //element_printf("com[%d][2] = %B\n", l, com[l][2]);
+
+        element_printf("com[%d][2] = %B\n", l, com[l][2]);
 
         for(i=0; i< num_attrs - 1; i++)
         {
@@ -559,7 +560,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 		element_pow_zn(temp2, ey1g2, negrhocpk);
 		element_mul(com[l][i+3], com[l][i+3], temp2);
 	    }
-	    //element_printf("com[%d][%d] = %B\n", l, i+3, com[l][i+3]);
+	    element_printf("com[%d][%d] = %B\n", l, i+3, com[l][i+3]);
         }
     }
     //printf("Done!\n");
@@ -578,9 +579,10 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
         for(i=0; i<ci->cred[l]->ca->num_of_attributes+2; i++)
         {
             element_getstr(buffer,size,com[l][i]);
-	    strcat(buffer, hash);
+	    //strcat(buffer, hash);
+	    sprintf(buffer + size, "%s", hash);
 	    SHA1(hash, buffer);
-	    //printf("Buffer = %s, Hash = %s\n", buffer, hash);
+	    //printf("Buffer = %s(%ld), Hash = %s(%ld)\n", buffer, strlen(buffer), hash, strlen(hash));
         }
     }
     element_from_hash(tok->c, hash, strlen(hash));
@@ -849,7 +851,7 @@ int verify_attribute_token(token_t *tk)
             element_neg(temp1, tk->c);
             element_pow_zn(temp3, temp3, temp1); 
             element_mul(comt[l][0], comt[l][0], temp3);
-            //element_printf("comt[%d][0] = %B\n", l, comt[l][0]);
+            element_printf("comt[%d][0] = %B\n", l, comt[l][0]);
 
             //comt[1] = e(rest[0],r1) * e(g1,g2)^(-rescsk) * (e(y1[0],root_public_key))^(-c)
             pairing_apply(comt[l][1], tok->rest[0], tok->r1, pairing);
@@ -882,7 +884,7 @@ int verify_attribute_token(token_t *tk)
                 element_mul(comt[l][1], comt[l][1], temp3);
 	    }
 
-            //element_printf("comt[%d][1] = %B\n", l, comt[l][1]);
+            element_printf("comt[%d][1] = %B\n", l, comt[l][1]);
 
             // compute comt[l][2]
             pairing_apply(comt[l][2], tok->rescpk, tok->rev_g1t_r, pairing);
@@ -890,7 +892,7 @@ int verify_attribute_token(token_t *tk)
 	    element_pow_zn(temp5, tok->rev_cpk_r, temp1);
             pairing_apply(temp3, temp5, G2T, pairing);
             element_mul(comt[l][2], comt[l][2], temp3);
-            //element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
+            element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
 
             for(i=0,j=0,k=0; i<num_attrs - 1; i++)
             {
@@ -937,7 +939,7 @@ int verify_attribute_token(token_t *tk)
                         element_mul(comt[l][i+3], comt[l][i+3], temp3);
 		    }
 	        }
-	        //element_printf("comt[%d][%d] = %B\n", l, i+3,comt[l][i+3]);
+	        element_printf("comt[%d][%d] = %B\n", l, i+3,comt[l][i+3]);
             }
         }
 	else
@@ -955,7 +957,7 @@ int verify_attribute_token(token_t *tk)
             element_neg(temp1, tk->c);
             element_pow_zn(temp3, temp3, temp1); 
             element_mul(comt[l][0], comt[l][0], temp3);
-            //element_printf("comt[%d][0] = %B\n", l, comt[l][0]);
+            element_printf("comt[%d][0] = %B\n", l, comt[l][0]);
 
             //comt[1] = e(rest[0],r1) * e(g1,g2)^(-rescsk) * (e(y1[0],root_public_key))^(-c)
             pairing_apply(comt[l][1], tok->r1, tok->rest[0], pairing);
@@ -979,7 +981,7 @@ int verify_attribute_token(token_t *tk)
                 element_mul(comt[l][1], comt[l][1], temp3);
 	    }
 
-            //element_printf("comt[%d][1] = %B\n", l, comt[l][1]);
+            element_printf("comt[%d][1] = %B\n", l, comt[l][1]);
 
 
             // compute comt[l][2]
@@ -989,7 +991,7 @@ int verify_attribute_token(token_t *tk)
             pairing_apply(temp3, G1T, temp5, pairing);
 
 	    element_mul(comt[l][2], comt[l][2], temp3);
-            //element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
+            element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
    
             for(i=0,j=0,k=0; i<num_attrs - 1; i++)
             {
@@ -1015,7 +1017,7 @@ int verify_attribute_token(token_t *tk)
 		    element_invert(temp2, temp2);
                     element_mul(comt[l][i+3], comt[l][i+3], temp2);
 	        }
-	        //element_printf("comt[%d][%d] = %B\n", l, i+3,comt[l][i+3]);
+	        element_printf("comt[%d][%d] = %B\n", l, i+3,comt[l][i+3]);
             }
         }
     }
@@ -1033,7 +1035,7 @@ int verify_attribute_token(token_t *tk)
         for(i=0; i<tk->te[l].num_attrs + 2; i++)
         {
 	    element_getstr(buffer,size,comt[l][i]);
-            strcat(buffer, hash);
+	    sprintf(buffer + size, "%s", hash);
             SHA1(hash, buffer);
 	    //printf("Buffer = %s, Hash = %s\n", buffer, hash);
         }
