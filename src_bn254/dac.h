@@ -233,3 +233,4 @@ extern void element_deserialize(element_t a, char *buf, int len);
 extern void element_add(element_t res, element_t a, element_t b);
 extern void element_getstr(char *buf, int size, element_t e);
 extern void element_from_hash(element_t e, char *buf, int len);
+extern void element_printf(char* format,...);
