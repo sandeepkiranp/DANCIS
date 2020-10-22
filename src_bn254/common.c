@@ -581,13 +581,13 @@ void element_printf(char* format,...)
 
     for(traverse = format; *traverse != '\0'; traverse++)
     {
-        while( *traverse != '%' )
+        if( *traverse != '%')
         {
             putchar(*traverse);
-            traverse++;
+            continue;
         }
-
-        traverse++;
+	else
+            traverse++;
 
         //Module 2: Fetching and executing arguments
         switch(*traverse)
@@ -602,25 +602,24 @@ void element_printf(char* format,...)
                             i = -i;
                             putchar('-');
                         }
-                        puts(convert(i,10));
+                        printf("%s",convert(i,10));
                         break;
 
             case 'o': i = va_arg(arg,unsigned int); //Fetch Octal representation
-                        puts(convert(i,8));
+                        printf("%s",convert(i,8));
                         break;
 
             case 's': s = va_arg(arg,char *);       //Fetch string
-                        puts(s);
+                        printf("%s",s);
                         break;
 
             case 'x': i = va_arg(arg,unsigned int); //Fetch Hexadecimal representation
-                        puts(convert(i,16));
+                        printf("%s",convert(i,16));
                         break;
-
-            case 'B': e = va_arg(arg, element_t); //Fetch element
+            case 'B': e = va_arg(arg, element_t *); //Fetch element
 		        char str[300] = {0};
-		        element_getstr(str, sizeof(str), e);
-                        puts(str);
+		        element_getstr(str, sizeof(str), *(element_t *)e);
+                        printf("%s",str);
                         break;
         }
     }
