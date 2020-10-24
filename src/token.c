@@ -480,8 +480,8 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
         }
         else
         {
-            element_init_G2(te->rev_g1t_r, pairing);
-            element_init_G1(te->rev_cpk_r, pairing);
+            element_init_G1(te->rev_g1t_r, pairing);
+            element_init_G2(te->rev_cpk_r, pairing);
             element_pow_zn(te->rev_g1t_r, G1T, rhocpk[l]);
         }
         element_pow_zn(te->rev_cpk_r, ic->ca->attributes[0], rhocpk[l]);
