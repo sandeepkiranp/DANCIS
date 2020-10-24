@@ -14,7 +14,7 @@ void send_data(int length, char *data, int sock, struct sockaddr_in *servaddr, c
 void send_element(element_t e, char compress, int sock, struct sockaddr_in *servaddr, char *sid, FILE *fp)
 {
     unsigned char len;
-    unsigned char buffer[1024] = {0};
+    char buffer[1024] = {0};
 
     len = element_serialize(e, buffer, sizeof(buffer));
 

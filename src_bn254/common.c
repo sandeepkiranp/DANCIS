@@ -482,18 +482,18 @@ int element_serialize(element_t a, char *buf, int buf_size)
     }
 }
 
-void element_deserialize(element_t a, char *buf, int buf_size)
+int element_deserialize(element_t a, char *buf, int buf_size)
 {
     switch(a[0].t)
     {
         case ELEMENT_G1:
-            mclBnG1_deserialize(&a[0].e.g1, buf, buf_size);
+            return mclBnG1_deserialize(&a[0].e.g1, buf, buf_size);
         case ELEMENT_G2:
-            mclBnG2_deserialize(&a[0].e.g2, buf, buf_size);
+            return mclBnG2_deserialize(&a[0].e.g2, buf, buf_size);
         case ELEMENT_GT:
-            mclBnGT_deserialize(&a[0].e.gt, buf, buf_size);
+            return mclBnGT_deserialize(&a[0].e.gt, buf, buf_size);
         case ELEMENT_FR:
-            mclBnFr_deserialize(&a[0].e.fr, buf, buf_size);
+            return mclBnFr_deserialize(&a[0].e.fr, buf, buf_size);
     }
 }
 
