@@ -28,6 +28,10 @@ typedef struct service_location
 static int num_services = 0;
 service_location *svc_loc = NULL;
 char *convert(unsigned int num, int base);
+
+element_t *cpk_r, *g2t_r;
+int revoked_count = 0;
+
 void mylog(FILE *logfp, char *fmt, ...)
 {
     va_list ap; /* points to each unnamed arg in turn */
@@ -141,6 +145,62 @@ void read_element_from_file(FILE *fp, char *param, element_t e, int skipline)
     //printf("Done\n");
 }
 
+void initialize_revoked_credentials()
+{
+    FILE *fp = NULL;
+    char c;
+    element_t dummy;
+
+    fp = fopen(REVOKED_FILE, "r");
+    if (fp == NULL)
+    {
+        printf("Error opening %s\n", REVOKED_FILE);
+        return FAILURE;
+    }
+
+    for (c = getc(fp); c != EOF; c = getc(fp)) 
+        if (c == '\n') // Increment count if this character is newline 
+            revoked_count = revoked_count + 1; 
+  
+    // Close the file 
+    fclose(fp); 
+
+    cpk_r = (element_t *)malloc(revoked_count * sizeof(element_t));
+    g2t_r = (element_t *)malloc(revoked_count * sizeof(element_t));
+
+    for(i = 0; i < revoked_count; i++)
+    {
+        element_init_G1(cpk_r[i], pairing);
+        element_init_G2(g2t_r[i], pairing);
+    }
+
+    fp = fopen(REVOKED_FILE, "r");
+    if (fp == NULL)
+    {
+        printf("Error opening %s\n", REVOKED_FILE);
+        return FAILURE;
+    }
+
+
+    //skip first two lines
+    read_element_from_file(fp, "dummy", dummy, 1);
+    read_element_from_file(fp, "dummy", dummy, 1);
+
+    fgetc(fp); //dummy read for "\n"
+    i = 0;
+    while(!feof(fp))
+    {
+        read_element_from_file(fp, "CPK_r", cpk_r[i], 0);
+        //element_printf("CPK_r %B\n", cpk_r);
+        read_element_from_file(fp, "G2T_r", g2t_r[i], 0);
+        //element_printf("g2t_r %B\n", g2t_r);
+        fgetc(fp); //dummy read for "\n"
+	i++;
+    }
+
+    fclose(fp);
+}
+
 
 int is_credential_valid(element_t user_cpk_r, element_t user_g2t_r)
 {
@@ -154,53 +214,27 @@ int is_credential_valid(element_t user_cpk_r, element_t user_g2t_r)
     int end, start=0, found=0;
     FILE *fp = NULL;
     element_t dummy, cpk_r, g2t_r, temp1, temp2;
+    int i = 0;
 
     //element_printf("User data cpk_r %B, g2t_r %B\n", user_cpk_r,user_g2t_r);
 
-    element_init_G1(cpk_r, pairing);
-    element_init_G2(g2t_r, pairing);
     element_init_GT(temp1, pairing);
     element_init_GT(temp2, pairing);
 
-    fp = fopen(REVOKED_FILE, "r");
-    if (fp == NULL)
-    {
-        printf("Error opening %s\n", REVOKED_FILE);
-        return FAILURE;
-    }
-
-    //skip first two lines
-    read_element_from_file(fp, "dummy", dummy, 1);
-    read_element_from_file(fp, "dummy", dummy, 1);
-
-    fgetc(fp); //dummy read for "\n"
-
-    //char c[500] = {0};
-    while(!feof(fp))
+    while(i < revoked_count)
     {
 
-        //fgets(c, sizeof(c), fp);
-	//printf("next line =====%s\n", c);
-
-        read_element_from_file(fp, "CPK_r", cpk_r, 0); 
-	//element_printf("CPK_r %B\n", cpk_r);
-        read_element_from_file(fp, "G2T_r", g2t_r, 0); 
-	//element_printf("g2t_r %B\n", g2t_r);
-        pairing_apply(temp1, user_cpk_r, g2t_r,pairing);
-	pairing_apply(temp2, cpk_r, user_g2t_r, pairing);
+        pairing_apply(temp1, user_cpk_r, g2t_r[i],pairing);
+	pairing_apply(temp2, cpk_r[i], user_g2t_r, pairing);
 	//element_printf("temp1 %B, temp2 %B\n", temp1, temp2);
 
 	if (!element_cmp(temp1, temp2)) {
 	    ret = FAILURE;
 	    break;
 	}
-        fgetc(fp); //dummy read for "\n"
-	
+        i++;	
     }
 
-    fclose(fp);
-    element_clear(cpk_r);
-    element_clear(g2t_r);
     element_clear(temp1);
     element_clear(temp2);
 
