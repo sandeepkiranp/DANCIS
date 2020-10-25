@@ -72,6 +72,7 @@ typedef struct session
     char sid[SID_LENGTH];
     int num_services;
     char *services[1000];
+    int is_user_credential_verified;
 }session_t;
 
 int num_sessions = 0;
@@ -384,6 +385,31 @@ int is_service_in_session_cache(int index, char *service)
 
     return FAILURE;
 }
+int is_user_credential_verified(char *sid)
+{
+    int i, j;
+    for(i = 0; i < num_sessions; i++)
+    {
+        if(!strcmp(sessions[i].sid, sid))
+        {
+            return sessions[i].is_user_credential_verified;
+        }
+    }
+    return 0;
+}
+
+void user_credential_verified(char *sid)
+{
+    int i, j;
+    for(i = 0; i < num_sessions; i++)
+    {
+        if(!strcmp(sessions[i].sid, sid))
+        {
+           sessions[i].is_user_credential_verified = 1; 
+        }
+    }
+}
+
 
 int handle_constrained_service(credential_t *c, char *service, char *sid, int sockfd)
 {
@@ -397,13 +423,16 @@ int handle_constrained_service(credential_t *c, char *service, char *sid, int so
     if (read_G1T_G2T == 0)
 	read_revoked_G1T_G2T(g1t, g2t);
 
-
-    // check for blacklist credential
-    if(is_credential_valid(c->cred[0]->ca->attributes[0], g2t) == FAILURE)
+    if(!is_user_credential_verified(sid))
     {
-        mylog(logfp, "handle_constrained_service failed as credential is blacklisted. \
-			service %s, sid %s\n", service, sid);
-        return FAILURE;
+        // check for blacklist credential
+        if(is_credential_valid(c->cred[0]->ca->attributes[0], g2t) == FAILURE)
+        {
+            mylog(logfp, "handle_constrained_service failed as credential is blacklisted. \
+	    		service %s, sid %s\n", service, sid);
+            return FAILURE;
+        }
+	user_credential_verified(sid);
     }
     
     for (i = 0; i < num_constrained_services; i++)
@@ -520,9 +549,9 @@ void generate_credential_token(char *session_id, char *user, char *service, int 
 	    if((MODE == HYBRID && get_service_mode(service) == CONSTRINED) ||
 	       MODE == CENTRALIZED)
 	    {
-		handle_constrained_service(c, service, session_id, sockfd);
-	        // Add service to session map
-	        add_service_to_session(session_id, service);
+		if(handle_constrained_service(c, service, session_id, sockfd) != FAILURE)
+	            // Add service to session map
+	            add_service_to_session(session_id, service);
                 break;
 	    }
 
