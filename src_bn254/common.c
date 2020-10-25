@@ -150,19 +150,20 @@ void initialize_revoked_credentials()
     FILE *fp = NULL;
     char c;
     element_t dummy;
+    int i;
 
     fp = fopen(REVOKED_FILE, "r");
     if (fp == NULL)
     {
         printf("Error opening %s\n", REVOKED_FILE);
-        return FAILURE;
+        return ;
     }
 
     for (c = getc(fp); c != EOF; c = getc(fp)) 
         if (c == '\n') // Increment count if this character is newline 
             revoked_count = revoked_count + 1; 
   
-    // Close the file 
+    revoked_count = (revoked_count - 2)/2; //skip first two lines
     fclose(fp); 
 
     cpk_r = (element_t *)malloc(revoked_count * sizeof(element_t));
@@ -178,9 +179,8 @@ void initialize_revoked_credentials()
     if (fp == NULL)
     {
         printf("Error opening %s\n", REVOKED_FILE);
-        return FAILURE;
+        return ;
     }
-
 
     //skip first two lines
     read_element_from_file(fp, "dummy", dummy, 1);
@@ -197,23 +197,15 @@ void initialize_revoked_credentials()
         fgetc(fp); //dummy read for "\n"
 	i++;
     }
-
+    printf("%d %d\n", i, revoked_count);
     fclose(fp);
 }
 
 
 int is_credential_valid(element_t user_cpk_r, element_t user_g2t_r)
 {
-    size_t len;
-    size_t outlen;
-    char *base64e;
-    unsigned char *buffer;
-    char *line = NULL;
-    ssize_t read;
-    int pos, ret = SUCCESS;
-    int end, start=0, found=0;
-    FILE *fp = NULL;
-    element_t dummy, cpk_r, g2t_r, temp1, temp2;
+    int ret = SUCCESS;
+    element_t temp1, temp2;
     int i = 0;
 
     //element_printf("User data cpk_r %B, g2t_r %B\n", user_cpk_r,user_g2t_r);
@@ -223,7 +215,6 @@ int is_credential_valid(element_t user_cpk_r, element_t user_g2t_r)
 
     while(i < revoked_count)
     {
-
         pairing_apply(temp1, user_cpk_r, g2t_r[i],pairing);
 	pairing_apply(temp2, cpk_r[i], user_g2t_r, pairing);
 	//element_printf("temp1 %B, temp2 %B\n", temp1, temp2);

@@ -820,6 +820,9 @@ int main(int argc, char *argv[])
     read_services_location();
     read_policy_attributes_from_services();
 
+    if (MODE != DECENTRALIZED)
+        initialize_revoked_credentials();
+
     load_delegated_credentials(NULL);
     fflush(logfp);
 

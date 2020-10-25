@@ -10,11 +10,11 @@
 #define N 3
 
 #define HOME_DIR "/home/users/sandeep/dac/dac"
+//#define HOME_DIR "/root/dac"
 #define PARAM_FILE HOME_DIR "/root/params.txt"
 #define SERVICES_FILE HOME_DIR "/root/services.txt"
 #define REVOKED_FILE HOME_DIR "/root/revoked.txt"
 
-//#define HOME_DIR "/root/dac"
 #define MAX_NUM_ATTRIBUTES 50
 #define TOTAL_ATTRIBUTES (MAX_NUM_ATTRIBUTES + 1) //cpk(i-1) + MAX_NUM_ATTRIBUTES attributes
 
@@ -211,6 +211,7 @@ extern void SHA1(char *hash, unsigned char * str1);
 
 extern void mylog(FILE *logfp, char *fmt, ...);
 extern void mysend(int sockfd, const char *msg, int length, int flags, char *sid, FILE *logfp);
+extern void initialize_revoked_credentials();
 
 extern char *rand_string(char *str, size_t size);
 
@@ -234,3 +235,4 @@ extern void element_add(element_t res, element_t a, element_t b);
 extern void element_getstr(char *buf, int size, element_t e);
 extern void element_from_hash(element_t e, char *buf, int len);
 extern void element_printf(char* format,...);
+

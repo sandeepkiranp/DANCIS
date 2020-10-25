@@ -350,6 +350,8 @@ int main(int argc, char *argv[])
 
     read_services_location();
 
+    initialize_revoked_credentials();
+
     int server_fd; 
     struct sockaddr_in address; 
     int opt = 1; 
