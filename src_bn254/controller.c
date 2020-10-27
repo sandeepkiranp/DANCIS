@@ -34,6 +34,8 @@ int dusers_count = 0;
 
 FILE *logfp = NULL;
 pthread_mutex_t lock;
+int read_G1T_G2T = 0;
+element_t g1t, g2t;
 
 typedef struct delegted_credential
 {
@@ -416,12 +418,12 @@ int handle_constrained_service(credential_t *c, char *service, char *sid, int so
     int i,j;
     int attributes[MAX_NUM_ATTRIBUTES] = {0};
     int found = 0, fndindx = -1;
-    static int read_G1T_G2T = 0;
-    static element_t g1t, g2t;
 
     // verify only c->cred[0]. Thats the user's credential
-    if (read_G1T_G2T == 0)
+    if (read_G1T_G2T == 0) {
 	read_revoked_G1T_G2T(g1t, g2t);
+	read_G1T_G2T = 1;
+    }
 
     if(!is_user_credential_verified(sid))
     {
