@@ -9,8 +9,8 @@
 #define FAILURE 1
 #define N 3
 
-#define HOME_DIR "/home/users/sandeep/dac/dac"
-//#define HOME_DIR "/root/dac"
+//#define HOME_DIR "/home/users/sandeep/dac/dac"
+#define HOME_DIR "/root/dac"
 #define PARAM_FILE HOME_DIR "/root/params.txt"
 #define SERVICES_FILE HOME_DIR "/root/services.txt"
 #define REVOKED_FILE HOME_DIR "/root/revoked.txt"
