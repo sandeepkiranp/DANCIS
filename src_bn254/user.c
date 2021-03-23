@@ -223,6 +223,7 @@ int delegate_credential(char *duser, char *attributes)
         read_element_from_file(fp, "public_key", duser_public_key, 0);
 
         fclose(fp);
+	element_printf("Cont pub key %B", duser_public_key);
 
         i = 1;     
 	a[0] = 1;  // Delegate a dummy attribute A1

@@ -428,12 +428,14 @@ int handle_constrained_service(credential_t *c, char *service, char *sid, int so
     if(!is_user_credential_verified(sid))
     {
         // check for blacklist credential
+	/*
         if(is_credential_valid(c->cred[0]->ca->attributes[0], g2t) == FAILURE)
         {
             mylog(logfp, "handle_constrained_service failed as credential is blacklisted. \
 	    		service %s, sid %s\n", service, sid);
             return FAILURE;
         }
+	*/
 	user_credential_verified(sid);
     }
     
@@ -822,8 +824,8 @@ int main(int argc, char *argv[])
     read_services_location();
     read_policy_attributes_from_services();
 
-    if (MODE != DECENTRALIZED)
-        initialize_revoked_credentials();
+    //if (MODE != DECENTRALIZED)
+    //    initialize_revoked_credentials();
 
     load_delegated_credentials(NULL);
     fflush(logfp);

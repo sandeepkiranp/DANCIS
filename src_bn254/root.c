@@ -281,6 +281,38 @@ static int issue_user_credential(char *user, char *attributes)
 
 }
 
+void handle_request(int sockfd)
+{
+    int n;
+    messagetype mtype;
+
+    n = recv(sockfd, (char *)&mtype, sizeof(messagetype), 0);
+    if (n == -1)
+    {
+        mylog(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
+        close(sockfd);
+        return;
+    }
+
+    switch(mtype)
+    {
+        case REVOCATION_REQUEST:
+            process_revocation(sockfd);
+            break;
+        default:
+            mylog(logfp, "Unknown %d request\n", mtype);
+    }
+    close(sockfd);
+}
+
+void * socketThread(void *arg)
+{
+    int new_socket = *((int *)arg);
+
+    handle_request(new_socket);
+    free(arg);
+}
+
 int main(int argc, char *argv[])
 {
     int i;
@@ -294,19 +326,93 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
-    write_revoked_G1T_G2T();
+    //write_revoked_G1T_G2T();
 
     // ./root ISSUE user1 A1,A3,A4
     if (!strcasecmp(argv[1], "ISSUE"))
     {
         ret = issue_user_credential(argv[2], argv[3]);
+	return 0;
     }
 
     // ./root REVOKE user1
     if (!strcasecmp(argv[1], "REVOKE"))
     {
         ret = revoke_user_credential(argv[2]);
+	return 0;
     }    
+
+    int server_fd;
+    struct sockaddr_in address;
+    int opt = 1;
+
+    // Creating socket file descriptor
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
+    {
+        perror("socket failed");
+        exit(EXIT_FAILURE);
+    }
+
+    // Forcefully attaching socket to the port 8080
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
+                                                  &opt, sizeof(opt)))
+    {
+        perror("setsockopt");
+        exit(EXIT_FAILURE);
+    }
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(get_service_port(ROOT_SVC));
+
+    if (bind(server_fd, (struct sockaddr *)&address,
+                                 sizeof(address))<0)
+    {
+        perror("bind failed");
+        exit(EXIT_FAILURE);
+    }
+
+    if (listen(server_fd, LISTENQ) < 0)
+    {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+
+    while(1)
+    {
+        int len, n;
+        pthread_t the_thread;
+        int *new_socket;
+        struct sockaddr_in cliaddr;
+
+        new_socket = (int *)malloc(sizeof(int));
+
+        len = sizeof(cliaddr);
+
+        if ((*new_socket = accept(server_fd,
+                    (struct sockaddr *)&cliaddr, (socklen_t*)&len))<0)
+        {
+            perror("accept");
+            exit(EXIT_FAILURE);
+        }
+        // TODO : Is it something from my port and my IP? If so, continue
+        if (/*!strcmp(inet_ntoa(cliaddr.sin_addr), ) && */ntohs(cliaddr.sin_port) == address.sin_port)
+        {
+            close(*new_socket);
+            free(new_socket);
+            continue;
+        }
+
+        if( pthread_create(&the_thread, NULL, socketThread, new_socket) != 0 )
+        {
+            printf("Failed to create thread\n");
+            perror("pthread_create");
+            exit(EXIT_FAILURE);
+        }
+
+        mylog(logfp, "Created Thread %d for socket %d\n", (int)the_thread,*new_socket);
+
+        pthread_detach(the_thread);
+    }
 
     printf("Exit from main\n");
     return 0;

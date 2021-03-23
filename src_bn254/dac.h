@@ -4,6 +4,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <mcl/bn_c384_256.h>
+//#include <mcl/bn_c384.h>
 
 #define SUCCESS 0
 #define FAILURE 1
@@ -78,8 +79,6 @@ typedef struct token_element
     element_t ress;
     element_t rescpk;
     element_t rescsk;
-    element_t rev_g1t_r;
-    element_t rev_cpk_r;
     char num_attrs; //cpk + all attributes
     element_t *rest;
     char *revealed;
@@ -102,7 +101,9 @@ typedef enum messagetype
     EVENT_RESPONSE,
     SERVICE_CHAIN_REQUEST,
     SERVICE_CHAIN_RESPONSE,
-    CONSTRAINED_SERVICE_REQUEST
+    CONSTRAINED_SERVICE_REQUEST,
+    REVOCATION_REQUEST,
+    REVOCATION_RESPONSE
 }messagetype;
 
 typedef enum eventtype

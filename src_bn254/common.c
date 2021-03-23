@@ -662,6 +662,8 @@ int initialize_system_params(FILE *logfp)
     FILE *fp = NULL;
 
     int ret = mclBn_init(MCL_BN254, MCLBN_COMPILED_TIME_VAR);
+    //int ret = mclBn_init(MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR);
+    //int ret = mclBn_init(MCL_BN381_1, MCLBN_COMPILED_TIME_VAR);
     if (ret != 0) {
             printf("err ret=%d\n", ret);
             return 1;

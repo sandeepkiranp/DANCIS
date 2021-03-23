@@ -180,12 +180,14 @@ int process_service_request(int sock)
     gettimeofday(&start, NULL);
 
     // check for blacklist credential hash
+    /*
     if(is_credential_valid(tok.te[0].rev_cpk_r, tok.te[0].rev_g1t_r) == FAILURE)
     {
 	mylog(logfp, "process_service_request failed as credential is blacklisted\n");
         token_free(&tok);
 	return FAILURE;
     }
+    */
     gettimeofday(&end, NULL);
     calculate_time_diff("credential blacklist checking", &start, &end);
 
@@ -350,7 +352,7 @@ int main(int argc, char *argv[])
 
     read_services_location();
 
-    initialize_revoked_credentials();
+    //initialize_revoked_credentials();
 
     int server_fd; 
     struct sockaddr_in address; 

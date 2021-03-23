@@ -55,12 +55,6 @@ void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr, char *sid,
             send_element(te->rescpk, 1, sock, servaddr, sid, fp); 
 	}
 
-	//send rev_g1t_r
-	send_element(te->rev_g1t_r, 1, sock, servaddr, sid, fp);
-
-	//send rev_cpk_r
-	send_element(te->rev_cpk_r, 1, sock, servaddr, sid, fp);
-
 	//send num_attrs
 	send_data(1, &te->num_attrs, sock, servaddr, sid, fp);
 
@@ -144,16 +138,12 @@ void token_receive(token_t *tok, int sock)
             element_init_G2(te->r1, pairing);
             element_init_G1(te->ress, pairing);
             element_init_G1(te->rescpk, pairing);            
-            element_init_G2(te->rev_g1t_r, pairing);
-            element_init_G1(te->rev_cpk_r, pairing);
 	}
 	else
         {
             element_init_G1(te->r1, pairing);
             element_init_G2(te->ress, pairing);
             element_init_G2(te->rescpk, pairing);
-            element_init_G1(te->rev_g1t_r, pairing);
-            element_init_G2(te->rev_cpk_r, pairing);
 	}
 
 	//receive r1
@@ -171,12 +161,6 @@ void token_receive(token_t *tok, int sock)
             //receive rescpk
             receive_element(te->rescpk, 1, sock);
 	}
-
-        //receive rev_g1t_r
-        receive_element(te->rev_g1t_r, 1, sock);
-
-        //receive rev_cpk_r
-        receive_element(te->rev_cpk_r, 1, sock);
 
 	//receive num_attrs
 	receive_data(1, &te->num_attrs, sock);
@@ -239,8 +223,6 @@ void token_free(token_t *tok)
 	element_clear(te->r1);
 	element_clear(te->ress);
 	element_clear(te->rescpk);
-	element_clear(te->rev_g1t_r);
-	element_clear(te->rev_cpk_r);
 
         if(l == tok->levels - 1)
 	{
@@ -450,22 +432,6 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
             pairing_apply(eg1R, ic->R, g2, pairing);
         }
 
-	/* compute revocation values for the level */
-        if ((l+1) % 2)
-        {
-            element_init_G2(te->rev_g1t_r, pairing);
-            element_init_G1(te->rev_cpk_r, pairing);
-            element_pow_zn(te->rev_g1t_r, G2T, rhocpk[l]);
-        }
-        else
-        {
-            element_init_G1(te->rev_g1t_r, pairing);
-            element_init_G2(te->rev_cpk_r, pairing);
-            element_pow_zn(te->rev_g1t_r, G1T, rhocpk[l]);
-        }
-        element_pow_zn(te->rev_cpk_r, ic->ca->attributes[0], rhocpk[l]);
-
-
         //com[0] = e(g1,ic->R)^(rhosig*rhos)
         element_mul(temp1, rhosig[l], rhos[l]);
         element_pow_zn(com[l][0], eg1R, temp1);
@@ -514,22 +480,6 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
         //element_printf("com[%d][1] = %B\n", l, com[l][1]);
 
 	//com[l][2] for revocation
-	if((l+1) % 2)
-	{
-	    element_t temp6;
-	    element_init_G1(temp6, pairing);
-            element_pow_zn(temp6, g1, rhocpk[l]);
-            pairing_apply(com[l][2], temp6, te->rev_g1t_r, pairing); 
-	    element_clear(temp6);
-	}
-	else
-	{
-	    element_t temp6;
-	    element_init_G2(temp6, pairing);
-            element_pow_zn(temp6, g2, rhocpk[l]);
-            pairing_apply(com[l][2], te->rev_g1t_r, temp6, pairing); 
-	    element_clear(temp6);
-	}
 
         //element_printf("com[%d][2] = %B\n", l, com[l][2]);
 
@@ -887,11 +837,6 @@ int verify_attribute_token(token_t *tk)
             //element_printf("comt[%d][1] = %B\n", l, comt[l][1]);
 
             // compute comt[l][2]
-            pairing_apply(comt[l][2], tok->rescpk, tok->rev_g1t_r, pairing);
-	    element_neg(temp1, tk->c);
-	    element_pow_zn(temp5, tok->rev_cpk_r, temp1);
-            pairing_apply(temp3, temp5, G2T, pairing);
-            element_mul(comt[l][2], comt[l][2], temp3);
             //element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
 
             for(i=0,j=0,k=0; i<num_attrs - 1; i++)
@@ -985,12 +930,6 @@ int verify_attribute_token(token_t *tk)
 
 
             // compute comt[l][2]
-	    pairing_apply(comt[l][2], tok->rev_g1t_r, tok->rescpk, pairing);
-            element_neg(temp1, tk->c);
-            element_pow_zn(temp5, tok->rev_cpk_r, temp1);
-            pairing_apply(temp3, G1T, temp5, pairing);
-
-	    element_mul(comt[l][2], comt[l][2], temp3);
             //element_printf("comt[%d][2] = %B\n", l, comt[l][2]);
    
             for(i=0,j=0,k=0; i<num_attrs - 1; i++)
