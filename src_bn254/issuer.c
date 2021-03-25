@@ -3,7 +3,7 @@
 #include <errno.h>
 #include <string.h>
 
-credential_attributes * set_credential_attributes(int level, element_t pub, int num_attr, int *attr)
+credential_attributes * set_credential_attributes(int level, element_t pub, int num_attr, int *attr, int use_custom_attr, element_t cattr)
 {
     int i=0,j=0;
     char buffer[150] = {0};
@@ -33,13 +33,20 @@ credential_attributes * set_credential_attributes(int level, element_t pub, int 
 
     element_set(ca->attributes[0],pub);
 
-    for(i=1; i<num_attr + 1; i++)
+    if(use_custom_attr)
     {
-        element_random(ca->attributes[i]);
-	if (level % 2)
-	    element_set(ca->attributes[i], system_attributes_g1[attr[j++]]);
-	else
-	    element_set(ca->attributes[i], system_attributes_g2[attr[j++]]);
+         element_set(ca->attributes[i], cattr);
+    }
+    else
+    {
+        for(i=1; i<num_attr + 1; i++)
+        {
+            element_random(ca->attributes[i]);
+    	    if (level % 2)
+	        element_set(ca->attributes[i], system_attributes_g1[attr[j++]]);
+	    else
+	        element_set(ca->attributes[i], system_attributes_g2[attr[j++]]);
+        }
     }
 
     ca->num_of_attributes = num_attr + 1;

@@ -606,6 +606,46 @@ void generate_credential_token(char *session_id, char *user, char *service, int 
     }
 }
 
+int get_revocation_status(char *user)
+{
+    int sockfd;
+    struct sockaddr_in     servaddr;
+    messagetype mtype = REVOCATION_REQUEST;
+    socklen_t addr_size;
+
+    // Creating socket file descriptor
+    if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
+        perror("socket creation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    memset(&servaddr, 0, sizeof(servaddr));
+
+    // Filling server information
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_port = htons(get_service_port(ROOT_SVC));
+    servaddr.sin_addr.s_addr = INADDR_ANY;
+
+    addr_size = sizeof(servaddr);
+
+    if(connect(sockfd, (struct sockaddr *) &servaddr, addr_size) < 0)
+    {
+        perror("socket connection failed");
+        return FAILURE;
+    }
+
+    int n, len;
+
+    send(sockfd, (const char *)&mtype, sizeof(messagetype), 0);
+
+    printf("Sending revocation request to root for %s\n", user);
+
+    // send user name
+    send(sockfd, user, USER_LENGTH,0);
+
+}
+
+
 int process_event_request(int sock)
 {
     int len, n;
@@ -627,6 +667,9 @@ int process_event_request(int sock)
 
     n = recv(sock, (char *)&evt, sizeof(event_t), 0);
     mylog(logfp, "Received %d event from %s, len = %d\n", evt, user, n);
+
+    //request the root issuer for revocation status
+    get_revocation_status(user);
 
     //load the delegated credentials for this user
     load_delegated_credentials(user);

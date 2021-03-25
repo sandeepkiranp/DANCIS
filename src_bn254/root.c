@@ -281,6 +281,70 @@ static int issue_user_credential(char *user, char *attributes)
 
 }
 
+void process_revocation_request(sockfd)
+{
+    int len, n;
+    struct sockaddr_in address, cliaddr;
+    event_t evt;
+    len = sizeof(cliaddr);
+    messagetype mtype;
+    char user[USER_LENGTH] = {0};
+    int i,j;
+    struct timeval start;
+
+    gettimeofday(&start, NULL);
+
+    double time_in_mill = (start.tv_sec) * 1000 + (start.tv_usec) / 1000 ;
+    mylog(logfp, "Received event request at %f ms\n", time_in_mill);
+
+    n = recv(sock, user, sizeof(user), 0);
+    mylog(logfp, "Received event from %s len %d\n", user, n);
+
+    //read user public key
+    char c[200] = {0};
+    char str[50] = {0};
+    char luser[30] = {0};
+    int levels;
+    char attributes[100] = {0};
+    credential_attributes ca;
+    int i = 0, j = 0;
+    credential_element_t *ce;
+    element_t dummy;
+    element_t user_public_key;
+    element_t current_time;
+    credential_attributes *ca;
+    credential_t ic;
+    char cur_time[30] = {0};
+
+    sprintf(str, "%s/%s/params.txt", USER_DIR, user);
+    printf("Reading parameters from %s\n", str);
+
+    FILE *fp = fopen(str, "r");
+    if (fp == NULL)
+    {
+        printf("Error opening file %s\n", strerror(errno));
+        return FAILURE;
+    }
+
+    fscanf(fp,"user = %s\n", username);
+    fscanf(fp,"levels = %d\n", &ic.levels);
+    fscanf(fp,"attributes = %s\n", attributes);
+
+    element_init_Zr(user_private_key, pairing);
+
+    element_init_G1(user_public_key, pairing);
+
+    read_element_from_file(fp, "dummy", dummy, 1);
+    read_element_from_file(fp, "public_key", user_public_key, 0);
+    
+    sprintf(cur_time, "%ld", time(NULL));
+    element_init_G1(current_time, pairing);
+    element_hash_and_map_to(current_time, cur_time);
+
+    ca = set_credential_attributes(1, user_public_key, 1, a, 1, current_time);
+    ret = issue_credential(root_secret_key, root_public_key, ca, &ic);
+}
+
 void handle_request(int sockfd)
 {
     int n;
@@ -297,7 +361,7 @@ void handle_request(int sockfd)
     switch(mtype)
     {
         case REVOCATION_REQUEST:
-            process_revocation(sockfd);
+            process_revocation_request(sockfd);
             break;
         default:
             mylog(logfp, "Unknown %d request\n", mtype);
@@ -393,13 +457,6 @@ int main(int argc, char *argv[])
         {
             perror("accept");
             exit(EXIT_FAILURE);
-        }
-        // TODO : Is it something from my port and my IP? If so, continue
-        if (/*!strcmp(inet_ntoa(cliaddr.sin_addr), ) && */ntohs(cliaddr.sin_port) == address.sin_port)
-        {
-            close(*new_socket);
-            free(new_socket);
-            continue;
         }
 
         if( pthread_create(&the_thread, NULL, socketThread, new_socket) != 0 )

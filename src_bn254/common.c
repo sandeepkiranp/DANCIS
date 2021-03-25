@@ -363,6 +363,20 @@ void huremi_element_init_Zr(element_t a)
     memset(&a[0], 0, sizeof(a[0]));
     a[0].t = ELEMENT_FR;
 }
+
+void element_hash_and_map_to(element_t a, char *str)
+{
+    switch(a[0].t)
+    {
+        case ELEMENT_G1:
+            mclBnG1_hashAndMapTo(&a[0].e.g1, str, strlen(str));
+            break;
+        case ELEMENT_G2:
+            mclBnG2_hashAndMapTo(&a[0].e.g2, str, strlen(str));
+            break;
+    }
+}
+
 void element_random(element_t a)
 {
     char str[20] = {0};

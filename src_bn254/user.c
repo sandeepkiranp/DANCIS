@@ -189,6 +189,8 @@ int send_event_request(char *user, char *event)
     send(sockfd, user, USER_LENGTH,0);
 
     send(sockfd, (const char *)&evt, sizeof(event_t), 0);
+
+    close(sockfd);
 }
 
 int delegate_credential(char *duser, char *attributes)
