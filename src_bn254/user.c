@@ -230,7 +230,7 @@ int delegate_credential(char *duser, char *attributes)
         i = 1;     
 	a[0] = 1;  // Delegate a dummy attribute A1
 
-        ca = set_credential_attributes(user_level + 1, duser_public_key, i, a);
+        ca = set_credential_attributes(user_level + 1, duser_public_key, i, a, 0, NULL);
 	
         if (!strcasecmp(attributes, "ALL"))
         {

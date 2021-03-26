@@ -612,10 +612,12 @@ void receive_revocation_signature(int sockfd, char **rev_time, credential_t *ic)
     credential_element_t *ce = ic->cred[0];
     unsigned char len;
     char *rtime;
+    int j;
 
-    recv(sockfd, &len, 1, 0, "dummy", fp); 
+    //receive the time revocation signature was generated
+    recv(sockfd, &len, 1, 0); 
     rtime = (char *)malloc(len);
-    recv(sock, rtime, len, 0, "dummy", fp);
+    recv(sockfd, rtime, len, 0);
 
     *rev_time = rtime;
 
@@ -623,7 +625,7 @@ void receive_revocation_signature(int sockfd, char **rev_time, credential_t *ic)
     element_init_G1(ce->S, pairing);
  
     receive_element(ce->R, 1, sockfd);
-    send_element(ce->S, 1, sockfd);
+    receive_element(ce->S, 1, sockfd);
 
     ce->ca->num_of_attributes = 2;
     ce->T = (element_t *)malloc(ce->ca->num_of_attributes * sizeof(element_t));
@@ -641,6 +643,7 @@ int get_revocation_status(char *user)
     messagetype mtype = REVOCATION_REQUEST;
     socklen_t addr_size;
     credential_t c;
+    char *rev_time = NULL;
 
     // Creating socket file descriptor
     if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
@@ -673,7 +676,7 @@ int get_revocation_status(char *user)
     send(sockfd, user, USER_LENGTH,0);
 
     // receive the revocation signature data
-    receive_revocation_signature(sockfd, rev_time, &c);
+    receive_revocation_signature(sockfd, &rev_time, &c);
 
 }
 
