@@ -920,3 +920,53 @@ void mysend(int sockfd, const char *msg, int length, int flags, char *sid, FILE 
     mylog(logfp, "sent %d bytes for session %s\n", n, sid);
     */
 }
+
+void send_data(int length, char *data, int sock, struct sockaddr_in *servaddr, char *sid, FILE *fp)
+{
+    mysend(sock, data, length, 0, sid, fp);
+}
+
+void send_element(element_t e, char compress, int sock, struct sockaddr_in *servaddr, char *sid, FILE *fp)
+{
+    unsigned char len;
+    char buffer[1024] = {0};
+
+    len = element_serialize(e, buffer, sizeof(buffer));
+
+    //first send length
+    send_data(sizeof(len), (char *)&len, sock, servaddr, sid, fp);
+    //send the data
+    send_data(len, buffer, sock, servaddr, sid, fp);
+}
+
+void receive_data(int length, char *data, int sock)
+{
+    int len, n;
+    struct sockaddr_in address, cliaddr;
+
+    len = sizeof(cliaddr);
+    n = recv(sock, data, length,0);
+    if (n == -1)
+    {
+        printf("Error receiving data %s\n", strerror(errno));
+        return;
+    }
+}
+
+void receive_element(element_t e, char compressed, int sock)
+{
+    unsigned char len;
+    unsigned char *buffer;
+
+    //first receive length
+    receive_data(1, &len, sock);
+
+    //receive the data
+    buffer =  (unsigned char *)malloc(len);
+    receive_data(len, buffer, sock);
+
+    element_deserialize(e, buffer, len);
+
+    free(buffer);
+}
+

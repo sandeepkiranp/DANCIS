@@ -20,6 +20,7 @@
 #define TOTAL_ATTRIBUTES (MAX_NUM_ATTRIBUTES + 1) //cpk(i-1) + MAX_NUM_ATTRIBUTES attributes
 
 #define CONTROLLER_SVC "controller"
+#define ROOT_SVC "root"
 
 #define SID_LENGTH 10
 #define SERVICE_LENGTH 15
@@ -174,7 +175,7 @@ extern int initialize_system_params(FILE *fp);
 
 extern void setup_credentials_from_file(FILE *fp, credential_t *c);
 
-extern credential_attributes *set_credential_attributes(int level, element_t pub, int num_attr, int *attr);
+extern credential_attributes *set_credential_attributes(int level, element_t pub, int num_attr, int *attr, int use_custom_attr, element_t cattr);
 
 extern int issue_credential(element_t secret_key, element_t public_key, credential_attributes *ca, credential_t *ic);
 
@@ -218,6 +219,8 @@ extern char *rand_string(char *str, size_t size);
 
 extern void send_element(element_t e, char compress, int sock, struct sockaddr_in *servaddr, char *sid, FILE *fp);
 extern void receive_element(element_t e, char compressed, int sock);
+
+extern void element_hash_and_map_to(element_t a, char *str);
 
 extern void huremi_element_init_G1(element_t e);
 extern void huremi_element_init_G2(element_t e);

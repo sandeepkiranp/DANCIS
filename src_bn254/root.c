@@ -7,8 +7,9 @@
 #include <sys/types.h>
 #include <time.h>
 #include <sys/time.h>
+#include <pthread.h>
 #include "dac.h"
-
+#define LISTENQ 100
 #define USER_DIR HOME_DIR "/users"
 
 void calculate_time_diff(char *prefix, struct timeval *start, struct timeval *end)
@@ -228,7 +229,7 @@ static int issue_user_credential(char *user, char *attributes)
 	    a[i++] = attrindx;
             token = strtok(NULL, ","); 
         }
-	ca = set_credential_attributes(1, pub, i, a);
+	ca = set_credential_attributes(1, pub, i, a, 0, NULL);
 
 	memset(&ic, 0, sizeof(ic));
 	gettimeofday(&start, NULL);
@@ -283,12 +284,13 @@ static int issue_user_credential(char *user, char *attributes)
 
 void send_revocation_signature(int sockfd, char *rev_time, credential_t *ic)
 {
+    int j;
     credential_element_t *ce = ic->cred[0];
 
     unsigned char len = strlen(rev_time);
 
-    mysend(sockfd, &len, 1, 0, "dummy", fp);
-    mysend(sock, rev_time, strlen(rev_time), 0, "dummy", fp);
+    mysend(sockfd, &len, 1, 0, "dummy", stdout);
+    mysend(sockfd, rev_time, strlen(rev_time), 0, "dummy", stdout);
 
     send_element(ce->R, 0, sockfd, NULL, "dummy", stdout);
     send_element(ce->S, 0, sockfd, NULL, "dummy", stdout);
@@ -312,10 +314,10 @@ void process_revocation_request(int sockfd)
     gettimeofday(&start, NULL);
 
     double time_in_mill = (start.tv_sec) * 1000 + (start.tv_usec) / 1000 ;
-    mylog(logfp, "Received event request at %f ms\n", time_in_mill);
+    printf("Received event request at %f ms\n", time_in_mill);
 
     n = recv(sockfd, user, sizeof(user), 0);
-    mylog(logfp, "Received revocation status request from %s len %d\n", user, n);
+    printf("Received revocation status request from %s len %d\n", user, n);
 
     //read user public key
     char c[200] = {0};
@@ -323,8 +325,6 @@ void process_revocation_request(int sockfd)
     char luser[30] = {0};
     int levels;
     char attributes[100] = {0};
-    credential_attributes ca;
-    int i = 0, j = 0;
     credential_element_t *ce;
     element_t dummy;
     element_t user_public_key;
@@ -341,14 +341,12 @@ void process_revocation_request(int sockfd)
     if (fp == NULL)
     {
         printf("Error opening file %s\n", strerror(errno));
-        return FAILURE;
+        return ;
     }
 
     fscanf(fp,"user = %s\n", dum);
     fscanf(fp,"levels = %s\n", dum);
     fscanf(fp,"attributes = %s\n", dum);
-
-    element_init_Zr(user_private_key, pairing);
 
     element_init_G1(user_public_key, pairing);
 
@@ -359,8 +357,8 @@ void process_revocation_request(int sockfd)
     element_init_G1(current_time, pairing);
     element_hash_and_map_to(current_time, cur_time);
 
-    ca = set_credential_attributes(1, user_public_key, 1, a, 1, current_time);
-    ret = issue_credential(root_secret_key, root_public_key, ca, &ic);
+    ca = set_credential_attributes(1, user_public_key, 1, NULL, 1, current_time);
+    issue_credential(root_secret_key, root_public_key, ca, &ic);
 
     send_revocation_signature(sockfd, cur_time, &ic);
 }
@@ -373,7 +371,7 @@ void handle_request(int sockfd)
     n = recv(sockfd, (char *)&mtype, sizeof(messagetype), 0);
     if (n == -1)
     {
-        mylog(logfp, "recvfrom returned %d, %s\n", errno, strerror(errno));
+        printf("recvfrom returned %d, %s\n", errno, strerror(errno));
         close(sockfd);
         return;
     }
@@ -384,7 +382,7 @@ void handle_request(int sockfd)
             process_revocation_request(sockfd);
             break;
         default:
-            mylog(logfp, "Unknown %d request\n", mtype);
+            printf("Unknown %d request\n", mtype);
     }
     close(sockfd);
 }
@@ -486,7 +484,7 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
 
-        mylog(logfp, "Created Thread %d for socket %d\n", (int)the_thread,*new_socket);
+        printf("Created Thread %d for socket %d\n", (int)the_thread,*new_socket);
 
         pthread_detach(the_thread);
     }
