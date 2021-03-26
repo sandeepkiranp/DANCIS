@@ -281,7 +281,24 @@ static int issue_user_credential(char *user, char *attributes)
 
 }
 
-void process_revocation_request(sockfd)
+void send_revocation_signature(int sockfd, char *rev_time, credential_t *ic)
+{
+    credential_element_t *ce = ic->cred[0];
+
+    unsigned char len = strlen(rev_time);
+
+    mysend(sockfd, &len, 1, 0, "dummy", fp);
+    mysend(sock, rev_time, strlen(rev_time), 0, "dummy", fp);
+
+    send_element(ce->R, 0, sockfd, NULL, "dummy", stdout);
+    send_element(ce->S, 0, sockfd, NULL, "dummy", stdout);
+    for(j=0; j<ce->ca->num_of_attributes; j++)
+    {
+        send_element(ce->T[j], 0, sockfd, NULL, "dummy", stdout);
+    }
+}
+
+void process_revocation_request(int sockfd)
 {
     int len, n;
     struct sockaddr_in address, cliaddr;
@@ -297,8 +314,8 @@ void process_revocation_request(sockfd)
     double time_in_mill = (start.tv_sec) * 1000 + (start.tv_usec) / 1000 ;
     mylog(logfp, "Received event request at %f ms\n", time_in_mill);
 
-    n = recv(sock, user, sizeof(user), 0);
-    mylog(logfp, "Received event from %s len %d\n", user, n);
+    n = recv(sockfd, user, sizeof(user), 0);
+    mylog(logfp, "Received revocation status request from %s len %d\n", user, n);
 
     //read user public key
     char c[200] = {0};
@@ -315,6 +332,7 @@ void process_revocation_request(sockfd)
     credential_attributes *ca;
     credential_t ic;
     char cur_time[30] = {0};
+    char dum[100];
 
     sprintf(str, "%s/%s/params.txt", USER_DIR, user);
     printf("Reading parameters from %s\n", str);
@@ -326,9 +344,9 @@ void process_revocation_request(sockfd)
         return FAILURE;
     }
 
-    fscanf(fp,"user = %s\n", username);
-    fscanf(fp,"levels = %d\n", &ic.levels);
-    fscanf(fp,"attributes = %s\n", attributes);
+    fscanf(fp,"user = %s\n", dum);
+    fscanf(fp,"levels = %s\n", dum);
+    fscanf(fp,"attributes = %s\n", dum);
 
     element_init_Zr(user_private_key, pairing);
 
@@ -343,6 +361,8 @@ void process_revocation_request(sockfd)
 
     ca = set_credential_attributes(1, user_public_key, 1, a, 1, current_time);
     ret = issue_credential(root_secret_key, root_public_key, ca, &ic);
+
+    send_revocation_signature(sockfd, cur_time, &ic);
 }
 
 void handle_request(int sockfd)

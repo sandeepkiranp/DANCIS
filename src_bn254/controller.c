@@ -606,12 +606,41 @@ void generate_credential_token(char *session_id, char *user, char *service, int 
     }
 }
 
+void receive_revocation_signature(int sockfd, char **rev_time, credential_t *ic)
+{
+    ic->cred = (credential_element_t **) malloc (1 * sizeof(credential_element_t *));
+    credential_element_t *ce = ic->cred[0];
+    unsigned char len;
+    char *rtime;
+
+    recv(sockfd, &len, 1, 0, "dummy", fp); 
+    rtime = (char *)malloc(len);
+    recv(sock, rtime, len, 0, "dummy", fp);
+
+    *rev_time = rtime;
+
+    element_init_G2(ce->R, pairing);
+    element_init_G1(ce->S, pairing);
+ 
+    receive_element(ce->R, 1, sockfd);
+    send_element(ce->S, 1, sockfd);
+
+    ce->ca->num_of_attributes = 2;
+    ce->T = (element_t *)malloc(ce->ca->num_of_attributes * sizeof(element_t));
+    for(j=0; j<ce->ca->num_of_attributes; j++)
+    {
+	element_init_G1(ce->T[j], pairing);
+        receive_element(ce->T[j], 1, sockfd);
+    }
+}
+
 int get_revocation_status(char *user)
 {
     int sockfd;
     struct sockaddr_in     servaddr;
     messagetype mtype = REVOCATION_REQUEST;
     socklen_t addr_size;
+    credential_t c;
 
     // Creating socket file descriptor
     if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
@@ -642,6 +671,9 @@ int get_revocation_status(char *user)
 
     // send user name
     send(sockfd, user, USER_LENGTH,0);
+
+    // receive the revocation signature data
+    receive_revocation_signature(sockfd, rev_time, &c);
 
 }
 

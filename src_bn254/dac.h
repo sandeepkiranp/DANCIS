@@ -216,6 +216,9 @@ extern void initialize_revoked_credentials();
 
 extern char *rand_string(char *str, size_t size);
 
+extern void send_element(element_t e, char compress, int sock, struct sockaddr_in *servaddr, char *sid, FILE *fp);
+extern void receive_element(element_t e, char compressed, int sock);
+
 extern void huremi_element_init_G1(element_t e);
 extern void huremi_element_init_G2(element_t e);
 extern void huremi_element_init_GT(element_t e);
