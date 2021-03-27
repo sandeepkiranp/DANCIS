@@ -10,8 +10,8 @@
 #define FAILURE 1
 #define N 3
 
-//#define HOME_DIR "/home/users/sandeep/dac/dac"
-#define HOME_DIR "/root/dac"
+#define HOME_DIR "/home/users/sandeep/dac/dac"
+//#define HOME_DIR "/root/dac"
 #define PARAM_FILE HOME_DIR "/root/params.txt"
 #define SERVICES_FILE HOME_DIR "/root/services.txt"
 #define REVOKED_FILE HOME_DIR "/root/revoked.txt"
@@ -63,7 +63,7 @@ typedef struct credential_element
 {
     element_t R;
     element_t S;
-    element_t *T; //CPK + credential hash + n attributes
+    element_t *T; //CPK + n attributes
     credential_attributes *ca;
 }credential_element_t;
 

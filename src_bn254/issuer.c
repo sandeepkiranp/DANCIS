@@ -35,7 +35,7 @@ credential_attributes * set_credential_attributes(int level, element_t pub, int 
 
     if(use_custom_attr)
     {
-         element_set(ca->attributes[i], cattr);
+         element_set(ca->attributes[1], cattr);
     }
     else
     {

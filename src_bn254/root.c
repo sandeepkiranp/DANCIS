@@ -358,6 +358,7 @@ void process_revocation_request(int sockfd)
     element_hash_and_map_to(current_time, cur_time);
 
     ca = set_credential_attributes(1, user_public_key, 1, NULL, 1, current_time);
+    memset(&ic, 0, sizeof(ic));
     issue_credential(root_secret_key, root_public_key, ca, &ic);
 
     send_revocation_signature(sockfd, cur_time, &ic);
@@ -402,31 +403,31 @@ int main(int argc, char *argv[])
 
     dac_generate_parameters();
 
-    if(argc < 2)
+    if(argc > 2)
     {
-        printf("Check Usage\n");
-        exit(-1);
+
+        // ./root ISSUE user1 A1,A3,A4
+        if (!strcasecmp(argv[1], "ISSUE"))
+        {
+            ret = issue_user_credential(argv[2], argv[3]);
+	    return 0;
+        }
+
+        // ./root REVOKE user1
+        if (!strcasecmp(argv[1], "REVOKE"))
+        {
+            ret = revoke_user_credential(argv[2]);
+	    return 0;
+        }    
     }
-
-    //write_revoked_G1T_G2T();
-
-    // ./root ISSUE user1 A1,A3,A4
-    if (!strcasecmp(argv[1], "ISSUE"))
-    {
-        ret = issue_user_credential(argv[2], argv[3]);
-	return 0;
-    }
-
-    // ./root REVOKE user1
-    if (!strcasecmp(argv[1], "REVOKE"))
-    {
-        ret = revoke_user_credential(argv[2]);
-	return 0;
-    }    
 
     int server_fd;
     struct sockaddr_in address;
     int opt = 1;
+    
+    read_services_location();
+
+    printf("Waiting for revocation status requests\n");
 
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
@@ -445,6 +446,8 @@ int main(int argc, char *argv[])
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(get_service_port(ROOT_SVC));
+
+    printf("Listening on %d port\n", address.sin_port);
 
     if (bind(server_fd, (struct sockaddr *)&address,
                                  sizeof(address))<0)

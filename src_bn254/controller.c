@@ -608,11 +608,13 @@ void generate_credential_token(char *session_id, char *user, char *service, int 
 
 void receive_revocation_signature(int sockfd, char **rev_time, credential_t *ic)
 {
-    ic->cred = (credential_element_t **) malloc (1 * sizeof(credential_element_t *));
-    credential_element_t *ce = ic->cred[0];
     unsigned char len;
     char *rtime;
     int j;
+
+    ic->cred = (credential_element_t **) malloc (1 * sizeof(credential_element_t *));
+    credential_element_t *ce = (credential_element_t *)malloc(sizeof(credential_element_t));
+    ic->cred[0] = ce;
 
     //receive the time revocation signature was generated
     recv(sockfd, &len, 1, 0); 
@@ -627,9 +629,9 @@ void receive_revocation_signature(int sockfd, char **rev_time, credential_t *ic)
     receive_element(ce->R, 1, sockfd);
     receive_element(ce->S, 1, sockfd);
 
-    ce->ca->num_of_attributes = 2;
-    ce->T = (element_t *)malloc(ce->ca->num_of_attributes * sizeof(element_t));
-    for(j=0; j<ce->ca->num_of_attributes; j++)
+    int num_of_attributes = 2; //one CPK the other timestamp
+    ce->T = (element_t *)malloc(num_of_attributes * sizeof(element_t));
+    for(j=0; j<num_of_attributes; j++)
     {
 	element_init_G1(ce->T[j], pairing);
         receive_element(ce->T[j], 1, sockfd);
@@ -662,7 +664,7 @@ int get_revocation_status(char *user)
 
     if(connect(sockfd, (struct sockaddr *) &servaddr, addr_size) < 0)
     {
-        perror("socket connection failed");
+        perror("socket connection to root failed");
         return FAILURE;
     }
 
@@ -676,6 +678,7 @@ int get_revocation_status(char *user)
     send(sockfd, user, USER_LENGTH,0);
 
     // receive the revocation signature data
+    memset(&c, 0, sizeof(c));
     receive_revocation_signature(sockfd, &rev_time, &c);
 
 }
