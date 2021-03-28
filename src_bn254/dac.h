@@ -91,6 +91,7 @@ typedef struct token
 {
     char levels;
     token_element_t *te;
+    char *revocation_time;
     token_element_t revocation;
     element_t c;
 }token_t;

@@ -63,6 +63,9 @@ void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr, char *sid,
 
         }
     }
+    //send revocation time;
+    te = tok->revocation;
+
 }
 
 void token_receive(token_t *tok, int sock)
@@ -222,7 +225,7 @@ void read_revoked_G1T_G2T(element_t g1t, element_t g2t)
     fclose(fp);
 }
 
-void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, credential_t *revc)
+void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, credential_t *revc, char *rev_time)
 {
     int i, j, k, l;
     element_t *r1, *rhosig, *s1, **t1;
