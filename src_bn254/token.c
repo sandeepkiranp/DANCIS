@@ -673,6 +673,26 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, c
 	element_clear(temp5);
     }
 
+    //set res values for revoaction. rescpk will be same rescpk[0]
+    te = &tok->revocation;
+    element_init_same_as(te->r1, rev_r1);
+    element_set(te->t1, rev_r1);
+
+    element_init_G1(te->ress, pairing);
+    element_init_G1(temp5, pairing);
+
+    //ress = g1^rhos * s1^c
+    element_pow_zn(te->ress, g1, rev_rhos); 
+    
+    te->rest = (element_t *)malloc(2 * sizeof(element_t));
+    for(i=0; i<num_attrs; i++)
+    {
+        element_init_G1(te->rest[i], pairing);
+        element_pow_zn(te->rest[i], g1, rhot[l][i]);
+    }
+
+
+
     //clear of everything used in this function
     element_clear(one_by_r);
     element_clear(G1T);
