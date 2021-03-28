@@ -75,6 +75,7 @@ typedef struct session
     int num_services;
     char *services[1000];
     int is_user_credential_verified;
+    credential_t *revc;
 }session_t;
 
 int num_sessions = 0;
@@ -419,12 +420,6 @@ int handle_constrained_service(credential_t *c, char *service, char *sid, int so
     int attributes[MAX_NUM_ATTRIBUTES] = {0};
     int found = 0, fndindx = -1;
 
-    // verify only c->cred[0]. Thats the user's credential
-    if (read_G1T_G2T == 0) {
-	read_revoked_G1T_G2T(g1t, g2t);
-	read_G1T_G2T = 1;
-    }
-
     if(!is_user_credential_verified(sid))
     {
         // check for blacklist credential
@@ -483,7 +478,7 @@ int handle_constrained_service(credential_t *c, char *service, char *sid, int so
     }
 }
 
-void generate_credential_token(char *session_id, char *user, char *service, int sockfd)
+void generate_credential_token(char *session_id, credential_t *revc, char *user, char *service, int sockfd)
 {
     int i = 0,j = 0;
     credential_t *c = NULL;
@@ -502,6 +497,7 @@ void generate_credential_token(char *session_id, char *user, char *service, int 
 	// Generate random session_id
 	rand_string(sessions[num_sessions].sid, sizeof(sessions[num_sessions].sid)); 
         strcpy(sessions[num_sessions].user, user);
+	sessions[num_sessions].revc = revc
 	session_id = sessions[num_sessions].sid;
         num_sessions++;
     }
@@ -519,6 +515,7 @@ void generate_credential_token(char *session_id, char *user, char *service, int 
 		    return;	
 		}
 	        user = sessions[i].user;
+		revc = sessions[num_sessions].revc;
 		break;
 	    }
 	}
@@ -584,7 +581,7 @@ void generate_credential_token(char *session_id, char *user, char *service, int 
 
 	    token_t tok;
 	    gettimeofday(&start, NULL);
-            generate_attribute_token(&tok, c, revealed);    
+            generate_attribute_token(&tok, c, revealed, revc);    
 	    gettimeofday(&end, NULL);
 	    calculate_time_diff("generate attribute token", &start, &end);
 
@@ -638,13 +635,12 @@ void receive_revocation_signature(int sockfd, char **rev_time, credential_t *ic)
     }
 }
 
-int get_revocation_status(char *user)
+int get_revocation_status(char *user, credential_t *c)
 {
     int sockfd;
     struct sockaddr_in     servaddr;
     messagetype mtype = REVOCATION_REQUEST;
     socklen_t addr_size;
-    credential_t c;
     char *rev_time = NULL;
 
     // Creating socket file descriptor
@@ -679,8 +675,9 @@ int get_revocation_status(char *user)
 
     // receive the revocation signature data
     memset(&c, 0, sizeof(c));
-    receive_revocation_signature(sockfd, &rev_time, &c);
+    receive_revocation_signature(sockfd, &rev_time, c);
 
+    close(sockfd);
 }
 
 
@@ -694,6 +691,7 @@ int process_event_request(int sock)
     char user[USER_LENGTH] = {0};
     int i,j;
     struct timeval start;
+    credential_t revc;
 
     gettimeofday(&start, NULL);
 
@@ -707,7 +705,7 @@ int process_event_request(int sock)
     mylog(logfp, "Received %d event from %s, len = %d\n", evt, user, n);
 
     //request the root issuer for revocation status
-    get_revocation_status(user);
+    get_revocation_status(user, &revc);
 
     //load the delegated credentials for this user
     load_delegated_credentials(user);
@@ -718,7 +716,7 @@ int process_event_request(int sock)
 	{
 	    for(j = 0; esmap[i].services[j] != NULL; j++)
 	    {
-                generate_credential_token(NULL, user, esmap[i].services[j], -1);
+                generate_credential_token(NULL, &revc, user, esmap[i].services[j], -1);
 	    }
 	}
     }	
@@ -827,7 +825,7 @@ int process_service_chain_request(int sock)
     }
     mylog(logfp,"Received session ID %s, len = %d\n", sid, n);
 
-    generate_credential_token(sid, NULL, service, sock);
+    generate_credential_token(sid, NULL, NULL, service, sock);
 }
 
 contmode_t get_controller_mode(char *mode)

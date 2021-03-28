@@ -222,7 +222,7 @@ void read_revoked_G1T_G2T(element_t g1t, element_t g2t)
     fclose(fp);
 }
 
-void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
+void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, credential_t *revc)
 {
     int i, j, k, l;
     element_t *r1, *rhosig, *s1, **t1;
@@ -265,6 +265,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
 
     element_init_Zr(one_by_r, pairing);
 
+    //randomize the signature
     for (l=0; l< ci->levels; l++)
     {
         ic = ci->cred[l];
@@ -307,6 +308,32 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
         }
     }
 
+    // randomize the revocation signature. Currently revocation is only for the level 1 (user/device)
+    // there are only two attributes during revocation. One is CPK (not revealed) other is timestapm (revealed)
+    element_t rev_r1, rev_rhosig, rev_s1, rev_t1[2];
+
+    element_init_Zr(rev_rhosig, pairing);
+    element_init_G2(rev_r1, pairing);
+    element_init_G1(rev_s1, pairing);
+
+    element_init_G1(rev_t1[0], pairing); //CPK
+    element_init_G1(rev_t1[1], pairing); //timestamp
+
+    //randomize the revocation signature
+    element_random(rev_rhosig);
+    element_invert(one_by_r, rev_rhosig);
+
+    element_pow_zn(rev_r1, revc->R, rhosig);
+
+    element_pow_zn(rev_s1, revc->S, one_by_r);
+
+    for(i=0; i<2; i++)
+    {
+        //element_printf("level - %d, ic->T[%d] = %B\n", l, i, ic->T[i]);
+        element_pow_zn(rev_t1[i], revc->T[i], one_by_r);
+        //element_printf("t1[%d][%d] = %B\n", l, i, t1[l][i]);
+    }
+
     //printf("Done!\n");
 
     //printf("\t2. Compute com-values...");
@@ -334,9 +361,6 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
     element_random(rhocsk);
 
     pairing_apply(eg1g2, g1, g2, pairing);
-    read_revoked_G1T_G2T(G1T, G2T);
-    //element_printf("G1T = %B\n", G2T);
-    //element_printf("G2T = %B\n", G1T);
 
     for (l=0; l< ci->levels; l++)
     {
@@ -465,7 +489,39 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
         }
     }
     //printf("Done!\n");
+    
+    //compute com values for revocation signature. Remember we do this only for level-0 
+    element_t rev_rhos, rev_rhot[2];
+    element_init_Zr(rev_rhos, pairing);
+    element_random(rev_rhos);
 
+    for(i=0; i<2; i++) //one for cpk and one for timestamp
+    {
+        element_init_Zr(rev_rhot[i], pairing);
+        element_random(rev_rhot[i]);
+    }
+
+    for(i=0; i<3; i++) //for s, cpk and timestamp
+    {
+        element_init_GT(rev_com[i], pairing);
+    }
+
+    //rev_com[0]
+    pairing_apply(eg1R, g1, revc->R, pairing);
+    element_mul(temp1, rev_rhosig, rev_rhos);
+    element_pow_zn(rev_com[0], eg1R, temp1);
+
+    //rev_com[1]
+    element_mul(temp1, rev_rhosig, rev_rhot[0]);
+    element_pow_zn(rev_com[1], eg1R, temp1); 
+
+    element_neg(negrhocpk, rhocpk[0]); //use rhocpk from level 0
+    element_pow_zn(temp2, eg1g2, negrhocpk);
+    element_mul(rev_com[1], rev_com[1], temp2);
+
+    //rev_com[2]
+    element_mul(temp1, rev_rhosig, rev_rhot[1]);
+    element_pow_zn(rev_com[2], eg1R, temp1);
 
     //printf("\t3. Compute c...");
     char buffer[150] = {0};
@@ -480,12 +536,20 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed)
         for(i=0; i<ci->cred[l]->ca->num_of_attributes+2; i++)
         {
             element_getstr(buffer,size,com[l][i]);
-	    //strcat(buffer, hash);
 	    sprintf(buffer + size, "%s", hash);
 	    SHA1(hash, buffer);
 	    //printf("Buffer = %s(%ld), Hash = %s(%ld)\n", buffer, strlen(buffer), hash, strlen(hash));
         }
     }
+    //add revocation com values
+    for(i=0; i<3; i++) //for s, cpk and timestamp
+    {
+        element_getstr(buffer,size,rev_com[i]);
+        sprintf(buffer + size, "%s", hash);
+        SHA1(hash, buffer);
+        //printf("Buffer = %s(%ld), Hash = %s(%ld)\n", buffer, strlen(buffer), hash, strlen(hash));
+    }
+
     element_from_hash(tok->c, hash, strlen(hash));
     //element_printf("c = %B\n", tok->c);
 

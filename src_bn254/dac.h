@@ -187,7 +187,7 @@ extern void get_root_public_key(element_t x);
 
 extern void credential_set_private_key(element_t secret_key, credential_t *ic);
 
-extern void generate_attribute_token(token_t *tok, credential_t *ic, char **revealed);
+extern void generate_attribute_token(token_t *tok, credential_t *ic, char **revealed, credential_t *revc);
 
 extern int verify_attribute_token(token_t *tok);
 
