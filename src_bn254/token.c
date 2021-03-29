@@ -66,7 +66,7 @@ void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr, char *sid,
     //send revocation time;
     unsigned char time_len = strlen(tok->revocation_time);
     send_data(1,&time_len, sock, servaddr, sid, fp); 
-    send_data(strlen(tok->revocation_time), tok->revocation_time, sock, servaddr, sid, fp);
+    send_data(time_len, tok->revocation_time, sock, servaddr, sid, fp);
 
     te = &tok->revocation;
     //send r1
@@ -724,15 +724,20 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, c
 
     //ress = g1^rhos * s1^c
     element_pow_zn(te->ress, g1, rev_rhos); 
-    
+    element_pow_zn(temp5, rev_s1, tok->c);
+    element_mul(te->ress, te->ress, temp5);    
+
     te->rest = (element_t *)malloc(2 * sizeof(element_t));
     for(i=0; i<2; i++)
     {
         element_init_G1(te->rest[i], pairing);
         element_pow_zn(te->rest[i], g1, rev_rhot[i]);
+        element_pow_zn(temp5, rev_t1[i], tok->c);
+        element_mul(te->rest[i], te->rest[i], temp5);
     }
 
-    tok->revocation_time = rev_time;
+    tok->revocation_time = malloc(strlen(rev_time));
+    strcpy(tok->revocation_time, rev_time);
 
     //clear of everything used in this function
     element_clear(one_by_r);
