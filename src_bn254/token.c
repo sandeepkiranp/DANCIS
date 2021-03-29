@@ -64,7 +64,22 @@ void token_send(token_t *tok, int sock, struct sockaddr_in *servaddr, char *sid,
         }
     }
     //send revocation time;
-    te = tok->revocation;
+    unsigned char time_len = strlen(tok->revocation_time);
+    send_data(1,&time_len, sock, servaddr, sid, fp); 
+    send_data(strlen(tok->revocation_time), tok->revocation_time, sock, servaddr, sid, fp);
+
+    te = &tok->revocation;
+    //send r1
+    send_element(te->r1, 1, sock, servaddr, sid, fp);
+
+    //send ress
+    send_element(te->ress, 1, sock, servaddr, sid, fp);
+
+    for(i=0; i < 2; i++)
+    {
+        //send rest
+        send_element(te->rest[i], 1, sock, servaddr, sid, fp);
+    }
 
 }
 
@@ -161,6 +176,29 @@ void token_receive(token_t *tok, int sock)
                 receive_element(te->resa[k++], 1, sock);
 	    }
         }
+    }
+
+    //receive revocation data
+    
+    unsigned char time_len;
+    receive_data(1, &time_len, sock);
+    tok->revocation_time = (char *)malloc(time_len);
+    receive_data(time_len, tok->revocation_time, sock); 
+
+    te = &tok->revocation;
+    element_init_G2(te->r1, pairing);
+    element_init_G1(te->ress, pairing);
+    //receive r1
+    receive_element(te->r1, 1, sock);
+    //receive ress
+    receive_element(te->ress, 1, sock);
+
+    te->rest = (element_t *)malloc(2 * sizeof(element_t));
+    for(i=0; i < 2; i++)
+    {
+        element_init_G1(te->rest[i], pairing);
+        //receive rest
+        receive_element(te->rest[i], 1, sock);
     }
 }
 
@@ -494,7 +532,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, c
     //printf("Done!\n");
     
     //compute com values for revocation signature. Remember we do this only for level-0 
-    element_t rev_rhos, rev_rhot[2];
+    element_t rev_rhos, rev_rhot[2], rev_com[3];
     element_init_Zr(rev_rhos, pairing);
     element_random(rev_rhos);
 
@@ -688,13 +726,13 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, c
     element_pow_zn(te->ress, g1, rev_rhos); 
     
     te->rest = (element_t *)malloc(2 * sizeof(element_t));
-    for(i=0; i<num_attrs; i++)
+    for(i=0; i<2; i++)
     {
         element_init_G1(te->rest[i], pairing);
-        element_pow_zn(te->rest[i], g1, rhot[l][i]);
+        element_pow_zn(te->rest[i], g1, rev_rhot[i]);
     }
 
-
+    tok->revocation_time = rev_time;
 
     //clear of everything used in this function
     element_clear(one_by_r);
@@ -793,10 +831,6 @@ int verify_attribute_token(token_t *tk)
     element_init_GT(eg1g2, pairing);
 
     pairing_apply(eg1g2, g1, g2, pairing);    
-
-    read_revoked_G1T_G2T(G1T, G2T);
-    //element_printf("G1T = %B\n", G2T);
-    //element_printf("G2T = %B\n", G1T);
 
     comt = (element_t **)malloc(tk->levels * sizeof(element_t *));
 
@@ -999,6 +1033,49 @@ int verify_attribute_token(token_t *tk)
         }
     }
 
+    //compute com values for revocation
+    element_t rev_comt[3];
+    element_init_G1(temp5, pairing);
+
+    tok = &tk->revocation;
+    //comt[0] = t(ress,r1) (e(y1[0],g2) * (e(g1,root_public_key))^(-c)
+    pairing_apply(rev_comt[0], tok->ress, tok->r1, pairing);
+
+    pairing_apply(temp3, Y1[0], g2, pairing);
+    pairing_apply(temp4, g1, root_public_key, pairing);
+    element_mul(temp3, temp3, temp4);
+    element_neg(temp1, tk->c);
+    element_pow_zn(temp3, temp3, temp1); 
+    element_mul(rev_comt[0], rev_comt[0], temp3);
+    //element_printf("comt[%d][0] = %B\n", l, comt[l][0]);
+
+    pairing_apply(rev_comt[1], tok->rest[0], tok->r1, pairing);
+    //e(rescpk[i],g2^(-1))
+    pairing_apply(temp3, tk->te[0].rescpk, g2, pairing); //use rescpk from level 0
+    element_invert(temp3, temp3);
+    element_mul(rev_comt[1], rev_comt[1], temp3);
+
+    pairing_apply(temp3, Y1[0], root_public_key, pairing);
+    element_neg(temp1, tk->c);
+    element_pow_zn(temp3, temp3, temp1);
+    element_mul(rev_comt[1], rev_comt[1], temp3);
+
+
+    pairing_apply(rev_comt[2], tok->rest[1], tok->r1, pairing);
+    //build the element from revocation time
+    element_t revocation_time;
+    element_init_G1(revocation_time, pairing);
+    element_hash_and_map_to(revocation_time, te->revocation_time);
+
+    pairing_apply(temp2, revocation_time, g2, pairing);
+
+    pairing_apply(temp3, Y1[1],root_public_key, pairing);
+    element_mul(temp2, temp2, temp3);
+    element_neg(temp1, tk->c);
+    element_pow_zn(temp2, temp2, temp1);
+
+    element_mul(rev_comt[2], rev_comt[2], temp2);
+
     //printf("\t3. Compute c\n");
     char buffer[150] = {0};
     int size = 100;
@@ -1017,6 +1094,15 @@ int verify_attribute_token(token_t *tk)
 	    //printf("Buffer = %s, Hash = %s\n", buffer, hash);
         }
     }
+    //add revocation com values
+    for(i=0; i<3; i++) //for s, cpk and timestamp
+    {
+        element_getstr(buffer,size,rev_comt[i]);
+        sprintf(buffer + size, "%s", hash);
+        SHA1(hash, buffer);
+        //printf("Buffer = %s(%ld), Hash = %s(%ld)\n", buffer, strlen(buffer), hash, strlen(hash));
+    }
+
     element_from_hash(ct, hash, strlen(hash));
 
     if (element_cmp(tk->c, ct))
