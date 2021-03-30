@@ -354,6 +354,7 @@ void process_revocation_request(int sockfd)
     read_element_from_file(fp, "public_key", user_public_key, 0);
     
     sprintf(cur_time, "%ld", time(NULL));
+    printf("Setting revocation status at %s\n", cur_time);
     element_init_G1(current_time, pairing);
     element_hash_and_map_to(current_time, cur_time);
 
