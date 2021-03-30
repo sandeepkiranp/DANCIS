@@ -675,7 +675,7 @@ int get_revocation_status(char *user, credential_t *c,  char **rev_time)
     send(sockfd, user, USER_LENGTH,0);
 
     // receive the revocation signature data
-    memset(&c, 0, sizeof(c));
+    memset(c, 0, sizeof(c));
     receive_revocation_signature(sockfd, rev_time, c);
 
     close(sockfd);
