@@ -484,8 +484,6 @@ void generate_credential_token(char *session_id, credential_t *revc, char *rev_t
     int i = 0,j = 0;
     credential_t *c = NULL;
     struct timeval start, end;
-    char *rev_time;
-
 
     if (session_id == NULL)
     {
@@ -499,7 +497,7 @@ void generate_credential_token(char *session_id, credential_t *revc, char *rev_t
 	// Generate random session_id
 	rand_string(sessions[num_sessions].sid, sizeof(sessions[num_sessions].sid)); 
         strcpy(sessions[num_sessions].user, user);
-	sessions[num_sessions].revc = revc
+	sessions[num_sessions].revc = revc;
         strcpy(sessions[num_sessions].revtime, rev_time);
 	session_id = sessions[num_sessions].sid;
         num_sessions++;

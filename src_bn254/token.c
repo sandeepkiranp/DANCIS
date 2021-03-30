@@ -364,14 +364,14 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, c
     element_random(rev_rhosig);
     element_invert(one_by_r, rev_rhosig);
 
-    element_pow_zn(rev_r1, revc->R, rhosig);
+    element_pow_zn(rev_r1, revc->cred[0]->R, rev_rhosig);
 
-    element_pow_zn(rev_s1, revc->S, one_by_r);
+    element_pow_zn(rev_s1, revc->cred[0]->S, one_by_r);
 
     for(i=0; i<2; i++)
     {
         //element_printf("level - %d, ic->T[%d] = %B\n", l, i, ic->T[i]);
-        element_pow_zn(rev_t1[i], revc->T[i], one_by_r);
+        element_pow_zn(rev_t1[i], revc->cred[0]->T[i], one_by_r);
         //element_printf("t1[%d][%d] = %B\n", l, i, t1[l][i]);
     }
 
@@ -548,7 +548,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, c
     }
 
     //rev_com[0]
-    pairing_apply(eg1R, g1, revc->R, pairing);
+    pairing_apply(eg1R, g1, revc->cred[0]->R, pairing);
     element_mul(temp1, rev_rhosig, rev_rhos);
     element_pow_zn(rev_com[0], eg1R, temp1);
 
@@ -717,7 +717,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, c
     //set res values for revoaction. rescpk will be same rescpk[0]
     te = &tok->revocation;
     element_init_same_as(te->r1, rev_r1);
-    element_set(te->t1, rev_r1);
+    element_set(te->r1, rev_r1);
 
     element_init_G1(te->ress, pairing);
     element_init_G1(temp5, pairing);
@@ -1070,7 +1070,7 @@ int verify_attribute_token(token_t *tk)
     //build the element from revocation time
     element_t revocation_time;
     element_init_G1(revocation_time, pairing);
-    element_hash_and_map_to(revocation_time, te->revocation_time);
+    element_hash_and_map_to(revocation_time, tk->revocation_time);
 
     pairing_apply(temp2, revocation_time, g2, pairing);
 
