@@ -669,7 +669,7 @@ int get_revocation_status(char *user, credential_t *c,  char **rev_time)
 
     send(sockfd, (const char *)&mtype, sizeof(messagetype), 0);
 
-    printf("Sending revocation request to root for %s\n", user);
+    mylog(logfp, "Sending revocation request to root for %s\n", user);
 
     // send user name
     send(sockfd, user, USER_LENGTH,0);

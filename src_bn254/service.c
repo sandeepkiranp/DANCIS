@@ -177,19 +177,18 @@ int process_service_request(int sock)
     gettimeofday(&end, NULL);
     calculate_time_diff("verify attribute token", &start, &end);
 
-    gettimeofday(&start, NULL);
+    //is the revocation time within the expected value?
+    char cur_time[30];
+    mylog(logfp, "Revocation time received in token %s\n", tok.revocation_time);
+    long my_time, their_time;
+    their_time = strtol(tok.revocation_time, NULL, 10);
+    my_time = time(NULL);
 
-    // check for blacklist credential hash
-    /*
-    if(is_credential_valid(tok.te[0].rev_cpk_r, tok.te[0].rev_g1t_r) == FAILURE)
+    if (my_time - their_time > 600)
     {
-	mylog(logfp, "process_service_request failed as credential is blacklisted\n");
-        token_free(&tok);
-	return FAILURE;
+        mylog(logfp, "Revocation time stamp is older than current time by 600s\n");
+        return FAILURE;
     }
-    */
-    gettimeofday(&end, NULL);
-    calculate_time_diff("credential blacklist checking", &start, &end);
 
     // Evaluate policy
     gettimeofday(&start, NULL);

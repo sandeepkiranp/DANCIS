@@ -576,7 +576,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, c
     {
         for(i=0; i<ci->cred[l]->ca->num_of_attributes+2; i++)
         {
-	    element_printf("com[%d][%d] = %B\n", l, i, com[l][i]);
+	    //element_printf("com[%d][%d] = %B\n", l, i, com[l][i]);
             element_getstr(buffer,size,com[l][i]);
 	    sprintf(buffer + size, "%s", hash);
 	    SHA1(hash, buffer);
@@ -586,7 +586,7 @@ void generate_attribute_token(token_t *tok, credential_t *ci, char **revealed, c
     //add revocation com values
     for(i=0; i<3; i++) //for s, cpk and timestamp
     {
-	element_printf("rev_com[%d] = %B\n", i, rev_com[i]);
+	//element_printf("rev_com[%d] = %B\n", i, rev_com[i]);
         element_getstr(buffer,size,rev_com[i]);
         sprintf(buffer + size, "%s", hash);
         SHA1(hash, buffer);
@@ -1075,7 +1075,6 @@ int verify_attribute_token(token_t *tk)
 
     pairing_apply(rev_comt[2], tok->rest[1], tok->r1, pairing);
     //build the element from revocation time
-    printf("Revocation time received is %s\n", tk->revocation_time);
     element_t revocation_time;
     element_init_G1(revocation_time, pairing);
     element_hash_and_map_to(revocation_time, tk->revocation_time);
@@ -1101,7 +1100,7 @@ int verify_attribute_token(token_t *tk)
     {
         for(i=0; i<tk->te[l].num_attrs + 2; i++)
         {
-	    element_printf("com[%d][%d] = %B\n", l, i, comt[l][i]);
+	    //element_printf("com[%d][%d] = %B\n", l, i, comt[l][i]);
 	    element_getstr(buffer,size,comt[l][i]);
 	    sprintf(buffer + size, "%s", hash);
             SHA1(hash, buffer);
@@ -1111,7 +1110,7 @@ int verify_attribute_token(token_t *tk)
     //add revocation com values
     for(i=0; i<3; i++) //for s, cpk and timestamp
     {
-	element_printf("rev_com[%d] = %B\n", i, rev_comt[i]);
+	//element_printf("rev_com[%d] = %B\n", i, rev_comt[i]);
         element_getstr(buffer,size,rev_comt[i]);
         sprintf(buffer + size, "%s", hash);
         SHA1(hash, buffer);
