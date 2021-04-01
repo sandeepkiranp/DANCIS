@@ -181,6 +181,10 @@ extern credential_attributes *set_credential_attributes(int level, element_t pub
 
 extern int issue_credential(element_t secret_key, element_t public_key, credential_attributes *ca, credential_t *ic);
 
+extern void free_credential_attributes(credential_attributes *ca);
+
+extern void free_credential(credential_t *ic);
+
 extern void generate_user_keys(int level, element_t priv, element_t pub);
 
 extern void get_root_secret_key(element_t x);

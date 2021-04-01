@@ -363,6 +363,9 @@ void process_revocation_request(int sockfd)
     issue_credential(root_secret_key, root_public_key, ca, &ic);
 
     send_revocation_signature(sockfd, cur_time, &ic);
+
+    free_credential_attributes(ca);
+    free_credential(&ic);
 }
 
 void handle_request(int sockfd)

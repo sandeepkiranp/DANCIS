@@ -242,6 +242,15 @@ void token_free(token_t *tok)
 	free(te->resa);
     }
     free(tok->te);
+    //free revocation stuff
+    free(tok->revocation_time);
+    te = &tok->revocation;
+    element_clear(te->r1);
+    element_clear(te->ress);
+    for(i=0; i < 2; i++)
+    {
+        element_clear(te->rest[i]);
+    }
 }
 
 void read_revoked_G1T_G2T(element_t g1t, element_t g2t)

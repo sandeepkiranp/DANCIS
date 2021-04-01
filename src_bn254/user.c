@@ -122,7 +122,7 @@ void initialize_credential(credential_t *src, credential_t *dst)
     }
 }
 
-void free_credential(credential_t *dst)
+void free_delegated_credential(credential_t *dst)
 {
     credential_element_t *ced;
     int i, j;
@@ -287,7 +287,7 @@ int delegate_credential(char *duser, char *attributes)
             }
         }
         printf("Finished writing delegated credentials\n");
-        free_credential(&dic);
+        free_delegated_credential(&dic);
     }
 }
 

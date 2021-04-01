@@ -55,6 +55,19 @@ credential_attributes * set_credential_attributes(int level, element_t pub, int 
     return ca;
 }
 
+void free_credential_attributes(credential_attributes *ca)
+{
+    int i;
+
+    for(i=0; i<ca->num_of_attributes; i++)
+    {
+        element_clear(ca->attributes[i]);
+    }
+    free(ca->attributes);
+    free(ca);
+
+}
+
 int issue_credential(element_t secret_key, element_t public_key, credential_attributes *ca, credential_t *ic)
 {
     int i;
@@ -80,6 +93,16 @@ int issue_credential(element_t secret_key, element_t public_key, credential_attr
     ic->cred[ic->levels - 1] = ce;
 
     return SUCCESS;
+}
+
+void free_credential(credential_t *ic)
+{
+    int i = 0;
+    for(i=0; i<ic->levels; i++)
+    {
+        free(ic->cred[i]);
+    }
+    free(ic->cred);
 }
 
 void credential_set_private_key(element_t secret_key, credential_t *ic)
