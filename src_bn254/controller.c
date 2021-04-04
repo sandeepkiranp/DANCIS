@@ -722,8 +722,8 @@ int process_event_request(int sock)
 	    }
 	}
     }	
-    free_credential(&revc);
-    free(rev_time);
+    //free_credential(&revc);
+    //free(rev_time);
 }
 
 int read_policy_attributes_from_services()
