@@ -516,8 +516,8 @@ void generate_credential_token(char *session_id, credential_t *revc, char *rev_t
 		    return;	
 		}
 	        user = sessions[i].user;
-		revc = sessions[num_sessions].revc;
-		rev_time = sessions[num_sessions].revtime;
+		revc = sessions[i].revc;
+		rev_time = sessions[i].revtime;
 		break;
 	    }
 	}
