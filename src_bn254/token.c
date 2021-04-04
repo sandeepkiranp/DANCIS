@@ -251,6 +251,7 @@ void token_free(token_t *tok)
     {
         element_clear(te->rest[i]);
     }
+    free(te->rest);
 }
 
 void read_revoked_G1T_G2T(element_t g1t, element_t g2t)
