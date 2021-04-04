@@ -372,7 +372,7 @@ void handle_request(int sockfd)
 {
     int n;
     messagetype mtype;
-
+    struct timeval start, end;
     n = recv(sockfd, (char *)&mtype, sizeof(messagetype), 0);
     if (n == -1)
     {
@@ -384,7 +384,10 @@ void handle_request(int sockfd)
     switch(mtype)
     {
         case REVOCATION_REQUEST:
+            gettimeofday(&start, NULL);
             process_revocation_request(sockfd);
+            gettimeofday(&end, NULL);
+	    calculate_time_diff("process revocation request", &start, &end);
             break;
         default:
             printf("Unknown %d request\n", mtype);
@@ -450,8 +453,6 @@ int main(int argc, char *argv[])
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(get_service_port(ROOT_SVC));
-
-    printf("Listening on %d port\n", address.sin_port);
 
     if (bind(server_fd, (struct sockaddr *)&address,
                                  sizeof(address))<0)

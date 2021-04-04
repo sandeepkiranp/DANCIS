@@ -612,6 +612,7 @@ void receive_revocation_signature(int sockfd, char **rev_time, credential_t **ic
     int j;
 
     credential_t *lic = (credential_t *)malloc(sizeof(credential_t));
+    memset(lic, 0, sizeof(credential_t));
 
     lic->cred = (credential_element_t **) malloc (1 * sizeof(credential_element_t *));
     credential_element_t *ce = (credential_element_t *)malloc(sizeof(credential_element_t));
@@ -651,7 +652,7 @@ int get_revocation_status(char *user, credential_t **c,  char **rev_time)
     // Creating socket file descriptor
     if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
         perror("socket creation failed");
-        exit(EXIT_FAILURE);
+        return FAILURE;
     }
 
     memset(&servaddr, 0, sizeof(servaddr));
@@ -679,14 +680,13 @@ int get_revocation_status(char *user, credential_t **c,  char **rev_time)
     send(sockfd, user, USER_LENGTH,0);
 
     // receive the revocation signature data
-    memset(c, 0, sizeof(c));
     receive_revocation_signature(sockfd, rev_time, c);
 
     close(sockfd);
 }
 
 
-int process_event_request(int sock)
+void process_event_request(int sock)
 {
     int len, n;
     struct sockaddr_in address, cliaddr;
@@ -711,7 +711,8 @@ int process_event_request(int sock)
     mylog(logfp, "Received %d event from %s, len = %d\n", evt, user, n);
 
     //request the root issuer for revocation status
-    get_revocation_status(user, &revc, &rev_time);
+    if(get_revocation_status(user, &revc, &rev_time) == FAILURE)
+        return;
 
     //load the delegated credentials for this user
     load_delegated_credentials(user);
