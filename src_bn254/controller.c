@@ -605,15 +605,17 @@ void generate_credential_token(char *session_id, credential_t *revc, char *rev_t
     }
 }
 
-void receive_revocation_signature(int sockfd, char **rev_time, credential_t *ic)
+void receive_revocation_signature(int sockfd, char **rev_time, credential_t **ic)
 {
     unsigned char len;
     char *rtime;
     int j;
 
-    ic->cred = (credential_element_t **) malloc (1 * sizeof(credential_element_t *));
+    credential_t *lic = (credential_t *)malloc(sizeof(credential_t));
+
+    lic->cred = (credential_element_t **) malloc (1 * sizeof(credential_element_t *));
     credential_element_t *ce = (credential_element_t *)malloc(sizeof(credential_element_t));
-    ic->cred[0] = ce;
+    lic->cred[0] = ce;
 
     //receive the time revocation signature was generated
     recv(sockfd, &len, 1, 0); 
@@ -635,9 +637,11 @@ void receive_revocation_signature(int sockfd, char **rev_time, credential_t *ic)
 	element_init_G1(ce->T[j], pairing);
         receive_element(ce->T[j], 1, sockfd);
     }
+
+    *ic = lic;
 }
 
-int get_revocation_status(char *user, credential_t *c,  char **rev_time)
+int get_revocation_status(char *user, credential_t **c,  char **rev_time)
 {
     int sockfd;
     struct sockaddr_in     servaddr;
@@ -692,7 +696,7 @@ int process_event_request(int sock)
     char user[USER_LENGTH] = {0};
     int i,j;
     struct timeval start;
-    credential_t revc;
+    credential_t *revc;
     char *rev_time = NULL;
 
     gettimeofday(&start, NULL);
@@ -718,7 +722,7 @@ int process_event_request(int sock)
 	{
 	    for(j = 0; esmap[i].services[j] != NULL; j++)
 	    {
-                generate_credential_token(NULL, &revc, rev_time, user, esmap[i].services[j], -1);
+                generate_credential_token(NULL, revc, rev_time, user, esmap[i].services[j], -1);
 	    }
 	}
     }	
